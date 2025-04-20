@@ -1,14 +1,14 @@
 project: "viscosity estimation testing"
-name: "decay_5s_10fps_highrpm_testrun"
-version: v1
+name: "50video_test_run"
+version: v0
 
 regression:
   train_settings:
-    batch_size : 2
+    batch_size : 4
     num_epochs : 50
     num_workers : 4
     seed : 1205
-    dataset : "VideoDataset"
+    dataset : "VideoDataset_50"
 
   preprocess:
     scaler : "loginterscaler"    # log scaled, inter scaling works best 
@@ -39,7 +39,7 @@ regression:
   real_model:
     real_num_epochs : 30
 
-  loss : "MSLE" 
+  loss : "MAPE" 
   # for normalized : MSLE, MAPE good for normalized values; 
 
   optimizer:
@@ -57,7 +57,7 @@ regression:
       real_checkpoint : "src/models/weights_reg/ViscRealXXXX_01.pth"
 
     data :
-      data_root : "dataset/decay_5s_10fps_highrpm"
+      data_root : "dataset/CFDArchive/decay_5.0s_10fps_512resolution"
       video_subdir : "videos"
       para_subdir : "parameters"
       norm_subdir : "parametersNorm"
