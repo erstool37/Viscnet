@@ -16,6 +16,7 @@ dataset/**/videos/
 dataset/**/parameters/
 dataset/**/parametersNorm/
 dataset/**/statistics.json
+*.mov
 
 src/inference/**/*.png
 src/weights/*.pth
