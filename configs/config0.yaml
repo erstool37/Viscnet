@@ -1,18 +1,18 @@
 project: "viscosity estimation testing"
-name: "25video_test_run"
+name: "decay_5s_10fps_surfdensrpm_test_run"
 version: v0
 
 regression:
   train_settings:
-    batch_size : 8
+    batch_size : 1
     num_epochs : 50
     num_workers : 4
     seed : 1205
-    dataset : "VideoDataset_25"
+    dataset : "VideoDataset"
 
   preprocess:
-    scaler : "loginterscaler"    # log scaled, inter scaling works best 
-    descaler : "loginterdescaler"
+    scaler : "logzscaler"    # log scaled, inter scaling works best 
+    descaler : "logzdescaler"
     frame_num : 10
     time : 5
     test_size : 0.2
@@ -48,32 +48,31 @@ regression:
     lr: 1e-5
     eta_min : 1e-10
     weight_decay: 5e-4
-    patience : 15
+    patience : 5
   
   directories:
     checkpoint :
-      mask_checkpoint : "src/weights/segmentation/Vortex0219_01.pth"
       checkpoint : "src/weights/"
+      inf_checkpoint : "src/weights/decay_5s_10fps_surfdensrpm_test_run_0424_v0.pth"
       real_checkpoint : "src/models/weights_reg/ViscRealXXXX_01.pth"
+      mask_checkpoint : "src/weights/segmentation/Vortex0219_01.pth"
 
     data :
-      data_root : "dataset/CFDArchive/decay_5.0s_10fps_512resolution"
+      data_root : "dataset/CFDArchive/decay_5s_10fps_surfdensrpm"
+      test_root : "dataset/CFDArchive/test"
+      real_root : "dataset/realfluid/decay_5s_10fps_hotplate"
       video_subdir : "videos"
       para_subdir : "parameters"
       norm_subdir : "parametersNorm"
-      save_root : "dataset/CFDfluid/processed_data" 
-      real_root : "dataset/realfluid/original"
-      real_save_root : "dataset/realfluid/processed_data"
-      test_root : "dataset/CFDArchive/test"
 
 segmentation:
   settings:
-    batch_size : 96
-    num_workers : 128
-    num_epochs : 20
-    lr_rate : 1e-4
-    checkpoint : "preprocess/model_seg/Vortex0306_01.pth" # freshly trained model name
-    base_checkpoint : "preprocess/model_seg/Vortex0219_01.pth" # pre-trained model name
+    batch_size : 
+    num_workers :
+    num_epochs :
+    lr_rate :
+    checkpoint : 
+    base_checkpoint : 
 
   directories:
     data_root : "dataset/WebGLfluid/original"

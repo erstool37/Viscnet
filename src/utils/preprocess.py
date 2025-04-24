@@ -11,26 +11,37 @@ import importlib
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, required=True, default="configs/config.yaml")
+parser.add_argument("-m", "--method", type=str, required=True, default="train")
 args = parser.parse_args()
 
 with open(args.config, "r") as file:
     config = yaml.safe_load(file)
 cfg = config["regression"]
 
+METHOD          = args.method
 DATA_ROOT       = cfg["directories"]["data"]["data_root"]
 TEST_ROOT       = cfg["directories"]["data"]["test_root"]
+REAL_ROOT       = cfg["directories"]["data"]["real_root"]
 PARA_SUBDIR     = cfg["directories"]["data"]["para_subdir"]
 NORM_SUBDIR     = cfg["directories"]["data"]["norm_subdir"]
 NORMALIZE       = cfg["preprocess"]["scaler"]
 UNNORMALIZE     = cfg["preprocess"]["descaler"]
 
-para_paths = sorted(glob.glob(osp.join(DATA_ROOT, PARA_SUBDIR, "*.json")))
-norm_path = osp.join(DATA_ROOT, NORM_SUBDIR)
-os.makedirs(norm_path, exist_ok=True)
-# test_para_paths = sorted(glob.glob(osp.join(TEST_ROOT, PARA_SUBDIR, "*.json")))
-# test_norm_paths = osp.join(TEST_ROOT, NORM_SUBDIR)
-# os.makedirs(test_norm_path, exist_ok=True)
+if METHOD == "test":
+    para_paths = sorted(glob.glob(osp.join(TEST_ROOT, PARA_SUBDIR, "*.json")))
+    norm_path = osp.join(TEST_ROOT, NORM_SUBDIR)
+    os.makedirs(norm_path, exist_ok=True)
 
+elif METHOD == "real":
+    para_paths = sorted(glob.glob(osp.join(REAL_ROOT, PARA_SUBDIR, "*.json")))
+    norm_path = osp.join(REAL_ROOT, NORM_SUBDIR)
+    os.makedirs(norm_path, exist_ok=True)
+
+else:
+    para_paths = sorted(glob.glob(osp.join(DATA_ROOT, PARA_SUBDIR, "*.json")))
+    norm_path = osp.join(DATA_ROOT, NORM_SUBDIR)
+    os.makedirs(norm_path, exist_ok=True)
+    
 utils = importlib.import_module("utils")
 scaler = getattr(utils, NORMALIZE)
 descaler = getattr(utils, UNNORMALIZE)
@@ -43,8 +54,8 @@ density = []
 for path in para_paths:
     with open(path, 'r') as file:
         data = json.load(file)
-        dynVisc.append(10 * data["dynamic_viscosity"])
-        kinVisc.append(10 * data["kinematic_viscosity"])
+        dynVisc.append(data["dynamic_viscosity"])
+        kinVisc.append(data["kinematic_viscosity"])
         surfT.append(data["surface_tension"])
         density.append(data["density"])
 

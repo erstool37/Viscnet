@@ -69,9 +69,7 @@ DATA_ROOT       = cfg["directories"]["data"]["data_root"]
 VIDEO_SUBDIR    = cfg["directories"]["data"]["video_subdir"]
 PARA_SUBDIR     = cfg["directories"]["data"]["para_subdir"]
 NORM_SUBDIR     = cfg["directories"]["data"]["norm_subdir"]
-SAVE_ROOT       = cfg["directories"]["data"]["save_root"]
 REAL_ROOT       = cfg["directories"]["data"]["real_root"]
-REAL_SAVE_ROOT  = cfg["directories"]["data"]["real_save_root"]
 
 set_seed(SEED)
 

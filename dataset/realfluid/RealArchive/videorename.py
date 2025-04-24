@@ -66,6 +66,7 @@ while count < 100:
                 "dynamic_viscosity": dynamic_viscosity[count//10],
                 "density": density[count//10],
                 "surface_tension": surface_tension
+                "kinematic_viscostiy": dynamic_viscosity[count//10] / density[count//10],
             }
             json_path = os.path.join(param_dir, f"{video_name}.json")
             with open(json_path, "w") as jf:

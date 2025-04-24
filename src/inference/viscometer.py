@@ -17,18 +17,18 @@ import yaml
 import json
 from torch.utils.data import TensorDataset, DataLoader, Dataset, Subset
 from sklearn.model_selection import train_test_split
-sys.path.append(osp.abspath(osp.join(osp.dirname(__file__), '..')))
 from utils import MAPEcalculator, MAPEflowcalculator, MAPEtestcalculator, set_seed, distribution
-from dataset import VideoDataset
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config", type=str, required=True, default="configs/testconfig.yaml")
+parser.add_argument("-c", "--config", type=str, required=True, default="configs/config0.yaml")
+parser.add_argument("-m", "--method", type=str, required=False, default="real")
 args = parser.parse_args()
 
-with open("configs/testconfig.yaml", "r") as file:
+with open(args.config, "r") as file:
     config = yaml.safe_load(file)
 cfg = config["regression"]
 
+METHOD          = args.method
 SCALER          = cfg["preprocess"]["scaler"]
 DESCALER        = cfg["preprocess"]["descaler"]
 TEST_SIZE       = float(cfg["preprocess"]["test_size"])
@@ -39,6 +39,7 @@ BATCH_SIZE      = int(cfg["train_settings"]["batch_size"])
 NUM_WORKERS     = int(cfg["train_settings"]["num_workers"])
 NUM_EPOCHS      = int(cfg["train_settings"]["num_epochs"])
 SEED            = int(cfg["train_settings"]["seed"])
+DATASET         = cfg["train_settings"]["dataset"]
 ENCODER         = cfg["model"]["encoder"]["encoder"]
 CNN             = cfg["model"]["encoder"]["cnn"]
 CNN_TRAIN       = cfg["model"]["encoder"]["cnn_train"]
@@ -52,34 +53,21 @@ DIM             = int(cfg["model"]["flow"]["dim"])
 CON_DIM         = int(cfg["model"]["flow"]["con_dim"])
 HIDDEN_DIM      = int(cfg["model"]["flow"]["hidden_dim"])
 NUM_LAYERS      = int(cfg["model"]["flow"]["num_layers"])
-CHECKPOINT      = cfg["directories"]["checkpoint"]["checkpoint"]
-DATA_ROOT       = cfg["directories"]["data"]["data_root"]
-VIDEO_SUBDIR    = cfg["directories"]["data"]["video_subdir"]
-PARA_SUBDIR     = cfg["directories"]["data"]["para_subdir"]
-NORM_SUBDIR     = cfg["directories"]["data"]["norm_subdir"]
-SAVE_ROOT       = cfg["directories"]["data"]["save_root"]
-TEST_ROOT       = cfg["directories"]["data"]["test_root"]
-
-video_paths = sorted(glob.glob(osp.join(DATA_ROOT, VIDEO_SUBDIR, "*.mp4")))
-para_paths = sorted(glob.glob(osp.join(DATA_ROOT, NORM_SUBDIR, "*.json")))
-# test_video_paths = sorted(glob.glob(osp.join(TEST_ROOT, VIDEO_SUBDIR, "*.mp4")))
-# test_para_paths = sorted(glob.glob(osp.join(TEST_ROOT, PARA_SUBDIR, "*.json")))
-
-train_video_paths, val_video_paths = train_test_split(video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
-train_para_paths, val_para_paths = train_test_split(para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
-
-train_ds = VideoDataset(train_video_paths, train_para_paths, FRAME_NUM, TIME)
-val_ds = VideoDataset(val_video_paths, val_para_paths, FRAME_NUM, TIME)
-# test_ds = VideoDataset(test_video_paths, test_para_paths, FRAME_NUM, TIME)
-
-train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
-val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
-# test_dl = DataLoader(test_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
+CHECKPOINT      = cfg["directories"]["checkpoint"]["inf_checkpoint"]
+repo = cfg["directories"]["data"]
+VAL_ROOT       = repo["data_root"]
+REAL_ROOT       = repo["real_root"]
+TEST_ROOT       = repo["test_root"]
+VIDEO_SUBDIR    = repo["video_subdir"]
+PARA_SUBDIR     = repo["para_subdir"]
+NORM_SUBDIR     = repo["norm_subdir"]
 
 # model load
+dataset_module = importlib.import_module(f"datasets.{DATASET}")
 encoder_module = importlib.import_module(f"models.{ENCODER}")
 flow_module = importlib.import_module(f"models.{FLOW}")
 
+dataset_class = getattr(dataset_module, DATASET)
 encoder_class = getattr(encoder_module, ENCODER)
 flow_class = getattr(flow_module, FLOW)
 
@@ -91,18 +79,34 @@ encoder.cuda()
 encoder.eval()
 encoder.load_state_dict(torch.load(CHECKPOINT))
 
+# Dataset load
+if METHOD == "real":
+    video_paths = sorted(glob.glob(osp.join(REAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
+    para_paths = sorted(glob.glob(osp.join(REAL_ROOT, NORM_SUBDIR, "*.json")))
+elif METHOD == "test":
+    video_paths = sorted(glob.glob(osp.join(TEST_ROOT, VIDEO_SUBDIR, "*.mp4")))
+    para_paths = sorted(glob.glob(osp.join(TEST_ROOT, NORM_SUBDIR, "*.json")))
+else:
+    val_video_paths = sorted(glob.glob(osp.join(VAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
+    val_para_paths = sorted(glob.glob(osp.join(VAL_ROOT, NORM_SUBDIR, "*.json")))
+    _, video_paths = train_test_split(val_video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
+    _, para_paths = train_test_split(val_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
+
+ds = dataset_class(video_paths, para_paths, FRAME_NUM, TIME)
+dl = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
+
 # Error Calculation
 errors = []
-for frames, parameters in val_dl:
+for frames, parameters, _ in dl:
     frames, parameters = frames.to(device), parameters.to(device)
     outputs = encoder(frames)
 
     if FLOW_BOOL:
         z, log_det_jacobian = flow(parameters, outputs)
         visc = flow.inverse(z, outputs)
-        error = MAPEtestcalculator(visc.detach(), parameters.detach(), DESCALER, "val", DATA_ROOT)
+        error = MAPEtestcalculator(visc.detach(), parameters.detach(), DESCALER, METHOD, repo[f"{METHOD}_root"])
     else:
-        error = MAPEtestcalculator(outputs.detach(), parameters.detach(), DESCALER, "val", DATA_ROOT)
+        error = MAPEtestcalculator(outputs.detach(), parameters.detach(), DESCALER, "real", REAL_ROOT)
     errors.append(error.detach().cpu())
 
 errors_tensor = torch.cat(errors, dim=0)
