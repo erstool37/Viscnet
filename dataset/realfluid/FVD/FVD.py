@@ -1,3 +1,18 @@
+"""
+README: 
+
+INFO
+- based on I3D model https://github.com/google-deepmind/kinetics-i3d, << download weights in this repo/data/checkpoints
+- PYTORCH version for I3D model from https://github.com/piergiaj/pytorch-i3d/tree/master
+- uses I3D model as video encoder and compares FVD metrics to tune appropriate RPM and viscWEIGHTS for CFD rendering
+- Uses Center-cropped 224, 224 videos, be aware
+
+THOUGHTS
+- quite skeptical on I3D model performance, for it is trained on Kinetics dataset(captures big human actions)
+- code not complete, requires debugging after dataset is ready
+"""
+
+
 import os
 import os.path as osp
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
@@ -20,7 +35,6 @@ import glob
 import numpy as np
 from I3D import InceptionI3d
 
-# VIDEO CENTER CROPPED AS 224, be aware 
 DATA_ROOT = 'dataset/realfluid/'
 REAL_VIDEO_SUBDIR = 'decay_5s_10fps_impeller/videos'
 REAL_PARA_SUBDIR = 'decay_5s_10fps_impeller/parameters'
@@ -34,6 +48,7 @@ FVD_SAVE_SUBDIR = 'FVDresults'
 FRAME_NUM = 5
 TIME = 10
 
+# runs I3D model on the videos and saves the features
 def run(max_steps=64e3, split=1.0, batch_size=1):
     test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
 
@@ -79,6 +94,7 @@ def run(max_steps=64e3, split=1.0, batch_size=1):
         features = i3d.extract_features(frames)
         np.save(osp.join(DATA_ROOT, CFD_SAVE_SUBDIR, names), features.squeeze(0).permute(1,2,3,0).cpu().numpy())
 
+# groups the dataset based on viscosity and rpm, base on the file path lists' index
 def group():
     real_para_paths = sorted(glob.glob(osp.join(DATA_ROOT, REAL_PARA_SUBDIR, "*.json")))
     cfd_para_paths = sorted(glob.glob(osp.join(DATA_ROOT, CFD_PARA_SUBDIR, "*.json")))
@@ -122,7 +138,7 @@ def group():
 
     return real_groups, cfd_rpm_groups, cfd_weight_groups
 
-
+# simple FVD calculator
 def FVDcalculator(mu1, sigma1, mu2, sigma2):
     covmean = sqrtm(sigma1 @ sigma2)
     if np.iscomplexobj(covmean):
@@ -130,6 +146,7 @@ def FVDcalculator(mu1, sigma1, mu2, sigma2):
     diff = mu1 - mu2
     return diff @ diff + np.trace(sigma1 + sigma2 - 2 * covmean)
 
+# FVD calculator for groups
 def FVDgrouper(real_groups, cfd_rpm_groups, cfd_weight_groups):
     fvd_rpm = {}
     fvd_weight = {}
@@ -160,6 +177,7 @@ def FVDgrouper(real_groups, cfd_rpm_groups, cfd_weight_groups):
 
     return fvd_rpm, fvd_weight
 
+# Visualize as heatmap
 def visualize(fvd_rpm, fvd_weight):
     # Convert fvd_rpm to matrix form for heatmap
     rpm_visc = sorted(set([k[0] for k in fvd_rpm]))
@@ -195,5 +213,6 @@ def visualize(fvd_rpm, fvd_weight):
     plt.tight_layout()
     plt.show()
 
+# Initialize.
 run()
 visualize(FVDgrouper(group()))

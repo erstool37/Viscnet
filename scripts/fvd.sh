@@ -1,0 +1,1 @@
+python3 dataset/realfluid/FVD/FVD.py
