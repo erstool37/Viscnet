@@ -4,10 +4,6 @@ os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 import sys
 import argparse
 import json
-
-# MODE = rgb, 
-parser = argparse.ArgumentParser()
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -21,9 +17,7 @@ from torch.utils.data import TensorDataset, DataLoader, Dataset, Subset
 from sklearn.model_selection import train_test_split
 from datasets.VideoDataset import VideoDataset
 import glob
-
 import numpy as np
-
 from I3D import InceptionI3d
 
 # VIDEO CENTER CROPPED AS 224, be aware 
@@ -89,58 +83,117 @@ def group():
     real_para_paths = sorted(glob.glob(osp.join(DATA_ROOT, REAL_PARA_SUBDIR, "*.json")))
     cfd_para_paths = sorted(glob.glob(osp.join(DATA_ROOT, CFD_PARA_SUBDIR, "*.json")))
 
-    # group real videos by viscosity and rpm
-    real_rpm_groups = {}
-    real_weight_groups = {}
+    # grouping real videos based on viscosity and rpm
+    real_groups = {}
     for idx, json_file in enumerate(real_para_paths):
         with open(json_file, 'r') as f:
             data = json.load(f)
+        visc = str(data['dynamic_viscosity'])
         rpm = str(data['rpm'])
-        weight = str(data['weight'])
+        if visc not in real_groups:
+            real_visc_rpm_groups[visc] = {}
+        if rpm not in real_visc_rpm_groups[visc]:
+            real_visc_rpm_groups[visc][rpm] = []
+        real_visc_rpm_groups[visc][rpm].append(idx)
 
-        if rpm not in real_rpm_groups:
-            real_rpm_groups[rpm] = []
-        real_rpm_groups[rpm].append(idx)
-
-        if weight not in real_weight_groups:
-            cfd_weight_groups[weight] = []
-        real_weight_groups[weight].append(idx)
-
-    # group cfd videos by viscosity, rpm, weight
+    # grouping cfd videos based on viscosity and rpm and weight
     cfd_rpm_groups = {}
     cfd_weight_groups = {}
     for idx, json_file in enumerate(cfd_para_paths):
         with open(json_file, 'r') as f:
             data = json.load(f)
+        visc = str(data['dynamic_viscosity'])
         rpm = str(data['rpm'])
         weight = str(data['weight'])
 
-        if rpm not in cfd_rpm_groups:
-            cfd_rpm_groups[rpm] = []
-        cfd_rpm_groups[rpm].append(idx)
+        # viscosity > rpm > list
+        if visc not in cfd_rpm_groups:
+            cfd_visc_rpm_groups[visc] = {}
+        if rpm not in cfd_rpm_groups[visc]:
+            cfd_rpm_groups[visc][rpm] = []
+        cfd_rpm_groups[visc][rpm].append(idx)
 
-        if weight not in cfd_weight_groups:
-            cfd_weight_groups[weight] = []
-        cfd_weight_groups[weight].append(idx)
+        # viscosity → weight > list
+        if visc not in cfd_weight_groups:
+            cfd_weight_groups[visc] = {}
+        if weight not in cfd_weight_groups[visc]:
+            cfd_weight_groups[visc][weight] = []
+        cfd_weight_groups[visc][weight].append(idx)
 
-    return real_rpm_groups,real_weight_groups, cfd_rpm_groups, cfd_weight_groups
-
-def FVDcalculator(grouped_feature_paths):
-    group_stats = {}
-    for key, paths in grouped_feature_paths.items():
-        all_features = []
-        for path in paths:
-            feat = np.load(path)
-            feat = feat.reshape(-1, feat.shape[-1])  # flatten over time
-            all_features.append(feat)
-        all_features = np.concatenate(all_features, axis=0)
-
-        mu = np.mean(all_features, axis=0)
-        sigma = np.cov(all_features, rowvar=False)
-        group_stats[key] = {'mu': mu, 'sigma': sigma}
-
-    return group_stats
+    return real_groups, cfd_rpm_groups, cfd_weight_groups
 
 
+def FVDcalculator(mu1, sigma1, mu2, sigma2):
+    covmean = sqrtm(sigma1 @ sigma2)
+    if np.iscomplexobj(covmean):
+        covmean = covmean.real
+    diff = mu1 - mu2
+    return diff @ diff + np.trace(sigma1 + sigma2 - 2 * covmean)
+
+def FVDgrouper(real_groups, cfd_rpm_groups, cfd_weight_groups):
+    fvd_rpm = {}
+    fvd_weight = {}
+
+    for visc in real_groups:
+        # calculate FVD for RPM
+        for rpm in real_groups[visc]:
+            real_features = np.concatenate([np.load(p).reshape(-1, np.load(p).shape[-1]) for p in real_groups[visc][rpm]], axis=0)
+            mu_real, sigma_real = np.mean(real_features, axis=0), np.cov(real_features, rowvar=False)
+
+            if visc in cfd_rpm_groups and rpm in cfd_rpm_groups[visc]:
+                cfd_features = np.concatenate([np.load(p).reshape(-1, np.load(p).shape[-1]) for p in cfd_rpm_groups[visc][rpm]], axis=0)
+                mu_cfd, sigma_cfd = np.mean(cfd_features, axis=0), np.cov(cfd_features, rowvar=False)
+                fvd_rpm[(visc, rpm)] = FVDcalculator(mu_real, sigma_real, mu_cfd, sigma_cfd)
+
+        # calculate FVD for weight
+        all_real_features = []
+        for rpm in real_groups[visc]:
+            all_real_features.extend([np.load(p).reshape(-1, np.load(p).shape[-1]) for p in real_groups[visc][rpm]])
+        all_real_features = np.concatenate(all_real_features, axis=0)
+        mu_real_all, sigma_real_all = np.mean(all_real_features, axis=0), np.cov(all_real_features, rowvar=False)
+
+        if visc in cfd_weight_groups:
+            for weight in cfd_weight_groups[visc]:
+                cfd_features = np.concatenate([np.load(p).reshape(-1, np.load(p).shape[-1]) for p in cfd_weight_groups[visc][weight]], axis=0)
+                mu_cfd, sigma_cfd = np.mean(cfd_features, axis=0), np.cov(cfd_features, rowvar=False)
+                fvd_weight[(visc, weight)] = FVDcalculator(mu_real_all, sigma_real_all, mu_cfd, sigma_cfd)
+
+    return fvd_rpm, fvd_weight
+
+def visualize(fvd_rpm, fvd_weight):
+    # Convert fvd_rpm to matrix form for heatmap
+    rpm_visc = sorted(set([k[0] for k in fvd_rpm]))
+    rpm_vals = sorted(set([k[1] for k in fvd_rpm]))
+    rpm_matrix = np.zeros((len(rpm_visc), len(rpm_vals)))
+
+    for i, visc in enumerate(rpm_visc):
+        for j, rpm in enumerate(rpm_vals):
+            rpm_matrix[i, j] = fvd_rpm.get((visc, rpm), np.nan)
+
+    plt.figure(figsize=(10, 6))
+    sns.heatmap(rpm_matrix, annot=True, xticklabels=rpm_vals, yticklabels=rpm_visc, cmap='coolwarm')
+    plt.title("FVD: (Viscosity, RPM)")
+    plt.xlabel("RPM")
+    plt.ylabel("Viscosity")
+    plt.tight_layout()
+    plt.show()
+
+    # Convert fvd_weight to matrix form for heatmap
+    weight_visc = sorted(set([k[0] for k in fvd_weight]))
+    weight_vals = sorted(set([k[1] for k in fvd_weight]))
+    weight_matrix = np.zeros((len(weight_visc), len(weight_vals)))
+
+    for i, visc in enumerate(weight_visc):
+        for j, weight in enumerate(weight_vals):
+            weight_matrix[i, j] = fvd_weight.get((visc, weight), np.nan)
+
+    plt.figure(figsize=(10, 6))
+    sns.heatmap(weight_matrix, annot=True, xticklabels=weight_vals, yticklabels=weight_visc, cmap='YlGnBu')
+    plt.title("FVD: (Viscosity, Weight)")
+    plt.xlabel("Weight")
+    plt.ylabel("Viscosity")
+    plt.tight_layout()
+    plt.show()
 
 run()
+visualize(FVDgrouper(group()))

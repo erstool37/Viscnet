@@ -79,6 +79,7 @@ dataset_module = importlib.import_module(f"datasets.{DATASET}")
 loss_module = importlib.import_module(f"losses.{LOSS}")
 encoder_module = importlib.import_module(f"models.{ENCODER}")
 flow_module = importlib.import_module(f"models.{FLOW}")
+dataset_class = getattr(dataset_module, DATASET)
 
 today = datetime.datetime.now().strftime("%m%d")
 checkpoint = f"{CHECKPOINT}{NAME}_{today}_{VER}.pth"
@@ -93,14 +94,14 @@ para_paths = sorted(glob.glob(osp.join(DATA_ROOT, NORM_SUBDIR, "*.json")))
 train_video_paths, val_video_paths = train_test_split(video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 train_para_paths, val_para_paths = train_test_split(para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
-train_ds = dataset_module(train_video_paths, train_para_paths, FRAME_NUM, TIME)
-val_ds = dataset_module(val_video_paths, val_para_paths, FRAME_NUM, TIME)
+train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME)
+val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME)
 
 train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 
 # DEFINE MODEL
-dataset_class = getattr(dataset_module, DATASET)
+
 encoder_class = getattr(encoder_module, ENCODER)
 flow_class = getattr(flow_module, FLOW)
 criterion_class = getattr(loss_module, LOSS)
