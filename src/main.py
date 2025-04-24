@@ -16,7 +16,6 @@ import yaml
 import json
 from torch.utils.data import TensorDataset, DataLoader, Dataset, Subset
 from sklearn.model_selection import train_test_split
-from datasets.VideoDataset import VideoDataset
 from utils.utils import MAPEcalculator, MAPEflowcalculator
 from utils.setseed import set_seed
 
@@ -94,8 +93,8 @@ para_paths = sorted(glob.glob(osp.join(DATA_ROOT, NORM_SUBDIR, "*.json")))
 train_video_paths, val_video_paths = train_test_split(video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 train_para_paths, val_para_paths = train_test_split(para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
-train_ds = VideoDataset(train_video_paths, train_para_paths, FRAME_NUM, TIME)
-val_ds = VideoDataset(val_video_paths, val_para_paths, FRAME_NUM, TIME)
+train_ds = dataset_module(train_video_paths, train_para_paths, FRAME_NUM, TIME)
+val_ds = dataset_module(val_video_paths, val_para_paths, FRAME_NUM, TIME)
 
 train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
@@ -115,6 +114,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 encoder.to(device)
 flow.to(device)
 criterion = criterion_class(DESCALER, DATA_ROOT)
+
 if FLOW_BOOL:
     optimizer = optim_class(list(encoder.parameters()) + list(flow.parameters()), lr=LR, weight_decay=W_DECAY)
 else:
@@ -125,11 +125,12 @@ scheduler = scheduler_class(optimizer, T_max=NUM_EPOCHS, eta_min=ETA_MIN)
 best_val_loss = float("inf")
 counter = 0
 wandb.watch(encoder, criterion, log="all", log_freq=10)
+
 for epoch in range(NUM_EPOCHS):  
     train_losses = []
     print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training ")  
     encoder.train()
-    for frames, parameters in tqdm(train_dl):
+    for frames, parameters, _ in tqdm(train_dl):
         frames, parameters = frames.to(device), parameters.to(device) # (B, F, C, H, W) // (B, P)
         outputs = encoder(frames)
 
@@ -157,7 +158,7 @@ for epoch in range(NUM_EPOCHS):
     val_losses = []
     with torch.no_grad():
         print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
-    for frames, parameters in tqdm(val_dl):
+    for frames, parameters, _ in tqdm(val_dl):
         frames, parameters = frames.to(device), parameters.to(device)
         outputs = encoder(frames)
 

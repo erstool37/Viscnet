@@ -21,3 +21,5 @@ from .analysis import (
 from .setseed import (
     set_seed
 )
+
+import videotransforms

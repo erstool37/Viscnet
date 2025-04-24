@@ -4,6 +4,7 @@ import json
 import numpy as np
 import torch
 import torch.nn.functional as F
+import os.path as osp
 
 class VideoDataset(Dataset):
     def __init__(self, video_paths, para_paths, frame_num, time):
@@ -15,7 +16,8 @@ class VideoDataset(Dataset):
     def __getitem__(self, index):
         frames = self._loadvideo(self.video_paths[index], self.frame_limit)
         parameters = self._loadparameters(self.para_paths[index])
-        return frames, parameters
+        names = self._loadname(self.para_paths[index])
+        return frames, parameters, names
 
     def _loadvideo(self, video_path, frame_limit):
         cap = cv2.VideoCapture(video_path)
@@ -47,6 +49,11 @@ class VideoDataset(Dataset):
             kinVisc = float(data["kinematic_viscosity"])
             
         return torch.tensor([density, dynVisc, surfT, kinVisc], dtype=torch.float32)
+    
+    def _loadname(self, video_path):
+        name = osp.splitext(osp.basename(video_path))
+            
+        return name[0]
 
     def __len__(self):
         return len(self.video_paths)
