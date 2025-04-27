@@ -7,6 +7,7 @@ import subprocess
 # Updated viscosity and density
 dynamic_viscosity = [0.89274, 1.5894, 2.8299, 5.0383, 8.9703, 15.971, 28.435, 50.626, 90.135, 160.48]
 density = [996.89, 1048.4, 1090.3, 1124.1, 1151.4, 1173.8, 1192.3, 1207.9, 1221.1, 1232.5]
+rpm = [325, 350, 375, 400, 425, 450, 475, 500, 525, 550]
 
 surface_tension = 0.0762
 output_size = (512, 512)
@@ -67,6 +68,7 @@ while count < 100:
                 "density": density[count//10],
                 "surface_tension": surface_tension
                 "kinematic_viscostiy": dynamic_viscosity[count//10] / density[count//10],
+                "RPM": rpm[count%10],
             }
             json_path = os.path.join(param_dir, f"{video_name}.json")
             with open(json_path, "w") as jf:

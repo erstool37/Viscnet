@@ -21,3 +21,9 @@ from .analysis import (
 from .setseed import (
     set_seed
 )
+
+from .videotransforms import (
+    RandomCrop,
+    CenterCrop,
+    RandomHorizontalFlip,
+)

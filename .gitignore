@@ -17,6 +17,7 @@ dataset/**/parameters/
 dataset/**/parametersNorm/
 dataset/**/statistics.json
 *.mov
+*.npy
 
 src/inference/**/*.png
 src/weights/*.pth
