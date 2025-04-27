@@ -21,6 +21,7 @@ dataset/**/statistics.json
 
 src/inference/**/*.png
 src/weights/*.pth
+src/weights/FVD/*.pt
 
 touch dataset/CFDArchive.gitkeep
 !dataset/CFDArchive.gitkeep
