@@ -23,5 +23,7 @@ src/inference/**/*.png
 src/weights/*.pth
 src/weights/FVD/*.pt
 
+dataset/realfluid/FVD/plots/*
+
 touch dataset/CFDArchive.gitkeep
 !dataset/CFDArchive.gitkeep

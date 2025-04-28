@@ -36,6 +36,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.linalg import sqrtm
 import collections
+import pandas as pd
 
 DATA_ROOT = 'dataset/realfluid/'
 REAL_SUBDIR = 'decay_5s_10fps_hotplate'
@@ -179,14 +180,14 @@ def match_viscosity(target_visc, candidate_viscs, threshold=0.5):
     return None
 
 # calculate FVD metric
-def calculate_fvd(real_features, cfd_features, num_iter=10):
+def calculate_fvd(real_features, cfd_features, num_iter=10, eps=1e-6):
     real_features = torch.tensor(real_features, dtype=torch.float32, device='cuda')
     cfd_features = torch.tensor(cfd_features, dtype=torch.float32, device='cuda')
 
     mu_real = torch.mean(real_features, dim=0)
     mu_cfd = torch.mean(cfd_features, dim=0)
-    sigma_real = torch.cov(real_features.T)
-    sigma_cfd = torch.cov(cfd_features.T)
+    sigma_real = torch.cov(real_features.T) + eps * torch.eye(real_features.shape[1], device='cuda')
+    sigma_cfd = torch.cov(cfd_features.T) + eps * torch.eye(cfd_features.shape[1], device='cuda')
 
     diff = mu_real - mu_cfd
     diff_norm = torch.sum(diff * diff)
@@ -207,7 +208,9 @@ def calculate_fvd(real_features, cfd_features, num_iter=10):
     covmean = Z * torch.sqrt(norm)
     trace = torch.trace(sigma_real + sigma_cfd - 2.0 * covmean)
 
-    return (diff_norm + trace).item()
+    fvd = (diff_norm + trace).item()
+
+    return fvd
 
 # calculate FVD for all pairs of real and CFD data when rpm changes
 def calculate_fvd_pairs_rpm(real_groups, cfd_rpm_groups):
@@ -232,7 +235,7 @@ def calculate_fvd_pairs_rpm(real_groups, cfd_rpm_groups):
 
                 counter += 1
                 if counter % 30 == 0:
-                    print(f"[Info] {counter} RPM FVD calculations done.")
+                    print(f"{counter} RPM FVD calculations finished")
 
     return results
 
@@ -260,14 +263,48 @@ def calculate_fvd_pairs_weight(real_groups, cfd_weight_groups):
 
             counter += 1
             if counter % 30 == 0:
-                print(f"[Info] {counter} Weight FVD calculations done.")
+                print(f"{counter} Weight FVD calculations done.")
+
+    return results
+
+def calculate_fvd_pairs_rpm_grouped(real_groups, cfd_groups):
+    results = {}
+    counter = 0
+
+    # Group real features by real RPM
+    rpm_grouped_real_features = {}
+
+    for visc_real in real_groups:
+        for rpm_real in real_groups[visc_real]:
+            if rpm_real not in rpm_grouped_real_features:
+                rpm_grouped_real_features[rpm_real] = []
+
+            real_paths = real_groups[visc_real][rpm_real]
+            real_features = torch.cat([torch.from_numpy(np.load(p)).reshape(-1, np.load(p).shape[-1]) for p in real_paths], dim=0)
+            rpm_grouped_real_features[rpm_real].append(real_features)
+
+    # Now for each real RPM group
+    for rpm_real, feature_list in rpm_grouped_real_features.items():
+        real_features = torch.cat(feature_list, dim=0)  # Merge all features sharing same real RPM
+
+        for visc_cfd in cfd_groups:
+            for rpm_cfd in cfd_groups[visc_cfd]:
+                cfd_paths = cfd_groups[visc_cfd][rpm_cfd]
+                cfd_features = torch.cat([torch.from_numpy(np.load(p)).reshape(-1, np.load(p).shape[-1]) for p in cfd_paths], dim=0)
+
+                fvd_value = calculate_fvd(real_features, cfd_features)
+                results[(rpm_real, visc_cfd, rpm_cfd)] = fvd_value
+
+                counter += 1
+                if counter % 30 == 0:
+                    print(f"{counter} FVD calculations done (grouped RPM mode).")
 
     return results
 
 # FVD calculating function
 def FVDgrouper(real_groups, cfd_rpm_groups, cfd_weight_groups):
-    fvd_rpm = calculate_fvd_pairs_rpm(real_groups, cfd_rpm_groups, mode='rpm')
-    fvd_weight = calculate_fvd_pairs_weight(real_groups, cfd_weight_groups, mode='weight')
+    fvd_rpm = calculate_fvd_pairs_rpm(real_groups, cfd_rpm_groups)
+    fvd_weight = calculate_fvd_pairs_weight(real_groups, cfd_weight_groups)
     return fvd_rpm, fvd_weight
 
 # prints data in terminal
@@ -304,47 +341,45 @@ def printer(fvd_data, mode):
 
 # draws heat map
 def visualize(fvd_rpm, fvd_weight):
+    os.makedirs("plots", exist_ok=True)
+
     # --- Plot RPM comparison ---
     if len(fvd_rpm) > 0:
-        print("\nPlotting FVD vs RPM...")
         rpm_data = []
         for (visc, real_rpm, cfd_rpm), fvd_value in fvd_rpm.items():
-            rpm_data.append((f"{visc} (Real {real_rpm})", int(cfd_rpm), fvd_value))
+            rpm_data.append((float(real_rpm), f"{visc}", fvd_value))  # Now real_rpm is X-axis!
 
-        rpm_df = sns.load_dataset('tips')[:0]  # dummy empty DataFrame
-        import pandas as pd
-        rpm_df = pd.DataFrame(rpm_data, columns=["Viscosity_RealRPM", "CFD_RPM", "FVD"])
+        rpm_df = pd.DataFrame(rpm_data, columns=["Real_RPM", "Viscosity", "FVD"])
 
         plt.figure(figsize=(12, 8))
-        sns.scatterplot(data=rpm_df, x="CFD_RPM", y="FVD", hue="Viscosity_RealRPM", style="Viscosity_RealRPM", s=100)
-        plt.title("FVD vs CFD RPM for Different Real Viscosities")
-        plt.xlabel("CFD RPM")
+        sns.scatterplot(data=rpm_df, x="Real_RPM", y="FVD", hue="Viscosity", style="Viscosity", s=100)
+        plt.title("FVD vs Real Fluid RPM for Different Real Viscosities")
+        plt.xlabel("Real Fluid RPM")
         plt.ylabel("FVD")
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.grid(True)
         plt.tight_layout()
-        plt.show()
+        plt.savefig("plots/RPM.png", dpi=300)
+        plt.close()
+        print("[Saved] dataset/realfluid/FVD/plots/RPM.png")
 
     # --- Plot Weight comparison ---
     if len(fvd_weight) > 0:
-        print("\nPlotting FVD vs Weight...")
         weight_data = []
-        for (visc, real_weight, cfd_weight), fvd_value in fvd_weight.items():
-            weight_data.append((f"{visc} (Real {real_weight})", float(cfd_weight), fvd_value))
+        for (visc, cfd_weight), fvd_value in fvd_weight.items():
+            weight_data.append((float(cfd_weight), f"{visc}", fvd_value))
 
-        weight_df = sns.load_dataset('tips')[:0]
-        import pandas as pd
-        weight_df = pd.DataFrame(weight_data, columns=["Viscosity_RealWeight", "CFD_Weight", "FVD"])
+        weight_df = pd.DataFrame(weight_data, columns=["CFD_Weight", "Viscosity", "FVD"])
 
         plt.figure(figsize=(12, 8))
-        sns.scatterplot(data=weight_df, x="CFD_Weight", y="FVD", hue="Viscosity_RealWeight", style="Viscosity_RealWeight", s=100)
+        sns.scatterplot(data=weight_df, x="CFD_Weight", y="FVD", hue="Viscosity", style="Viscosity", s=100)
         plt.title("FVD vs CFD Weight for Different Real Viscosities")
         plt.xlabel("CFD Weight")
         plt.ylabel("FVD")
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.grid(True)
         plt.tight_layout()
-        plt.show()
+        plt.savefig("plots/Weight.png", dpi=300)
+        plt.close()
+        print("[Saved] dataset/realfluid/FVD/plots/Weight.png")
 
 ##### CALL FUNCTIONS #####
 # feature_extractor() # save encoded features
@@ -352,4 +387,4 @@ real_groups, cfd_rpm_groups, cfd_weight_groups = group()
 fvd_rpm, fvd_weight = FVDgrouper(real_groups, cfd_rpm_groups, cfd_weight_groups)
 printer(fvd_rpm, 'rpm')
 printer(fvd_weight, 'weight')
-# visualize(fvd_rpm, fvd_weight)
+visualize(fvd_rpm, fvd_weight)
