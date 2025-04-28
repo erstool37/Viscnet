@@ -35,6 +35,7 @@ from I3D import InceptionI3d
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.linalg import sqrtm
+import collections
 
 DATA_ROOT = 'dataset/realfluid/'
 REAL_SUBDIR = 'decay_5s_10fps_hotplate'
@@ -208,8 +209,8 @@ def calculate_fvd(real_features, cfd_features, num_iter=10):
 
     return (diff_norm + trace).item()
 
-# calculate FVD for all pairs of real and CFD data
-def calculate_fvd_pairs(real_groups, cfd_groups, mode='rpm'):
+# calculate FVD for all pairs of real and CFD data when rpm changes
+def calculate_fvd_pairs_rpm(real_groups, cfd_rpm_groups):
     results = {}
     counter = 0
 
@@ -218,56 +219,88 @@ def calculate_fvd_pairs(real_groups, cfd_groups, mode='rpm'):
             real_paths = real_groups[visc_real][rpm_real]
             real_features = torch.cat([torch.from_numpy(np.load(p)).reshape(-1, np.load(p).shape[-1]) for p in real_paths], dim=0)
 
-            matched_visc = match_viscosity(visc_real, list(cfd_groups.keys()))
-            if matched_visc is None or matched_visc not in cfd_groups:
+            matched_visc = match_viscosity(visc_real, list(cfd_rpm_groups.keys()))
+            if matched_visc is None or matched_visc not in cfd_rpm_groups:
                 continue
 
-            for rpm_cfd in cfd_groups[matched_visc]:
-                cfd_paths = cfd_groups[matched_visc][rpm_cfd]
+            for rpm_cfd in cfd_rpm_groups[matched_visc]:
+                cfd_paths = cfd_rpm_groups[matched_visc][rpm_cfd]
                 cfd_features = torch.cat([torch.from_numpy(np.load(p)).reshape(-1, np.load(p).shape[-1]) for p in cfd_paths], dim=0)
 
                 fvd_value = calculate_fvd(real_features, cfd_features)
-                if mode == 'rpm':
-                    results[(matched_visc, rpm_real, rpm_cfd)] = fvd_value
-                else:
-                    results[(matched_visc, rpm_real, rpm_cfd)] = fvd_value
+                results[(matched_visc, rpm_real, rpm_cfd)] = fvd_value
 
                 counter += 1
                 if counter % 30 == 0:
-                    print(f"[Info] {counter} FVD calculations done.")
+                    print(f"[Info] {counter} RPM FVD calculations done.")
+
     return results
 
-# REAL FVD calculator
+def calculate_fvd_pairs_weight(real_groups, cfd_weight_groups):
+    results = {}
+    counter = 0
+
+    for visc_real in real_groups:
+        # Merge all RPM real videos together
+        real_paths = []
+        for rpm_real in real_groups[visc_real]:
+            real_paths += real_groups[visc_real][rpm_real]
+        real_features = torch.cat([torch.from_numpy(np.load(p)).reshape(-1, np.load(p).shape[-1]) for p in real_paths], dim=0)
+
+        matched_visc = match_viscosity(visc_real, list(cfd_weight_groups.keys()))
+        if matched_visc is None or matched_visc not in cfd_weight_groups:
+            continue
+
+        for weight_cfd in cfd_weight_groups[matched_visc]:
+            cfd_paths = cfd_weight_groups[matched_visc][weight_cfd]
+            cfd_features = torch.cat([torch.from_numpy(np.load(p)).reshape(-1, np.load(p).shape[-1]) for p in cfd_paths], dim=0)
+
+            fvd_value = calculate_fvd(real_features, cfd_features)
+            results[(matched_visc, weight_cfd)] = fvd_value
+
+            counter += 1
+            if counter % 30 == 0:
+                print(f"[Info] {counter} Weight FVD calculations done.")
+
+    return results
+
+# FVD calculating function
 def FVDgrouper(real_groups, cfd_rpm_groups, cfd_weight_groups):
-    fvd_rpm = calculate_fvd_pairs(real_groups, cfd_rpm_groups, mode='rpm')
-    fvd_weight = calculate_fvd_pairs(real_groups, cfd_weight_groups, mode='weight')
+    fvd_rpm = calculate_fvd_pairs_rpm(real_groups, cfd_rpm_groups, mode='rpm')
+    fvd_weight = calculate_fvd_pairs_weight(real_groups, cfd_weight_groups, mode='weight')
     return fvd_rpm, fvd_weight
 
 # prints data in terminal
 def printer(fvd_data, mode):
-    import collections
-
     data_dict = collections.defaultdict(list)
 
-    # Organize by (viscosity, real rpm or real weight)
-    for key, fvd in fvd_data.items():
-        if mode == "rpm":
-            visc, real_rpm, cfd_rpm = key
+    # Organize data
+    if mode == "rpm":
+        for (visc, real_rpm, cfd_rpm), fvd in fvd_data.items():
             data_dict[(visc, real_rpm)].append((cfd_rpm, fvd))
-        elif mode == "weight":
-            visc, real_weight, cfd_weight = key
-            data_dict[(visc, real_weight)].append((cfd_weight, fvd))
-        else:
-            raise ValueError(f"Unknown mode: {mode}")
+    elif mode == "weight":
+        for (visc, cfd_weight), fvd in fvd_data.items():
+            data_dict[visc].append((cfd_weight, fvd))
+    else:
+        raise ValueError(f"Unknown mode: {mode}")
 
-    # Sort and print
-    for (visc, real_param) in sorted(data_dict.keys(), key=lambda x: (float(x[0]), float(x[1]))):
-        entries = data_dict[(visc, real_param)]
+    # Print organized and sorted
+    for key in sorted(data_dict.keys(), key=lambda x: (float(x[0]), float(x[1]) if isinstance(x, tuple) else 0)):
+        entries = data_dict[key]
         entries = sorted(entries, key=lambda x: x[1])  # Sort by FVD ascending
 
-        print(f"\n=== Real Viscosity {visc}, Real {mode.upper()} {real_param} ===")
-        for cfd_param, fvd_value in entries:
-            print(f"CFD {mode.upper()}: {cfd_param}, FVD: {fvd_value:.4f}")
+        if mode == "rpm":
+            visc, real_rpm = key
+            print(f"\n=== Viscosity {visc}, Real RPM {real_rpm} ===")
+        else:
+            visc = key
+            print(f"\n=== Viscosity {visc} ===")
+
+        for param, fvd_value in entries:
+            if mode == "rpm":
+                print(f"CFD RPM: {param}, FVD: {fvd_value:.4f}")
+            else:
+                print(f"CFD Weight: {param}, FVD: {fvd_value:.4f}")
 
 # draws heat map
 def visualize(fvd_rpm, fvd_weight):
