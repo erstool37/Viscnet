@@ -16,7 +16,7 @@ class ResnetLSTMEmbedAdd10(nn.Module):
 
         self.rpm_embedding = nn.Embedding(rpm_class, self.embed_features)
 
-        self.lstm = nn.LSTM(input_size=self.cnn_out_features + self.embed_features, hidden_size=lstm_hidden_size, num_layers=lstm_layers, batch_first=True, dropout=dropout)
+        self.lstm = nn.LSTM(input_size=self.cnn_out_features, hidden_size=lstm_hidden_size, num_layers=lstm_layers, batch_first=True, dropout=dropout)
         self.fc =nn.Sequential(
             nn.Linear(lstm_hidden_size, 128),
             nn.ReLU(),
@@ -39,7 +39,7 @@ class ResnetLSTMEmbedAdd10(nn.Module):
         video_features = self.cnn(x) 
         video_features = video_features.view(batch_size, frames, -1) 
 
-        concat = video_feature + rpm_vec
+        concat = video_features + rpm_vec
 
         lstm_out, _ = self.lstm(concat)
         lstm_last_out = lstm_out[:, -1, :]
