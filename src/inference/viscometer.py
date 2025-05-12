@@ -54,6 +54,7 @@ CON_DIM         = int(cfg["model"]["flow"]["con_dim"])
 HIDDEN_DIM      = int(cfg["model"]["flow"]["hidden_dim"])
 NUM_LAYERS      = int(cfg["model"]["flow"]["num_layers"])
 CHECKPOINT      = cfg["directories"]["checkpoint"]["inf_checkpoint"]
+RPM_CLASS       = int(cfg["preprocess"]["rpm_class"])
 repo = cfg["directories"]["data"]
 VAL_ROOT       = repo["data_root"]
 REAL_ROOT       = repo["real_root"]
@@ -61,6 +62,8 @@ TEST_ROOT       = repo["test_root"]
 VIDEO_SUBDIR    = repo["video_subdir"]
 PARA_SUBDIR     = repo["para_subdir"]
 NORM_SUBDIR     = repo["norm_subdir"]
+
+wandb.init(project="viscosity estimation testing", name="inference", reinit=True, resume="never", config= config)
 
 # model load
 dataset_module = importlib.import_module(f"datasets.{DATASET}")
@@ -71,7 +74,7 @@ dataset_class = getattr(dataset_module, DATASET)
 encoder_class = getattr(encoder_module, ENCODER)
 flow_class = getattr(flow_module, FLOW)
 
-encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL)
+encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -93,19 +96,19 @@ else:
     _, para_paths = train_test_split(val_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
 ds = dataset_class(video_paths, para_paths, FRAME_NUM, TIME)
-dl = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
+dl = DataLoader(ds, batch_size=1, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 
 # Error Calculation
 errors = []
-for frames, parameters, _ in dl:
-    frames, parameters = frames.to(device), parameters.to(device)
-    outputs = encoder(frames)
+for frames, parameters, _, rpm_class in dl:
+    frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+    outputs = encoder(frames, rpm_class)
 
     if FLOW_BOOL:
         z, log_det_jacobian = flow(parameters, outputs)
         visc = flow.inverse(z, outputs)
         error = MAPEtestcalculator(visc.detach(), parameters.detach(), DESCALER, METHOD, repo[f"{METHOD}_root"])
-    else:
+    else:   
         error = MAPEtestcalculator(outputs.detach(), parameters.detach(), DESCALER, "real", REAL_ROOT)
     errors.append(error.detach().cpu())
 

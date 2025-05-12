@@ -50,6 +50,7 @@ dynVisc = []
 kinVisc = [] 
 surfT = []
 density = []
+rpm = []
 
 for path in para_paths:
     with open(path, 'r') as file:
@@ -58,9 +59,10 @@ for path in para_paths:
         kinVisc.append(data["kinematic_viscosity"])
         surfT.append(data["surface_tension"])
         density.append(data["density"])
+        rpm.append(data["RPM"])
 
 # sanity check
-parameters = [dynVisc, kinVisc, surfT, density]
+parameters = [dynVisc, kinVisc, surfT, density, rpm]
 for idx, lst in enumerate(parameters):
     if max(lst) == min(lst):
         eps = max(lst) * 1e-3
@@ -73,6 +75,9 @@ dynViscnorm, con1dynVisc, con2dynVisc = scaler(dynVisc)
 kinViscnorm, con1kinVisc, con2kinVisc = scaler(kinVisc)
 surfTnorm, con1surfT, con2surfT = scaler(surfT)
 densitynorm, con1density, con2density = scaler(density)
+
+rpm_unique = sorted(set(rpm))
+rpm_to_idx = {r: i for i, r in enumerate(rpm_unique)}
 
 if "z" in NORMALIZE:
     stats = {
@@ -91,10 +96,13 @@ else:
 
 # store normalized data
 for idx in range(len(dynViscnorm)):
-    data = {"dynamic_viscosity": float(dynViscnorm[idx]), "kinematic_viscosity": float(kinViscnorm[idx]), "surface_tension": float(surfTnorm[idx]),  "density": float(densitynorm[idx])}
+    data = {"dynamic_viscosity": float(dynViscnorm[idx]), "kinematic_viscosity": float(kinViscnorm[idx]), 
+    "surface_tension": float(surfTnorm[idx]),  "density": float(densitynorm[idx]), "rpm": rpm[idx], "rpm_idx": rpm_to_idx[rpm[idx]]}
     with open(f'{norm_path}/config_{(idx+1):04d}.json', 'w') as file:
         json.dump(data, file, indent=4)
 
 # store statistics data
 with open(f'{norm_path}/../statistics.json', 'w') as file:
     json.dump(stats, file, indent=4)
+
+print(f"Total unique RPM classes: {len(rpm_to_idx)}")

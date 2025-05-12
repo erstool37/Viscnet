@@ -36,6 +36,7 @@ TEST_SIZE       = float(cfg["preprocess"]["test_size"])
 RAND_STATE      = int(cfg["preprocess"]["random_state"])
 FRAME_NUM       = int(cfg["preprocess"]["frame_num"])
 TIME            = int(cfg["preprocess"]["time"])
+RPM_CLASS       = int(cfg["preprocess"]["rpm_class"])
 BATCH_SIZE      = int(cfg["train_settings"]["batch_size"])
 NUM_WORKERS     = int(cfg["train_settings"]["num_workers"])
 NUM_EPOCHS      = int(cfg["train_settings"]["num_epochs"])
@@ -55,6 +56,7 @@ LSTM_SIZE       = int(cfg["model"]["encoder"]["lstm_size"])
 LSTM_LAYERS     = int(cfg["model"]["encoder"]["lstm_layers"])
 OUTPUT_SIZE     = int(cfg["model"]["encoder"]["output_size"])
 DROP_RATE       = float(cfg["model"]["encoder"]["drop_rate"])
+EMBED_SIZE      = int(cfg["model"]["encoder"]["embedding_size"])
 FLOW            = cfg["model"]["flow"]["flow"]
 FLOW_BOOL       = cfg["model"]["flow"]["flow_bool"]
 DIM             = int(cfg["model"]["flow"]["dim"])
@@ -99,14 +101,13 @@ train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers
 val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 
 # DEFINE MODEL
-
 encoder_class = getattr(encoder_module, ENCODER)
 flow_class = getattr(flow_module, FLOW)
 criterion_class = getattr(loss_module, LOSS)
 optim_class = getattr(optim, OPTIM_CLASS)
 scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
 
-encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL)
+encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -129,9 +130,9 @@ for epoch in range(NUM_EPOCHS):
     train_losses = []
     print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training ")  
     encoder.train()
-    for frames, parameters, _ in tqdm(train_dl):
-        frames, parameters = frames.to(device), parameters.to(device) # (B, F, C, H, W) // (B, P)
-        outputs = encoder(frames)
+    for frames, parameters, _, rpm_class in tqdm(train_dl):
+        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+        outputs = encoder(frames, rpm_class)
 
         if FLOW_BOOL:
             z, log_det_jacobian = flow(parameters, outputs) # para=4, outputs=512
@@ -157,9 +158,9 @@ for epoch in range(NUM_EPOCHS):
     val_losses = []
     with torch.no_grad():
         print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
-    for frames, parameters, _ in tqdm(val_dl):
-        frames, parameters = frames.to(device), parameters.to(device)
-        outputs = encoder(frames)
+    for frames, parameters, _, rpm_class in tqdm(val_dl):
+        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+        outputs = encoder(frames, rpm_class)
 
         if FLOW_BOOL:
             z, log_det_jacobian = flow(parameters, outputs)

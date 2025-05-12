@@ -3,6 +3,7 @@ import seaborn as sns
 import torch
 import numpy as np
 import importlib
+import wandb
 
 def distribution(data, ref=None, title='Normalized Value Distribution', save_path='.', prefix='dist'):
     import os
@@ -31,11 +32,12 @@ def MAPEtestcalculator(pred, target, descaler, method, path):
     target_den = descaler(target[:,0], "density", path).unsqueeze(-1)
     target_dynvisc = descaler(target[:,1], "dynamic_viscosity", path).unsqueeze(-1)
     target_surfT = descaler(target[:,2], "surface_tension", path).unsqueeze(-1)
-    print("VISC:","pred",  pred_dynvisc, "target", target_dynvisc)
 
     loss_mape_den = (torch.abs(pred_den - target_den) / target_den) * 100
     loss_mape_dynvisc = (torch.abs(pred_dynvisc - target_dynvisc) / target_dynvisc) * 100
     loss_mape_surfT = (torch.abs(pred_surfT - target_surfT) / target_surfT) * 100
     
     error = torch.cat([loss_mape_den, loss_mape_dynvisc, loss_mape_surfT], dim=1) 
+
+    wandb.log({"predict visc": pred_dynvisc, "answer visc": target_dynvisc})
     return error

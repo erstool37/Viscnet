@@ -1,0 +1,86 @@
+project: "viscosity estimation testing"
+name: "decay_5s_10fps_surfdensrpm_EMBED_test_run"
+version: v6
+
+regression:
+  train_settings:
+    batch_size : 2
+    num_epochs : 50
+    num_workers : 4
+    seed : 1205
+    dataset : "VideoDatasetEmbed"
+
+  preprocess:
+    scaler : "logzscaler"
+    descaler : "logzdescaler"
+    frame_num : 10
+    time : 5
+    test_size : 0.2
+    random_state : 37
+    rpm_class : 7
+  
+  model:
+    encoder:
+      encoder: "ResnetLSTMEmbedAdd10"
+      cnn : "resnet34"
+      cnn_train : True
+      lstm_size : 512
+      lstm_layers : 4
+      output_size : 3
+      drop_rate : 0.3
+      embedding_size : 512
+
+    flow: 
+      flow : "RealNVP"
+      flow_bool : False
+      dim: 4 # dimension of total model output, currently 4
+      con_dim: 256 # same as lstm hidden_size
+      hidden_dim: 64 # innate dimension of flow
+      num_layers : 10 # number of s, t layers stacked
+
+  real_model:
+    real_num_epochs : 30
+
+  loss : "MAPE" 
+  # for normalized : MSLE, MAPE good for normalized values; 
+
+  optimizer:
+    optim_class: Adam
+    scheduler_class: CosineAnnealingLR
+    lr: 1e-5
+    eta_min : 1e-10
+    weight_decay: 5e-4
+    patience : 5
+  
+  directories:
+    checkpoint :
+      checkpoint : "src/weights/"
+      inf_checkpoint : "src/weights/decay_5s_10fps_surfdensrpm_EMBED_test_run_0511_v0.pth"
+      real_checkpoint : "src/models/weights_reg/ViscRealXXXX_01.pth"
+      mask_checkpoint : "src/weights/segmentation/Vortex0219_01.pth"
+
+    data :
+      data_root : "dataset/CFDArchive/decay_5s_10fps_surfdensrpm"
+      test_root : "dataset/CFDArchive/test"
+      real_root : "dataset/realfluid/decay_5s_10fps_hotplate"
+      video_subdir : "videos"
+      para_subdir : "parameters"
+      norm_subdir : "parametersNorm"
+
+segmentation:
+  settings:
+    batch_size : 
+    num_workers :
+    num_epochs :
+    lr_rate :
+    checkpoint : 
+    base_checkpoint : 
+
+  directories:
+    data_root : "dataset/WebGLfluid/original"
+    image_subdir : "raw"
+    mask_subdir : "masked"
+    save_root : "dataset/WebGLfluid/processed_data"
+    image_save_subdir : "images"
+    mask_save_subdir : "masks"
+    box_save_subdir : "boxes"
