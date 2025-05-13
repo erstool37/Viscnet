@@ -20,8 +20,8 @@ from sklearn.model_selection import train_test_split
 from utils import MAPEcalculator, MAPEflowcalculator, MAPEtestcalculator, set_seed, distribution
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config", type=str, required=True, default="configs/config0.yaml")
-parser.add_argument("-m", "--method", type=str, required=False, default="real")
+parser.add_argument("-c", "--config", type=str, required=True, default="configs/config.yaml")
+parser.add_argument("-m", "--method", type=str, required=False, default="pca")
 args = parser.parse_args()
 
 with open(args.config, "r") as file:
@@ -57,7 +57,7 @@ NUM_LAYERS      = int(cfg["model"]["flow"]["num_layers"])
 CHECKPOINT      = cfg["directories"]["checkpoint"]["inf_checkpoint"]
 RPM_CLASS       = int(cfg["preprocess"]["rpm_class"])
 repo = cfg["directories"]["data"]
-VAL_ROOT       = repo["data_root"]
+VAL_ROOT        = repo["data_root"]
 REAL_ROOT       = repo["real_root"]
 TEST_ROOT       = repo["test_root"]
 VIDEO_SUBDIR    = repo["video_subdir"]
@@ -88,6 +88,7 @@ if METHOD == "real":
     video_paths = sorted(glob.glob(osp.join(REAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
     para_paths = sorted(glob.glob(osp.join(REAL_ROOT, NORM_SUBDIR, "*.json")))
 elif METHOD == "test":
+
     video_paths = sorted(glob.glob(osp.join(TEST_ROOT, VIDEO_SUBDIR, "*.mp4")))
     para_paths = sorted(glob.glob(osp.join(TEST_ROOT, NORM_SUBDIR, "*.json")))
 else:
@@ -100,59 +101,42 @@ ds = dataset_class(video_paths, para_paths, FRAME_NUM, TIME)
 dl = DataLoader(ds, batch_size=1, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 
 # Error Calculation
-errors = []
-for frames, parameters, _, rpm_class in dl:
-    frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
-    outputs = encoder(frames, rpm_class)
+all_latents, all_visc, all_rpms = [], [], []
+with torch.no_grad():
+    for frames, parameters, _, rpm_class in dl:
+        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+        outputs = encoder(frames, rpm_class)
+        all_latents.append(outputs.squeeze(0).cpu())               
+        all_visc.append(parameters[:, 1].item())                 
+        all_rpms.append(rpm_class.item())                            
 
-    if FLOW_BOOL:
-        z, log_det_jacobian = flow(parameters, outputs)
-        visc = flow.inverse(z, outputs)
-        error = MAPEtestcalculator(visc.detach(), parameters.detach(), DESCALER, METHOD, repo[f"{METHOD}_root"])
-    else:   
-        error = MAPEtestcalculator(outputs.detach(), parameters.detach(), DESCALER, "real", REAL_ROOT)
-    errors.append(error.detach().cpu())
+latents = torch.stack(all_latents).numpy()                   
+viscs = np.array(all_visc)                                  
+rpms = np.array(all_rpms)                                
 
-errors_tensor = torch.cat(errors, dim=0)
-meanerror = errors_tensor.mean(dim=0)  # shape: [3]
+from sklearn.decomposition import PCA
+from matplotlib import pyplot as plt
+pca = PCA(n_components=2)
+latents_pca = pca.fit_transform(latents)  # shape: [N, 2]
 
-distribution(data=errors_tensor[:,0], ref = 0, save_path='src/inference/error/dist_den.png')
-distribution(data=errors_tensor[:,1], ref = 0, save_path='src/inference/error/dist_visco.png')
-distribution(data=errors_tensor[:,2], ref = 0, save_path='src/inference/error/dist_surf.png')
+# Plot by viscosity
+plt.figure(figsize=(8, 6))
+plt.scatter(latents_pca[:, 0], latents_pca[:, 1], c=viscs, cmap='viridis')
+plt.colorbar(label='Viscosity')
+plt.title("PCA: Latent Features Colored by Viscosity")
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.grid(True)
+plt.savefig("src/inference/PCA/pca_by_viscosity.jpg", format='jpg')
+plt.close()
 
-print(f"density MAPE: {float(meanerror[0]):.2f}%")
-print(f"dynamic viscosity MAPE: {float(meanerror[1]):.2f}%")
-print(f"surface tension MAPE: {float(meanerror[2]):.2f}%")
-
-# Regression Validation test
-"""
-unnorm_outputs_list = []
-unnorm_para_list = []
-
-for frames, parameters in test_dl:
-    frames, parameters = frames.to(device), parameters.to(device)
-    outputs = visc_model(frames)
-    
-    unnorm_outputs = torch.stack([zdescaler(outputs[:, 0], 'density'), zdescaler(outputs[:, 1], 'dynamic_viscosity'), zdescaler(outputs[:, 2], 'surface_tension')], dim=1)  
-    unnorm_para = torch.stack([parameters[:, 0], parameters[:, 1], parameters[:, 2]], dim=1)
-    
-    unnorm_outputs_list.append(unnorm_outputs.detach().cpu()) 
-    unnorm_para_list.append(unnorm_para.detach().cpu())
-
-unnorm_outputs_list = torch.cat(unnorm_outputs_list, dim=0)
-unnorm_para_list = torch.cat(unnorm_para_list, dim=0)
-
-groups = defaultdict(list)
-for idx, item in enumerate(unnorm_para_list):
-    key = item[0].item()
-    groups[key].append(idx)
-grouped_indices = list(groups.values())
-
-grouped_outputs_list = [unnorm_outputs_list[idx] for idx in grouped_indices]
-grouped_para_list = [unnorm_para_list[idx] for idx in grouped_indices]
-
-for idx in range(len(grouped_outputs_list)):
-    distribution(grouped_outputs_list[idx][:,0], ref = grouped_para_list[idx][0,0].cpu(), save_path=f'test/precision/dist{(idx+1):02d}_den.png')
-    distribution(grouped_outputs_list[idx][:,1], ref = grouped_para_list[idx][0,1].cpu(), save_path=f'test/precision/dist{(idx+1):02d}_visco.png')
-    distribution(grouped_outputs_list[idx][:,2], ref = grouped_para_list[idx][0,2].cpu(), save_path=f'test/precision/dist{(idx+1):02d}_surf.png')
-"""
+# Plot by RPM
+plt.figure(figsize=(8, 6))
+plt.scatter(latents_pca[:, 0], latents_pca[:, 1], c=rpms, cmap='plasma')
+plt.colorbar(label='RPM Class')
+plt.title("PCA: Latent Features Colored by RPM")
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.grid(True)
+plt.savefig("src/inference/PCA/pca_by_rpm.jpg", format='jpg')
+plt.close()

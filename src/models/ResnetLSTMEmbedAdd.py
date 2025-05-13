@@ -2,14 +2,15 @@ import torch.nn as nn
 import torch
 from torchvision import models
 
-class ResnetLSTMEmbedAdd10(nn.Module):
-    def __init__(self, lstm_hidden_size, lstm_layers, output_size, dropout, cnn, cnn_train, flow_bool, rpm_class, embedding_size):
-        super(ResnetLSTMEmbedAdd10, self).__init__()
+class ResnetLSTMEmbedAdd(nn.Module):
+    def __init__(self, lstm_hidden_size, lstm_layers, output_size, dropout, cnn, cnn_train, flow_bool, rpm_class, embedding_size, weight):
+        super(ResnetLSTMEmbedAdd, self).__init__()
         self.resnet = getattr(models, cnn)(pretrained=True)
         self.cnn = nn.Sequential(*list(self.resnet.children())[:-1])
         self.cnn_out_features = 512
         self.flow_bool = flow_bool
         self.embed_features = embedding_size
+        self.weight = weight
 
         for param in self.cnn.parameters():
             param.requires_grad = cnn_train
@@ -32,14 +33,14 @@ class ResnetLSTMEmbedAdd10(nn.Module):
         """
         batch_size, frames, C, H, W = x.shape
         x = x.view(batch_size * frames, C, H, W)
-
+        assert rpm_idx.max().item() < self.rpm_embedding.num_embeddings, f"rpm_idx overflow: max={rpm_idx.max().item()}, embedding size={self.rpm_embedding.num_embeddings}"
         rpm_vec = self.rpm_embedding(rpm_idx.long())
         rpm_vec = rpm_vec.unsqueeze(1).expand(-1, frames, -1)
         
         video_features = self.cnn(x) 
         video_features = video_features.view(batch_size, frames, -1) 
 
-        concat = video_features + rpm_vec
+        concat = video_features + self.weight * rpm_vec
 
         lstm_out, _ = self.lstm(concat)
         lstm_last_out = lstm_out[:, -1, :]
@@ -48,5 +49,5 @@ class ResnetLSTMEmbedAdd10(nn.Module):
             viscosity = lstm_last_out
         else:
             viscosity = self.fc(lstm_last_out)
-        
+            
         return viscosity

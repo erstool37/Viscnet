@@ -38,7 +38,6 @@ class VideoDatasetEmbed(Dataset):
         mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
         std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
         frames = (frames - mean) / std
-
         return frames
     
     def _loadparameters(self, para_path):
@@ -53,7 +52,6 @@ class VideoDatasetEmbed(Dataset):
     
     def _loadname(self, video_path):
         name = osp.splitext(osp.basename(video_path))
-            
         return name[0]
 
     def __len__(self):

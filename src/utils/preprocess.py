@@ -10,8 +10,8 @@ import yaml
 import importlib
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config", type=str, required=True, default="configs/config.yaml")
-parser.add_argument("-m", "--method", type=str, required=True, default="train")
+parser.add_argument("-c", "--config", type=str, required=True)
+parser.add_argument("-m", "--method", type=str, required=True)
 args = parser.parse_args()
 
 with open(args.config, "r") as file:
@@ -31,17 +31,15 @@ if METHOD == "test":
     para_paths = sorted(glob.glob(osp.join(TEST_ROOT, PARA_SUBDIR, "*.json")))
     norm_path = osp.join(TEST_ROOT, NORM_SUBDIR)
     os.makedirs(norm_path, exist_ok=True)
-
 elif METHOD == "real":
     para_paths = sorted(glob.glob(osp.join(REAL_ROOT, PARA_SUBDIR, "*.json")))
     norm_path = osp.join(REAL_ROOT, NORM_SUBDIR)
     os.makedirs(norm_path, exist_ok=True)
-
 else:
     para_paths = sorted(glob.glob(osp.join(DATA_ROOT, PARA_SUBDIR, "*.json")))
     norm_path = osp.join(DATA_ROOT, NORM_SUBDIR)
     os.makedirs(norm_path, exist_ok=True)
-    
+
 utils = importlib.import_module("utils")
 scaler = getattr(utils, NORMALIZE)
 descaler = getattr(utils, UNNORMALIZE)

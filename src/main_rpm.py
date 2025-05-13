@@ -119,14 +119,14 @@ criterion_class = getattr(loss_module, LOSS)
 optim_class = getattr(optim, OPTIM_CLASS)
 scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
 
-encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL)#, RPM_CLASS, EMBED_SIZE, WEIGHT)
+encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 encoder.to(device)
 flow.to(device)
 criterion = criterion_class(DESCALER, DATA_ROOT)
-
+"""
 if FLOW_BOOL:
     optimizer = optim_class(list(encoder.parameters()) + list(flow.parameters()), lr=LR, weight_decay=W_DECAY)
 else:
@@ -141,9 +141,9 @@ for epoch in range(NUM_EPOCHS):
     train_losses = []
     print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training ")  
     encoder.train()
-    for frames, parameters, _ in tqdm(train_dl):
-        frames, parameters = frames.to(device), parameters.to(device)
-        outputs = encoder(frames)
+    for frames, parameters, _, rpm_class in tqdm(train_dl):
+        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+        outputs = encoder(frames, rpm_class)
 
         if FLOW_BOOL:
             z, log_det_jacobian = flow(parameters, outputs) # para=4, outputs=512
@@ -169,9 +169,9 @@ for epoch in range(NUM_EPOCHS):
     val_losses = []
     with torch.no_grad():
         print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
-    for frames, parameters, _ in tqdm(val_dl):
-        frames, parameters = frames.to(device), parameters.to(device)
-        outputs = encoder(frames)
+    for frames, parameters, _, rpm_class in tqdm(val_dl):
+        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+        outputs = encoder(frames, rpm_class)
 
         if FLOW_BOOL:
             z, log_det_jacobian = flow(parameters, outputs)
@@ -202,9 +202,8 @@ for epoch in range(NUM_EPOCHS):
     val_losses.clear()
 wandb.finish()
 torch.save(encoder.state_dict(), checkpoint)
-
+"""
 # REAL WORLD calibration
-# checkpoint = "src/weights/decay_5s_10fps_surfdensrpm_test_run_0424_v0.pth"
 encoder.load_state_dict(torch.load(checkpoint))
 for param in encoder.cnn.parameters():
     param.requires_grad = False
@@ -214,18 +213,19 @@ for param in encoder.lstm.parameters():
 # Model Definition
 optimizer = torch.optim.Adam(encoder.fc.parameters(), lr=REAL_LR, weight_decay=REAL_W_DECAY) 
 scheduler = scheduler_class(optimizer, T_max=REAL_EPOCHS, eta_min=ETA_MIN)
-criterion = nn.MSELoss()
+criterion = nn.MSELoss(512, 4)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 encoder.to(device)
+
 
 # TRAINING
 for epoch in range(REAL_EPOCHS):  
     encoder.train()
     train_losses = []
     print(f"Epoch {epoch+1}/{REAL_EPOCHS} - Training ")
-    for frames, parameters, _ in tqdm(real_train_dl):
-        frames, parameters = frames.to(device), parameters.to(device)
-        outputs = encoder(frames)
+    for frames, parameters, _, rpm_class in tqdm(real_train_dl):
+        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+        outputs = encoder(frames, rpm_class)
         parameters = torch.cat((parameters[:, :3], parameters[:, 4:]), dim=1)
         MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "real", REAL_ROOT)
 
@@ -246,9 +246,9 @@ for epoch in range(REAL_EPOCHS):
     with torch.no_grad():
         print(f"Epoch {epoch+1}/{REAL_EPOCHS} - Validation")
 
-    for frames, parameters, _ in tqdm(real_val_dl):
-        frames, parameters = frames.to(device), parameters.to(device)
-        outputs = encoder(frames)
+    for frames, parameters, _, rpm_class in tqdm(real_val_dl):
+        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+        outputs = encoder(frames, rpm_class)
         parameters = torch.cat((parameters[:, :3], parameters[:, 4:]), dim=1)
         MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "real", REAL_ROOT)
 
@@ -259,9 +259,9 @@ for epoch in range(REAL_EPOCHS):
 
     scheduler.step()
     current_lr = scheduler.get_last_lr()[0]
-    print(f"Epoch {epoch+1}/{REAL_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.8f}")
+    print(f"Epoch {epoch+1}/{REAL_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.5f}")
 wandb.finish() 
 
 # Save the model
-real_checkpoint = checkpoint.replace(".pth", "_real.pth")
+real_checkpoint = osp.replace(checkpoint, ".pth", "_real.pth")
 torch.save(encoder.state_dict(), real_checkpoint)

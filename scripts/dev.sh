@@ -1,11 +1,4 @@
-# python3 src/utils/preprocess.py -c configs/config1.yaml -m train
-# python3 src/main.py -c configs/config1.yaml
-
-# python3 src/utils/preprocess.py -c configs/config2.yaml -m train
-# python3 src/main.py -c configs/config2.yaml
-
-python3 src/utils/preprocess.py -c configs/config3.yaml -m train
-python3 src/main.py -c configs/config3.yaml
-
-python3 src/utils/preprocess.py -c configs/config4.yaml -m train
-python3 src/main.py -c configs/config4.yaml
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
+python3 src/utils/preprocess.py -c configs/config.yaml -m train
+python3 src/utils/preprocess.py -c configs/config.yaml -m real
+python3 src/main.py -c configs/config.yaml
