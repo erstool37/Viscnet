@@ -104,8 +104,8 @@ def MAPEcalculator(pred, target, descaler, method, path):
     wandb.log({f"MAPE {method} den %" : loss_mape_den * 100})
     wandb.log({f"MAPE {method} dynvisc %" : loss_mape_dynvisc * 100})
     wandb.log({f"MAPE {method} surfT %" : loss_mape_surfT * 100})
-    wandb.log({f"MAPE {method} dynvisc answer" : target_dynvisc.squeeze().tolist()})
-    wandb.log({f"MAPE {method} surfT answer" : pred_dynvisc.squeeze().tolist()})
+    # wandb.log({f"MAPE {method} dynvisc answer" : target_dynvisc.squeeze().tolist()})
+    # wandb.log({f"MAPE {method} surfT answer" : pred_dynvisc.squeeze().tolist()})
 
 def MAPEflowcalculator(pred, target, descaler, method, path):
     """

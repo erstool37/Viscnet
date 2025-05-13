@@ -1,6 +1,6 @@
 project: "viscosity estimation testing"
-name: "better_fc_run"
-version: v0
+name: "better_fc_run_newtrain"
+version: v1
 
 regression:
   train_settings:
@@ -41,7 +41,7 @@ regression:
 
   real_model:
     real_epochs : 30
-    lr : 1e-5
+    lr : 1e-3
     weight_decay : 5e-4
 
   loss : "MAPE"
