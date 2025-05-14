@@ -1,6 +1,6 @@
 project: "viscosity estimation testing"
 name: "better_fc_run_newtrain"
-version: v1
+version: v2
 
 regression:
   train_settings:
@@ -41,8 +41,8 @@ regression:
 
   real_model:
     real_epochs : 30
-    lr : 1e-3
-    weight_decay : 5e-4
+    lr : 1e-4
+    weight_decay : 0
 
   loss : "MAPE"
 
@@ -50,7 +50,7 @@ regression:
     optim_class: Adam
     scheduler_class: CosineAnnealingLR
     lr: 1e-5
-    eta_min : 1e-9
+    eta_min : 1e-10
     weight_decay: 5e-4
     patience : 10
   

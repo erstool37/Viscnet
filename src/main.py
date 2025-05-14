@@ -206,14 +206,14 @@ torch.save(encoder.state_dict(), checkpoint)
 # REAL WORLD calibration
 
 # New regression Model Definition
-regression_module = importlib.import_module(f"models.FChead")
-regression_class = getattr(regression_module, "FChead")
-fc_model = regression_class(LSTM_SIZE, OUTPUT_SIZE)
-encoder.fc = fc_model
+# regression_module = importlib.import_module(f"models.FChead")
+# regression_class = getattr(regression_module, "FChead")
+# fc_model = regression_class(LSTM_SIZE, OUTPUT_SIZE)
+# encoder.fc = fc_model
 
 # Load the pretrained weights
 checkpoint = "src/weights/decay_5s_10fps_surfdense_testrun_0414_v3.pth"
-encoder.load_state_dict(torch.load(checkpoint), strict=False) # Beware, cnn, lstm layers must be identical to the checkpoint
+encoder.load_state_dict(torch.load(checkpoint)) # Beware, cnn, lstm layers must be identical to the checkpoint
 for param in encoder.cnn.parameters():
     param.requires_grad = False
 for param in encoder.lstm.parameters():

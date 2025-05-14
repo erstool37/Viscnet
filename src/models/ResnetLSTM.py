@@ -15,11 +15,11 @@ class ResnetLSTM(nn.Module):
 
         self.lstm = nn.LSTM(input_size=self.cnn_out_features, hidden_size=lstm_hidden_size, num_layers=lstm_layers, batch_first=True, dropout=dropout)
         self.fc =nn.Sequential(
-            nn.Linear(lstm_hidden_size, 128),
+            nn.Linear(lstm_hidden_size, 256),
             nn.ReLU(),
-            nn.Linear(128, 32),
+            nn.Linear(256, 64),
             nn.ReLU(),
-            nn.Linear(32, output_size),
+            nn.Linear(64, output_size),
         )
     
     def forward(self, x):
