@@ -27,3 +27,7 @@ dataset/realfluid/FVD/plots/*
 
 touch dataset/CFDArchive.gitkeep
 !dataset/CFDArchive.gitkeep
+
+*.csv
+*.xlsx
+*.m
