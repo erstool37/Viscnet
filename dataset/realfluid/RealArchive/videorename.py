@@ -5,8 +5,8 @@ import time
 import subprocess
 
 # Updated viscosity and density
-dynamic_viscosity = [0.89274, 1.5894, 2.8299, 5.0383, 8.9703, 15.971, 28.435, 50.626, 90.135, 160.48]
-density = [996.89, 1048.4, 1090.3, 1124.1, 1151.4, 1173.8, 1192.3, 1207.9, 1221.1, 1232.5]
+dynamic_viscosity = [160.48, 90.135, 50.626, 28.435, 15.971, 8.9703, 5.0383, 2.8299, 1.5894, 0.89274]
+density = [1232.5, 1221.1, 1207.9, 1192.3, 1173.8, 1151.4, 1124.1, 1090.3, 1048.4, 996.89]
 rpm = [325, 350, 375, 400, 425, 450, 475, 500, 525, 550]
 
 surface_tension = 0.0762
@@ -45,8 +45,17 @@ while count < 100:
                 ret, frame = cap.read()
                 if not ret:
                     break
+
                 h, w, _ = frame.shape
-                cropped = frame[104:h-104, 384:w-384]
+                if h > w:
+                    # Long side is height
+                    top = (h - 512) // 2
+                    cropped = frame[top:top+512, 0:512]
+                else:
+                    # Long side is width
+                    left = (w - 512) // 2
+                    cropped = frame[0:512, left:left+512]
+
                 resized = cv2.resize(cropped, output_size)
                 out_path = os.path.join(temp_dir, f"frame_{frame_count:03d}.png")
                 cv2.imwrite(out_path, resized)
@@ -66,8 +75,8 @@ while count < 100:
                 "fps": target_fps,
                 "dynamic_viscosity": dynamic_viscosity[count//10],
                 "density": density[count//10],
-                "surface_tension": surface_tension
-                "kinematic_viscostiy": dynamic_viscosity[count//10] / density[count//10],
+                "surface_tension": surface_tension,
+                "kinematic_viscosiyy": dynamic_viscosity[count//10] / density[count//10],
                 "RPM": rpm[count%10],
             }
             json_path = os.path.join(param_dir, f"{video_name}.json")
