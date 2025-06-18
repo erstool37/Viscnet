@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 import datetime
 import wandb
 import argparse
@@ -10,7 +9,7 @@ from tqdm import tqdm
 from statistics import mean
 import importlib
 import yaml
-from torch.utils.data import TensorDataset, DataLoader, Dataset, Subset
+from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from utils.utils import MAPEcalculator, MAPEflowcalculator
 from utils.setseed import set_seed
@@ -70,9 +69,6 @@ REAL_EPOCHS     = int(cfg["real_model"]["real_epochs"])
 REAL_LR         = float(cfg["real_model"]["lr"])
 REAL_W_DECAY    = float(cfg["real_model"]["weight_decay"]) 
 
-torch.use_deterministic_algorithms(True)
-torch.backends.mkldnn.deterministic = True
-torch.backends.mkldnn.benchmark = True
 set_seed(SEED)
 
 dataset_module = importlib.import_module(f"datasets.{DATASET}")
@@ -105,7 +101,7 @@ real_val_ds = dataset_class(real_val_video_paths, real_val_para_paths, FRAME_NUM
 
 train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
-real_train_dl = DataLoader(real_train_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
+real_train_dl = DataLoader(real_train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 real_val_dl = DataLoader(real_val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 
 # DEFINE MODEL
@@ -122,7 +118,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 encoder.to(device)
 flow.to(device)
 criterion = criterion_class(DESCALER, DATA_ROOT)
-"""
+
 if FLOW_BOOL:
     optimizer = optim_class(list(encoder.parameters()) + list(flow.parameters()), lr=LR, weight_decay=W_DECAY)
 else:
@@ -132,17 +128,17 @@ scheduler = scheduler_class(optimizer, T_max=NUM_EPOCHS, eta_min=ETA_MIN)
 # TRAIN MODEL
 best_val_loss = float("inf")
 counter = 0
-wandb.watch(encoder, criterion, log="all", log_freq=10)
+wandb.watch(encoder, log="all", log_freq=10)
 for epoch in range(NUM_EPOCHS):  
     train_losses = []
-    print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training ")  
+    print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training")  
     encoder.train()
     for frames, parameters, _, rpm_class in tqdm(train_dl):
         frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
         outputs = encoder(frames, rpm_class)
 
         if FLOW_BOOL:
-            z, log_det_jacobian = flow(parameters, outputs) # para=4, outputs=512
+            z, log_det_jacobian = flow(parameters, outputs)
             train_loss = criterion(z, log_det_jacobian)
             visc = flow.inverse(z, outputs)
             MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "train", DATA_ROOT)
@@ -198,6 +194,7 @@ for epoch in range(NUM_EPOCHS):
     val_losses.clear()
 wandb.finish()
 torch.save(encoder.state_dict(), checkpoint)
+
 """
 # REAL WORLD calibration
 encoder.load_state_dict(torch.load(checkpoint))
@@ -261,3 +258,4 @@ wandb.finish()
 # Save the model
 real_checkpoint = osp.replace(checkpoint, ".pth", "_real.pth")
 torch.save(encoder.state_dict(), real_checkpoint)
+"""

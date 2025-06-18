@@ -11,34 +11,41 @@ class ResnetLSTMEmbedAdd(nn.Module):
         self.flow_bool = flow_bool
         self.embed_features = embedding_size
         self.weight = weight
+        self.cnn_dropout = nn.Dropout(p=dropout)
 
         for param in self.cnn.parameters():
             param.requires_grad = cnn_train
 
-        self.rpm_embedding = nn.Embedding(rpm_class, self.embed_features)
+        # self.rpm_embedding = nn.Embedding(rpm_class, self.embed_features)
+
+        self.rpm_embedding = nn.Sequential(
+            nn.Linear(1, self.embed_features),
+            nn.ReLU(inplace=True),
+            nn.Linear(self.embed_features, self.embed_features),
+        )
 
         self.lstm = nn.LSTM(input_size=self.cnn_out_features, hidden_size=lstm_hidden_size, num_layers=lstm_layers, batch_first=True, dropout=dropout)
+        
         self.fc =nn.Sequential(
             nn.Linear(lstm_hidden_size, 128),
             nn.ReLU(),
+            nn.Dropout(p=dropout),
             nn.Linear(128, 32),
             nn.ReLU(),
+            nn.Dropout(p=dropout),
             nn.Linear(32, output_size),
         )
         
-    def forward(self, x, rpm_idx):
-        """ 
-        x: (B, L, C, H, W)
-        rpm_idx : 
-        """
+    def forward(self, x, rpm):        
         batch_size, frames, C, H, W = x.shape
         x = x.view(batch_size * frames, C, H, W)
-        assert rpm_idx.max().item() < self.rpm_embedding.num_embeddings, f"rpm_idx overflow: max={rpm_idx.max().item()}, embedding size={self.rpm_embedding.num_embeddings}"
-        rpm_vec = self.rpm_embedding(rpm_idx.long())
+        
+        rpm_vec = self.rpm_embedding(rpm.unsqueeze(1))
         rpm_vec = rpm_vec.unsqueeze(1).expand(-1, frames, -1)
         
         video_features = self.cnn(x) 
         video_features = video_features.view(batch_size, frames, -1) 
+        video_features = self.cnn_dropout(video_features)
 
         concat = video_features + self.weight * rpm_vec
 

@@ -13,6 +13,7 @@ dataset/CFDArchive/**/parametersNorm/*
 dataset/CFDArchive/**/statistics.json
 
 dataset/**/videos/
+dataset/**/wrongvideos/
 dataset/**/parameters/
 dataset/**/parametersNorm/
 dataset/**/statistics.json

@@ -31,14 +31,17 @@ if METHOD == "test":
     para_paths = sorted(glob.glob(osp.join(TEST_ROOT, PARA_SUBDIR, "*.json")))
     norm_path = osp.join(TEST_ROOT, NORM_SUBDIR)
     os.makedirs(norm_path, exist_ok=True)
+    print("Test mode: Normalizing test data")
 elif METHOD == "real":
     para_paths = sorted(glob.glob(osp.join(REAL_ROOT, PARA_SUBDIR, "*.json")))
     norm_path = osp.join(REAL_ROOT, NORM_SUBDIR)
     os.makedirs(norm_path, exist_ok=True)
+    print("Real mode: Normalizing real data")
 else:
     para_paths = sorted(glob.glob(osp.join(DATA_ROOT, PARA_SUBDIR, "*.json")))
     norm_path = osp.join(DATA_ROOT, NORM_SUBDIR)
     os.makedirs(norm_path, exist_ok=True)
+    print("Train mode: Normalizing training data")
 
 utils = importlib.import_module("utils")
 scaler = getattr(utils, NORMALIZE)
@@ -73,6 +76,7 @@ dynViscnorm, con1dynVisc, con2dynVisc = scaler(dynVisc)
 kinViscnorm, con1kinVisc, con2kinVisc = scaler(kinVisc)
 surfTnorm, con1surfT, con2surfT = scaler(surfT)
 densitynorm, con1density, con2density = scaler(density)
+rpmnorm, con1rpm, con2rpm = scaler(rpm)
 
 rpm_unique = sorted(set(rpm))
 rpm_to_idx = {r: i for i, r in enumerate(rpm_unique)}
@@ -82,20 +86,23 @@ if "z" in NORMALIZE:
         "dynamic_viscosity": {"mean": float(con1dynVisc), "std": float(con2dynVisc)},
         "kinematic_viscosity": {"mean": float(con1kinVisc), "std": float(con2kinVisc)},
         "surface_tension": {"mean": float(con1surfT), "std": float(con2surfT)},
-        "density": {"mean": float(con1density), "std": float(con2density)}
+        "density": {"mean": float(con1density), "std": float(con2density)},
+        "rpm": {"mean": float(con1rpm), "std": float(con2rpm)}
     }
 else:
     stats = {
         "dynamic_viscosity": {"max": float(con1dynVisc), "min": float(con2dynVisc)},
         "kinematic_viscosity": {"max": float(con1kinVisc), "min": float(con2kinVisc)},
         "surface_tension": {"max": float(con1surfT), "min": float(con2surfT)},
-        "density": {"max": float(con1density), "min": float(con2density)}
+        "density": {"max": float(con1density), "min": float(con2density)},
+        "rpm": {"max": float(con1rpm), "min": float(con2rpm)}
     }
 
 # store normalized data
 for idx in range(len(dynViscnorm)):
     data = {"dynamic_viscosity": float(dynViscnorm[idx]), "kinematic_viscosity": float(kinViscnorm[idx]), 
-    "surface_tension": float(surfTnorm[idx]),  "density": float(densitynorm[idx]), "rpm": rpm[idx], "rpm_idx": rpm_to_idx[rpm[idx]]}
+    "surface_tension": float(surfTnorm[idx]),  "density": float(densitynorm[idx]), 
+    "rpm": float(rpmnorm[idx]), "rpm_idx": rpm_to_idx[rpm[idx]]}
     with open(f'{norm_path}/config_{(idx+1):04d}.json', 'w') as file:
         json.dump(data, file, indent=4)
 
@@ -103,4 +110,4 @@ for idx in range(len(dynViscnorm)):
 with open(f'{norm_path}/../statistics.json', 'w') as file:
     json.dump(stats, file, indent=4)
 
-print(f"Total unique RPM classes: {len(rpm_to_idx)}")
+# print(f"Total unique RPM classes: {len(rpm_to_idx)}")

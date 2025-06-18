@@ -23,11 +23,16 @@ class VideoDataset(Dataset):
         cap = cv2.VideoCapture(video_path)
         frames = []
 
-        while cap.isOpened() and len(frames) < self.frame_limit:
+        while len(frames) < self.frame_limit:
             ret, frame = cap.read()
-            if ret:
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # Convert BGR → RGB
-                frames.append(frame)
+            if not ret:
+                h, w, c = 512, 512, 3  # fallback shape
+                pad = np.zeros((h, w, c), dtype=np.uint8)
+                frames += [pad] * (self.frame_limit - len(frames))
+                break
+
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frames.append(frame)
         cap.release()
 
         frames = np.array(frames, dtype=np.float32) # required only for no masked

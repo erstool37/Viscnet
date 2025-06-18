@@ -1,14 +1,14 @@
 project: "real_world_calibration"
-name: "test_run"
+name: "onlyVisc_rpmContEmbed"
 version: v0
 
 regression:
   train_settings:
     batch_size : 2
     num_epochs : 30
-    num_workers : 4
+    num_workers : 0
     seed : 1205
-    dataset : "VideoDataset"
+    dataset : "VideoDatasetEmbed"
 
   preprocess:
     scaler : "logzscaler"    # log scaled, inter scaling works best 
@@ -21,15 +21,15 @@ regression:
   
   model:
     encoder:
-      encoder: "ResnetLSTM"
+      encoder: "ResnetLSTMEmbedAdd"
       cnn : "resnet34"
       cnn_train : True
       lstm_size : 256
       lstm_layers : 3
-      output_size : 3 # 4 for rpm
-      drop_rate : 0.3
+      output_size : 4 # 4 for rpm trained
+      drop_rate : 0.2
       embedding_size : 512
-      embed_weight : 0.5
+      embed_weight : 4
 
     flow: 
       flow : "RealNVP"
@@ -40,25 +40,24 @@ regression:
       num_layers : 10 # number of s, t layers stacked
 
   real_model:
-    real_epochs : 30
+    real_epochs : 50
     lr : 1e-4
-    weight_decay : 0
+    weight_decay : 1e-5
 
-  loss : "MAPE"
+  loss : "MAPErpm"
 
   optimizer:
     optim_class: Adam
     scheduler_class: CosineAnnealingLR
-    lr: 1e-5
+    lr: 1e-4
     eta_min : 1e-10
-    weight_decay: 5e-4
-    patience : 10
+    weight_decay: 0
+    patience : 5
   
   directories:
     checkpoint :
       ckpt_root : "src/weights/"
-      # inf_checkpoint : "decay_5s_10fps_surfdensrpm_EMBED_test_run_0512_v6.pth"
-      inf_checkpoint : "decay_5s_10fps_surfdensrpm_test_run_0424_v0.pth"
+      inf_checkpoint : "src/weights/onlyVisc_rpmContEmbed_loss_weight_inc_0618_v0.pth"
 
     data :
       data_root : "dataset/CFDArchive/decay_5s_10fps_surfdensrpm"
