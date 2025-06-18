@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 import datetime
 import wandb
 import argparse
@@ -10,7 +9,7 @@ from tqdm import tqdm
 from statistics import mean
 import importlib
 import yaml
-from torch.utils.data import TensorDataset, DataLoader, Dataset, Subset
+from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from utils.utils import MAPEcalculator, MAPEflowcalculator
 from utils.setseed import set_seed
@@ -105,8 +104,8 @@ real_val_ds = dataset_class(real_val_video_paths, real_val_para_paths, FRAME_NUM
 
 train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
-real_train_dl = DataLoader(real_train_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
-real_val_dl = DataLoader(real_val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
+real_train_dl = DataLoader(real_train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
+real_val_dl = DataLoader(real_val_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
 
 # DEFINE MODEL
 encoder_class = getattr(encoder_module, ENCODER)
@@ -115,14 +114,14 @@ criterion_class = getattr(loss_module, LOSS)
 optim_class = getattr(optim, OPTIM_CLASS)
 scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
 
-encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT)
+encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL) # RPM_CLASS, EMBED_SIZE, WEIGHT
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 encoder.to(device)
 flow.to(device)
 criterion = criterion_class(DESCALER, DATA_ROOT)
-"""
+
 if FLOW_BOOL:
     optimizer = optim_class(list(encoder.parameters()) + list(flow.parameters()), lr=LR, weight_decay=W_DECAY)
 else:
@@ -130,6 +129,7 @@ else:
 scheduler = scheduler_class(optimizer, T_max=NUM_EPOCHS, eta_min=ETA_MIN)
 
 # TRAIN MODEL
+"""
 best_val_loss = float("inf")
 counter = 0
 wandb.watch(encoder, criterion, log="all", log_freq=10)
@@ -137,9 +137,9 @@ for epoch in range(NUM_EPOCHS):
     train_losses = []
     print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training ")  
     encoder.train()
-    for frames, parameters, _, rpm_class in tqdm(train_dl):
-        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
-        outputs = encoder(frames, rpm_class)
+    for frames, parameters, _ in tqdm(train_dl):
+        frames, parameters = frames.to(device), parameters.to(device)
+        outputs = encoder(frames)
 
         if FLOW_BOOL:
             z, log_det_jacobian = flow(parameters, outputs) # para=4, outputs=512
@@ -165,9 +165,9 @@ for epoch in range(NUM_EPOCHS):
     val_losses = []
     with torch.no_grad():
         print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
-    for frames, parameters, _, rpm_class in tqdm(val_dl):
-        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
-        outputs = encoder(frames, rpm_class)
+    for frames, parameters, _ in tqdm(val_dl):
+        frames, parameters = frames.to(device), parameters.to(device)
+        outputs = encoder(frames)
 
         if FLOW_BOOL:
             z, log_det_jacobian = flow(parameters, outputs)
@@ -200,31 +200,39 @@ wandb.finish()
 torch.save(encoder.state_dict(), checkpoint)
 """
 # REAL WORLD calibration
-encoder.load_state_dict(torch.load(checkpoint))
+
+# New regression Model Definition
+# regression_module = importlib.import_module(f"models.FChead")
+# regression_class = getattr(regression_module, "FChead")
+# fc_model = regression_class(LSTM_SIZE, OUTPUT_SIZE)
+# encoder.fc = fc_model
+
+# Load the pretrained weights
+checkpoint = "src/weights/decay_5s_10fps_surfdense_testrun_0414_v3.pth"
+encoder.load_state_dict(torch.load(checkpoint)) # Beware, cnn, lstm layers must be identical to the checkpoint
 for param in encoder.cnn.parameters():
     param.requires_grad = False
 for param in encoder.lstm.parameters():
     param.requires_grad = False
 
-# Model Definition
 optimizer = torch.optim.Adam(encoder.fc.parameters(), lr=REAL_LR, weight_decay=REAL_W_DECAY) 
 scheduler = scheduler_class(optimizer, T_max=REAL_EPOCHS, eta_min=ETA_MIN)
-criterion = nn.MSELoss(512, 4)
+criterion = criterion_class(DESCALER, REAL_ROOT)
+            
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 encoder.to(device)
-
 
 # TRAINING
 for epoch in range(REAL_EPOCHS):  
     encoder.train()
     train_losses = []
     print(f"Epoch {epoch+1}/{REAL_EPOCHS} - Training ")
-    for frames, parameters, _, rpm_class in tqdm(real_train_dl):
-        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
-        outputs = encoder(frames, rpm_class)
-        parameters = torch.cat((parameters[:, :3], parameters[:, 4:]), dim=1)
-        MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "real", REAL_ROOT)
+    for frames, parameters, _ in tqdm(real_train_dl):
+        frames, parameters = frames.to(device), parameters.to(device)
+        outputs = encoder(frames)
+        parameters = parameters[:, :3]
 
+        MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "real", DATA_ROOT)
         train_loss = criterion(outputs, parameters)
         train_losses.append(train_loss.item())
         optimizer.zero_grad()
@@ -242,12 +250,12 @@ for epoch in range(REAL_EPOCHS):
     with torch.no_grad():
         print(f"Epoch {epoch+1}/{REAL_EPOCHS} - Validation")
 
-    for frames, parameters, _, rpm_class in tqdm(real_val_dl):
-        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
-        outputs = encoder(frames, rpm_class)
-        parameters = torch.cat((parameters[:, :3], parameters[:, 4:]), dim=1)
+    for frames, parameters, _ in tqdm(real_val_dl):
+        frames, parameters = frames.to(device), parameters.to(device)
+        outputs = encoder(frames)
+        parameters = parameters[:, :3]
+        
         MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "real", REAL_ROOT)
-
         val_loss = criterion(outputs, parameters)
         val_losses.append(val_loss.item())
     mean_val_loss = mean(val_losses)
@@ -255,9 +263,9 @@ for epoch in range(REAL_EPOCHS):
 
     scheduler.step()
     current_lr = scheduler.get_last_lr()[0]
-    print(f"Epoch {epoch+1}/{REAL_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.5f}")
+    print(f"Epoch {epoch+1}/{REAL_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.8f}")
 wandb.finish() 
 
 # Save the model
-real_checkpoint = osp.replace(checkpoint, ".pth", "_real.pth")
+real_checkpoint = checkpoint.replace(".pth", "_real.pth")
 torch.save(encoder.state_dict(), real_checkpoint)

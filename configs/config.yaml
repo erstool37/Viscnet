@@ -1,6 +1,6 @@
-project: "viscosity estimation testing"
-name: "better_fc_run_newtrain"
-version: v2
+project: "real_world_calibration"
+name: "test_run"
+version: v0
 
 regression:
   train_settings:
