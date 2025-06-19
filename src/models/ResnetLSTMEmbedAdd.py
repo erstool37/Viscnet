@@ -8,31 +8,33 @@ class ResnetLSTMEmbedAdd(nn.Module):
         self.resnet = getattr(models, cnn)(pretrained=True)
         self.cnn = nn.Sequential(*list(self.resnet.children())[:-1])
         self.cnn_out_features = 512
-        self.flow_bool = flow_bool
-        self.embed_features = embedding_size
-        self.weight = weight
         self.cnn_dropout = nn.Dropout(p=dropout)
 
         for param in self.cnn.parameters():
             param.requires_grad = cnn_train
 
         # self.rpm_embedding = nn.Embedding(rpm_class, self.embed_features)
-
+        self.embed_features = embedding_size
+        self.weight = weight
         self.rpm_embedding = nn.Sequential(
             nn.Linear(1, self.embed_features),
             nn.ReLU(inplace=True),
             nn.Linear(self.embed_features, self.embed_features),
         )
 
-        self.lstm = nn.LSTM(input_size=self.cnn_out_features, hidden_size=lstm_hidden_size, num_layers=lstm_layers, batch_first=True, dropout=dropout)
+        self.lstm = nn.LSTM(input_size=self.cnn_out_features, hidden_size=lstm_hidden_size, 
+                            num_layers=lstm_layers, batch_first=True, dropout=dropout)
         
+        self.flow_bool = flow_bool
         self.fc =nn.Sequential(
             nn.Linear(lstm_hidden_size, 128),
             nn.ReLU(),
             nn.Dropout(p=dropout),
+
             nn.Linear(128, 32),
             nn.ReLU(),
             nn.Dropout(p=dropout),
+
             nn.Linear(32, output_size),
         )
         

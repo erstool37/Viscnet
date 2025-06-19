@@ -1,4 +1,3 @@
-cd slurry_viscnet
 git pull origin main
 pip install -r requirements.txt
 apt update

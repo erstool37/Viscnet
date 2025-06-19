@@ -26,10 +26,10 @@ regression:
       cnn_train : True
       lstm_size : 256
       lstm_layers : 3
-      output_size : 4 # 4 for rpm trained
+      output_size : 3
       drop_rate : 0.2
       embedding_size : 512
-      embed_weight : 4
+      embed_weight : 2
 
     flow: 
       flow : "RealNVP"
