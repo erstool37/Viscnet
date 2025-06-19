@@ -9,10 +9,11 @@ from tqdm import tqdm
 from statistics import mean
 import importlib
 import yaml
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, DistributedSampler
 from sklearn.model_selection import train_test_split
 from utils.utils import MAPEcalculator, MAPEflowcalculator
-from utils.setseed import set_seed
+from utils import set_seed, ddp_setup, ddp_cleanup
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, required=True, default="configs/config.yaml")
@@ -32,6 +33,7 @@ RAND_STATE      = int(cfg["preprocess"]["random_state"])
 FRAME_NUM       = int(cfg["preprocess"]["frame_num"])
 TIME            = int(cfg["preprocess"]["time"])
 RPM_CLASS       = int(cfg["preprocess"]["rpm_class"])
+AUG_BOOL        = cfg["preprocess"]["aug_bool"]
 BATCH_SIZE      = int(cfg["train_settings"]["batch_size"])
 NUM_WORKERS     = int(cfg["train_settings"]["num_workers"])
 NUM_EPOCHS      = int(cfg["train_settings"]["num_epochs"])
@@ -69,7 +71,9 @@ REAL_EPOCHS     = int(cfg["real_model"]["real_epochs"])
 REAL_LR         = float(cfg["real_model"]["lr"])
 REAL_W_DECAY    = float(cfg["real_model"]["weight_decay"]) 
 
-set_seed(SEED)
+rank, world_size, local_rank = ddp_setup()
+set_seed(SEED+rank)
+print(f"Rank: {rank}, World Size: {world_size}, Local Rank: {local_rank}")
 
 dataset_module = importlib.import_module(f"datasets.{DATASET}")
 loss_module = importlib.import_module(f"losses.{LOSS}")
@@ -82,27 +86,20 @@ checkpoint = f"{CKPT_ROOT}{NAME}_{today}_{VER}.pth"
 run_name = osp.basename(checkpoint).split(".")[0]
 
 # LOAD DATA
-wandb.init(project=PROJECT, name=run_name, reinit=True, resume="never", config= config)
-
 video_paths = sorted(glob.glob(osp.join(DATA_ROOT, VIDEO_SUBDIR, "*.mp4")))
 para_paths = sorted(glob.glob(osp.join(DATA_ROOT, NORM_SUBDIR, "*.json")))
-real_video_paths = sorted(glob.glob(osp.join(REAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
-real_para_paths = sorted(glob.glob(osp.join(REAL_ROOT, NORM_SUBDIR, "*.json")))
 
 train_video_paths, val_video_paths = train_test_split(video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 train_para_paths, val_para_paths = train_test_split(para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
-real_train_video_paths, real_val_video_paths = train_test_split(real_video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
-real_train_para_paths, real_val_para_paths = train_test_split(real_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
-train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME)
-val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME)
-real_train_ds = dataset_class(real_train_video_paths, real_train_para_paths, FRAME_NUM, TIME)
-real_val_ds = dataset_class(real_val_video_paths, real_val_para_paths, FRAME_NUM, TIME)
+train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME, AUG_BOOL)
+val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME, AUG_BOOL)
 
-train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
-val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
-real_train_dl = DataLoader(real_train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
-real_val_dl = DataLoader(real_val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, prefetch_factor=None, persistent_workers=False)
+train_sampler = DistributedSampler(train_ds, num_replicas=world_size, rank=rank, shuffle=True)
+val_sampler = DistributedSampler(val_ds, num_replicas=world_size, rank=rank, shuffle=False)
+
+train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, sampler=train_sampler, num_workers=NUM_WORKERS)
+val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, sampler=val_sampler, num_workers=NUM_WORKERS)
 
 # DEFINE MODEL
 encoder_class = getattr(encoder_module, ENCODER)
@@ -110,13 +107,12 @@ flow_class = getattr(flow_module, FLOW)
 criterion_class = getattr(loss_module, LOSS)
 optim_class = getattr(optim, OPTIM_CLASS)
 scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
+device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
-encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT)
-flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS)
-
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-encoder.to(device)
-flow.to(device)
+# encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
+encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
+encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
+flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
 criterion = criterion_class(DESCALER, DATA_ROOT)
 
 if FLOW_BOOL:
@@ -125,13 +121,17 @@ else:
     optimizer = optim_class(encoder.parameters(), lr=LR, weight_decay=W_DECAY)
 scheduler = scheduler_class(optimizer, T_max=NUM_EPOCHS, eta_min=ETA_MIN)
 
+if rank == 0:
+    wandb.init(project=PROJECT, name=run_name, reinit=True, resume="never", config= config)
+    wandb.watch(encoder, log="all", log_freq=10)
+
 # TRAIN MODEL
 best_val_loss = float("inf")
 counter = 0
-wandb.watch(encoder, log="all", log_freq=10)
-for epoch in range(NUM_EPOCHS):  
+for epoch in range(NUM_EPOCHS):
+    train_sampler.set_epoch(epoch)
     train_losses = []
-    print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training")  
+    if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
     encoder.train()
     for frames, parameters, _, rpm_class in tqdm(train_dl):
         frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
@@ -141,26 +141,28 @@ for epoch in range(NUM_EPOCHS):
             z, log_det_jacobian = flow(parameters, outputs)
             train_loss = criterion(z, log_det_jacobian)
             visc = flow.inverse(z, outputs)
-            MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "train", DATA_ROOT)
+            if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "train", DATA_ROOT)
         else:
             train_loss = criterion(outputs, parameters)
-            MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
-        
-        train_losses.append(train_loss.item())
+            if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
         optimizer.zero_grad()
         train_loss.backward()
         optimizer.step()
+        with torch.no_grad():
+            torch.distributed.all_reduce(train_loss, op=torch.distributed.ReduceOp.SUM)
+            avg_train_loss = train_loss / world_size
+            train_losses.append(avg_train_loss.item())
 
         if (len(train_losses)) % 10 == 0:
             mean_train_loss = mean(train_losses)
-            wandb.log({"train_loss": mean_train_loss})
+            if rank == 0: wandb.log({"train_loss": mean_train_loss})
     train_losses.clear()
 
     # VALIDATION
     encoder.eval()
     val_losses = []
     with torch.no_grad():
-        print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
+        if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
     for frames, parameters, _, rpm_class in tqdm(val_dl):
         frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
         outputs = encoder(frames, rpm_class)
@@ -169,15 +171,16 @@ for epoch in range(NUM_EPOCHS):
             z, log_det_jacobian = flow(parameters, outputs)
             val_loss = criterion(z, log_det_jacobian)
             visc = flow.inverse(z, outputs)
-            MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "val", DATA_ROOT)
+            if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "val", DATA_ROOT)
         else:
             val_loss = criterion(outputs, parameters)
-            MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
-        val_losses.append(val_loss.item())
-
+            if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
+        torch.distributed.all_reduce(val_loss, op=torch.distributed.ReduceOp.SUM)
+        avg_val_loss = val_loss / world_size
+        val_losses.append(avg_val_loss.item())
     mean_val_loss = mean(val_losses)
     val_losses.clear()
-    wandb.log({"val_loss": mean_val_loss})
+    if rank == 0: wandb.log({"val_loss": mean_val_loss})
 
     # PATIENCE
     if mean_val_loss < best_val_loss:
@@ -190,10 +193,12 @@ for epoch in range(NUM_EPOCHS):
             break
     scheduler.step()
     current_lr = scheduler.get_last_lr()[0]
-    print(f"Epoch {epoch+1}/{NUM_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.7f}")
+    if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.7f}")
     val_losses.clear()
-wandb.finish()
-torch.save(encoder.state_dict(), checkpoint)
+if rank == 0:
+    wandb.finish()
+    torch.save(encoder.module.state_dict(), checkpoint)
+ddp_cleanup()
 
 """
 # REAL WORLD calibration
@@ -210,6 +215,21 @@ criterion = nn.MSELoss(512, 4)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 encoder.to(device)
 
+# Data Loader
+real_video_paths = sorted(glob.glob(osp.join(REAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
+real_para_paths = sorted(glob.glob(osp.join(REAL_ROOT, NORM_SUBDIR, "*.json")))
+
+real_train_video_paths, real_val_video_paths = train_test_split(real_video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
+real_train_para_paths, real_val_para_paths = train_test_split(real_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
+
+real_train_ds = dataset_class(real_train_video_paths, real_train_para_paths, FRAME_NUM, TIME)
+real_val_ds = dataset_class(real_val_video_paths, real_val_para_paths, FRAME_NUM, TIME)
+
+real_train_sampler = DistributedSampler(real_train_ds, num_replicas=world_size, rank=rank, shuffle=True)
+real_val_sampler = DistributedSampler(real_val_ds, num_replicas=world_size, rank=rank, shuffle=False)
+
+real_train_dl = DataLoader(real_train_ds, batch_size=BATCH_SIZE, sampler=real_train_sampler, num_workers=NUM_WORKERS)
+real_val_dl = DataLoader(real_val_ds, batch_size=BATCH_SIZE, sampler=real_val_sampler, num_workers=NUM_WORKERS)
 
 # TRAINING
 for epoch in range(REAL_EPOCHS):  

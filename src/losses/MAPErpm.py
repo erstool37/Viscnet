@@ -34,7 +34,7 @@ class MAPErpm(nn.Module):
         total_loss = loss_dynvisc
 
         # wandb.log({"loss_den": loss_den})
-        wandb.log({"loss_visc": loss_dynvisc})
+        # wandb.log({"loss_visc": loss_dynvisc})
         # wandb.log({"loss_surf": loss_surfT})      
 
         return total_loss

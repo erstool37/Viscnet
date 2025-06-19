@@ -5,6 +5,7 @@ from torchvision import models
 class ResnetLSTMEmbedAdd(nn.Module):
     def __init__(self, lstm_hidden_size, lstm_layers, output_size, dropout, cnn, cnn_train, flow_bool, rpm_class, embedding_size, weight):
         super(ResnetLSTMEmbedAdd, self).__init__()
+        # CNN
         self.resnet = getattr(models, cnn)(pretrained=True)
         self.cnn = nn.Sequential(*list(self.resnet.children())[:-1])
         self.cnn_out_features = 512
@@ -13,6 +14,7 @@ class ResnetLSTMEmbedAdd(nn.Module):
         for param in self.cnn.parameters():
             param.requires_grad = cnn_train
 
+        # RPM EMBEDDING, CONTINUOUS VERSION
         # self.rpm_embedding = nn.Embedding(rpm_class, self.embed_features)
         self.embed_features = embedding_size
         self.weight = weight
@@ -22,9 +24,11 @@ class ResnetLSTMEmbedAdd(nn.Module):
             nn.Linear(self.embed_features, self.embed_features),
         )
 
+        # LSTM
         self.lstm = nn.LSTM(input_size=self.cnn_out_features, hidden_size=lstm_hidden_size, 
                             num_layers=lstm_layers, batch_first=True, dropout=dropout)
         
+        # FC LAYER
         self.flow_bool = flow_bool
         self.fc =nn.Sequential(
             nn.Linear(lstm_hidden_size, 128),
@@ -47,7 +51,7 @@ class ResnetLSTMEmbedAdd(nn.Module):
         
         video_features = self.cnn(x) 
         video_features = video_features.view(batch_size, frames, -1) 
-        video_features = self.cnn_dropout(video_features)
+        # video_features = self.cnn_dropout(video_features)
 
         concat = video_features + self.weight * rpm_vec
 

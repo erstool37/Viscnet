@@ -1,50 +1,52 @@
-from torch.utils.data import Dataset
+from torch.utils.data import IterableDataset, Dataset
 import cv2
 import json
 import numpy as np
 import torch
 import torch.nn.functional as F
 import os.path as osp
+from transformers import VideoMAEImageProcessor
+import albumentations as A
 
-class VideoDatasetEmbed(Dataset):
-    def __init__(self, video_paths, para_paths, frame_num, time):
+class VideoDatasetMAE(Dataset):
+    def __init__(self, video_paths, para_paths, frame_num, time, aug_bool=False):
         '''Initialize dataset'''
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = frame_num * time
+        self.processor = VideoMAEImageProcessor.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
+
+        self.aug_bool = aug_bool
+        self.augmentation = A.Compose([
+            A.GaussNoise(var_limit=(10,50), p=0.3),
+            A.MotionBlur(blur_limit=5, p=0.2),
+            A.RandomBrightnessContrast(0.2, 0.2, p=0.3),
+        ])
 
     def __getitem__(self, index):
-        frames = self._loadvideo(self.video_paths[index], self.frame_limit)
+        frames = self._loadvideo(self.video_paths[index])
         parameters = self._loadparameters(self.para_paths[index])
         names = self._loadname(self.para_paths[index])
         # rpm_idx = parameters[-1] 
         rpm = parameters[-1]
         return frames, parameters, names, rpm
 
-    def _loadvideo(self, video_path, frame_limit):
+    def _loadvideo(self, video_path):
+        # Shrink the video from (512, 512, 3) to (256, 256, 3)
         cap = cv2.VideoCapture(video_path)
         frames = []
-
-        while len(frames) < self.frame_limit:
+        while True:
             ret, frame = cap.read()
             if not ret:
-                h, w, c = 512, 512, 3  # fallback shape
-                pad = np.zeros((h, w, c), dtype=np.uint8)
-                frames += [pad] * (self.frame_limit - len(frames))
                 break
-
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frames.append(frame)
+            small = cv2.resize(frame, (256, 256), interpolation=cv2.INTER_AREA) # Resize to 256x256\
+            if self.aug_bool:
+                small = self.augmentation(image=small)["image"] # Apply augmentations
+            frames.append(small)
         cap.release()
-
-        frames = np.array(frames, dtype=np.float32) # required only for no masked
-        frames = torch.tensor(frames, dtype=torch.float32).permute(0, 3, 1, 2)
         
-        # FOR RESNET34
-        mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
-        std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
-        frames = (frames - mean) / std
-        return frames
+        preprocessed = self.processor(images=frames, return_tensors="pt") # only implemented for 50frame set videos, not ready for inference(versatile fps videos)
+        return preprocessed["pixel_values"].squeeze(0).permute(1, 0, 2, 3)
     
     def _loadparameters(self, para_path):
         try :
