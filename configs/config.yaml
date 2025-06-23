@@ -1,6 +1,6 @@
 project: "real_world_calibration"
 name: "transformer_test_run"
-version: v0
+version: vReal
 
 regression:
   train_settings:

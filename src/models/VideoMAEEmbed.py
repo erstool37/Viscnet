@@ -7,6 +7,7 @@ class VideoMAEEmbed(nn.Module):
         super(VideoMAEEmbed, self).__init__()
         # VideoMAE encoder
         self.config = AutoConfig.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
+        self.config.model_config["use_mean_pooling"] = False
         self.featureextractor = AutoModel.from_pretrained('OpenGVLab/VideoMAEv2-Base', config=self.config, trust_remote_code=True)
         self.hidden_size = self.config.model_config["embed_dim"]
         self.tube_frame = self.config.model_config["tubelet_size"]
@@ -37,16 +38,13 @@ class VideoMAEEmbed(nn.Module):
         """
         video: (B, 3, T, H, W)
         """
-        B, C, T, H, W = video.shape
-        seq_len = (T / self.tube_frame) * (H // self.patch_size) * (W // self.patch_size)
-        video_features = self.featureextractor(video) # (B, seq_len, H)
-        print(video_features.shape)
-        clip_vec = video_features.mean(dim=1).squeeze(1) # (B, H)
+        # B, C, T, H, W = video.shape
+        
+        video_features = self.featureextractor(video)
     
         rpm_vec = self.rpm_embedding(rpm.unsqueeze(1))
-        rpm_vec = rpm_vec.unsqueeze(1).expand(-1, seq_len, -1)
     
-        concat = torch.cat((clip_vec, rpm_vec), dim=-1)  # (B, 2H)
+        concat = torch.cat((video_features, rpm_vec), dim=-1)
 
         if self.flow_bool:
             viscosity = concat

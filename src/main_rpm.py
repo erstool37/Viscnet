@@ -131,7 +131,7 @@ counter = 0
 for epoch in range(NUM_EPOCHS):
     train_sampler.set_epoch(epoch)
     train_losses = []
-    if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
+    if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training")
     encoder.train()
     for frames, parameters, _, rpm_class in tqdm(train_dl):
         frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)

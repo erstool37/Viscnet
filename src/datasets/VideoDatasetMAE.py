@@ -32,17 +32,25 @@ class VideoDatasetMAE(Dataset):
         return frames, parameters, names, rpm
 
     def _loadvideo(self, video_path):
-        # Shrink the video from (512, 512, 3) to (256, 256, 3)
         cap = cv2.VideoCapture(video_path)
         frames = []
-        while True:
+        frame_idx = 0
+        selected_count = 0
+
+        while selected_count < 16:
             ret, frame = cap.read()
             if not ret:
                 break
-            small = cv2.resize(frame, (256, 256), interpolation=cv2.INTER_AREA) # Resize to 256x256\
-            if self.aug_bool:
-                small = self.augmentation(image=small)["image"] # Apply augmentations
-            frames.append(small)
+            if frame_idx >= 32:
+                break
+            if frame_idx % 2 == 0:  # even-numbered frame
+                small = cv2.resize(frame, (256, 256), interpolation=cv2.INTER_AREA)
+                if self.aug_bool:
+                    small = self.augmentation(image=small)["image"]
+                frames.append(small)
+                selected_count += 1
+            frame_idx += 1
+            
         cap.release()
         
         preprocessed = self.processor(images=frames, return_tensors="pt") # only implemented for 50frame set videos, not ready for inference(versatile fps videos)
