@@ -1,5 +1,5 @@
 project: "real_world_calibration"
-name: "onlyVisc_rpmContEmbed"
+name: "transformer_test_run"
 version: v0
 
 regression:

@@ -110,4 +110,5 @@ for idx in range(len(dynViscnorm)):
 with open(f'{norm_path}/../statistics.json', 'w') as file:
     json.dump(stats, file, indent=4)
 
-# print(f"Total unique RPM classes: {len(rpm_to_idx)}")
+print(f"Normalization complete")
+# print(f"Total unique RPM classes: {len(rpm_to_idx)}") 
