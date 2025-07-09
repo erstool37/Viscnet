@@ -92,8 +92,10 @@ para_paths = sorted(glob.glob(osp.join(DATA_ROOT, NORM_SUBDIR, "*.json")))
 train_video_paths, val_video_paths = train_test_split(video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 train_para_paths, val_para_paths = train_test_split(para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
-train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME, AUG_BOOL)
-val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME, AUG_BOOL)
+# train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME, AUG_BOOL)
+# val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME, AUG_BOOL)
+train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME)
+val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME)
 
 train_sampler = DistributedSampler(train_ds, num_replicas=world_size, rank=rank, shuffle=True)
 val_sampler = DistributedSampler(val_ds, num_replicas=world_size, rank=rank, shuffle=False)
@@ -109,8 +111,8 @@ optim_class = getattr(optim, OPTIM_CLASS)
 scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
 device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
-# encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
-encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
+encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
+# encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
 encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
 criterion = criterion_class(DESCALER, DATA_ROOT)
@@ -153,7 +155,7 @@ for epoch in range(NUM_EPOCHS):
             avg_train_loss = train_loss / world_size
             train_losses.append(avg_train_loss.item())
 
-        if (len(train_losses)) % 10 == 0:
+        if (len(train_losses)) % 2 == 0:
             mean_train_loss = mean(train_losses)
             if rank == 0: wandb.log({"train_loss": mean_train_loss})
     train_losses.clear()

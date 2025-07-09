@@ -55,13 +55,17 @@ rpm = []
 
 for path in para_paths:
     with open(path, 'r') as file:
+        
         data = json.load(file)
         dynVisc.append(data["dynamic_viscosity"])
-        kinVisc.append(data["kinematic_viscosity"])
+        # dynVisc.append(data["xsph"])
+        # kinVisc.append(float(1.0))
+        kinVisc.append(data["kinematic_viscosiyy"])
         surfT.append(data["surface_tension"])
+        # surfT.append(data["surfaceTension"])
         density.append(data["density"])
         rpm.append(data["RPM"])
-
+        # rpm.append(data["rpm"])
 # sanity check
 parameters = [dynVisc, kinVisc, surfT, density, rpm]
 for idx, lst in enumerate(parameters):

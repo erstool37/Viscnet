@@ -1,20 +1,20 @@
-project: "real_world_calibration"
-name: "transformer_test_run"
-version: vReal
+project: "sph_test_run"
+name: "initial_test_run"
+version: v0
 
 regression:
   train_settings:
-    batch_size : 2
-    num_epochs : 30
+    batch_size : 8
+    num_epochs : 100
     num_workers : 0
     seed : 1205
-    dataset : "VideoDatasetMAE"
+    dataset : "VideoDatasetEmbed"
 
   preprocess:
-    scaler : "logzscaler"    # log scaled, inter scaling works best 
-    descaler : "logzdescaler"
+    scaler : "zscaler"    # log scaled, inter scaling works best 
+    descaler : "zdescaler"
     frame_num : 10
-    time : 5
+    time : 3.2
     test_size : 0.2
     random_state : 37
     rpm_class : 7
@@ -22,15 +22,15 @@ regression:
   
   model:
     encoder:
-      encoder: VideoMAEEmbed
+      encoder: ResnetLSTMEmbedAdd
       cnn : "resnet34"
       cnn_train : True
       lstm_size : 256
-      lstm_layers : 4
+      lstm_layers : 5
       output_size : 3
       drop_rate : 0.2
       embedding_size : 512
-      embed_weight : 2
+      embed_weight : 0.7
 
     flow: 
       flow : "RealNVP"
@@ -51,19 +51,19 @@ regression:
     optim_class: Adam
     scheduler_class: CosineAnnealingLR
     lr: 1e-4
-    eta_min : 1e-10
+    eta_min : 1e-9
     weight_decay: 0
-    patience : 5
+    patience : 10
   
   directories:
     checkpoint :
       ckpt_root : "src/weights/"
-      inf_checkpoint : "src/weights/onlyVisc_rpmContEmbed_loss_weight_inc_0618_v0.pth"
+      inf_checkpoint : "src/weights/initial_test_run_0709_v0.pth"
 
     data :
-      data_root : "dataset/CFDArchive/decay_5s_10fps_surfdensrpm"
+      data_root : "dataset/CFDArchive/sph_test"
       test_root : "dataset/CFDArchive/test"
-      real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_hotplate"
+      real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"
       video_subdir : "videos"
       para_subdir : "parameters"
       norm_subdir : "parametersNorm"

@@ -11,7 +11,7 @@ class VideoDatasetEmbed(Dataset):
         '''Initialize dataset'''
         self.video_paths = video_paths
         self.para_paths = para_paths
-        self.frame_limit = frame_num * time
+        self.frame_limit = 32
 
     def __getitem__(self, index):
         frames = self._loadvideo(self.video_paths[index], self.frame_limit)
@@ -21,41 +21,46 @@ class VideoDatasetEmbed(Dataset):
         rpm = parameters[-1]
         return frames, parameters, names, rpm
 
-    def _loadvideo(self, video_path, frame_limit):
+    def _loadvideo(self, video_path, frame_limit=32):
         cap = cv2.VideoCapture(video_path)
-        frames = []
+        all_frames = []
 
-        while len(frames) < self.frame_limit:
+        while True:
             ret, frame = cap.read()
             if not ret:
-                h, w, c = 512, 512, 3  # fallback shape
-                pad = np.zeros((h, w, c), dtype=np.uint8)
-                frames += [pad] * (self.frame_limit - len(frames))
                 break
-
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frames.append(frame)
+            frame = cv2.resize(frame, (224, 224))
+            all_frames.append(frame)
         cap.release()
 
-        frames = np.array(frames, dtype=np.float32) # required only for no masked
+        # Take last `frame_limit` frames
+        if len(all_frames) >= frame_limit:
+            frames = all_frames[-frame_limit:]
+        else:
+            pad_frame = np.zeros((224, 224, 3), dtype=np.uint8)
+            frames = [pad_frame] * (frame_limit - len(all_frames)) + all_frames
+
+        frames = np.array(frames, dtype=np.float32) / 255.0
         frames = torch.tensor(frames, dtype=torch.float32).permute(0, 3, 1, 2)
-        
-        # FOR RESNET34
+
+        # Normalize for ResNet34
         mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
         std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
         frames = (frames - mean) / std
+
         return frames
     
     def _loadparameters(self, para_path):
         try :
             with open(para_path, 'r') as file:
                 data = json.load(file)
-                density = data["density"]
+                density = float(data["density"])
                 dynVisc = float(data["dynamic_viscosity"])
-                surfT = float(data["surface_tension"])
                 kinVisc = float(data["kinematic_viscosity"])
+                surfT = float(data["surface_tension"])
                 # rpm_index = int(data["rpm_idx"])
-                rpm = int(data["rpm"])
+                rpm = float(data["rpm"])
             return torch.tensor([density, dynVisc, surfT, kinVisc, rpm], dtype=torch.float32)
         except json.JSONDecodeError as e:
             print(f"Failed to parse JSON at: {para_path}")

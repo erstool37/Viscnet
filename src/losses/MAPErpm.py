@@ -5,6 +5,7 @@ import os.path as osp
 import json
 import importlib
 import torch.nn.functional as F
+
 class MAPErpm(nn.Module):
     """
     unnormalized and MAPE calculation
@@ -27,10 +28,13 @@ class MAPErpm(nn.Module):
         # target_surfT = descaler(target[:,2], "surface_tension", self.path).unsqueeze(-1).to(pred.device)
 
         # loss_den = torch.mean((torch.abs(pred_den - target_den) / target_den)).unsqueeze(-1)
-        loss_dynvisc = torch.mean((torch.abs(pred_dynvisc - target_dynvisc) / target_dynvisc)).unsqueeze(-1)
+        loss_dynvisc = F.mse_loss(pred_dynvisc, target_dynvisc).unsqueeze(-1)
+        # loss_dynvisc = torch.mean((torch.abs(pred_dynvisc - target_dynvisc) / target_dynvisc)).unsqueeze(-1)
+        
         # loss_surfT = torch.mean((torch.abs(pred_surfT - target_surfT) / target_surfT)).unsqueeze(-1)
 
         # total_loss = loss_den + 2 * loss_dynvisc + loss_surfT + 0.2 * loss_rpm
+    
         total_loss = loss_dynvisc
 
         # wandb.log({"loss_den": loss_den})
