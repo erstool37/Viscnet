@@ -18,6 +18,7 @@ class ResnetLSTMEmbedAdd(nn.Module):
         # self.rpm_embedding = nn.Embedding(rpm_class, self.embed_features)
         self.embed_features = embedding_size
         self.weight = weight
+
         self.rpm_embedding = nn.Sequential(
             nn.Linear(1, self.embed_features),
             nn.ReLU(inplace=True),
@@ -42,19 +43,19 @@ class ResnetLSTMEmbedAdd(nn.Module):
             nn.Linear(32, output_size),
         )
         
-    def forward(self, x, rpm):        
+    def forward(self, x, rpm):              
         batch_size, frames, C, H, W = x.shape
         x = x.view(batch_size * frames, C, H, W)
-        
+
         rpm_vec = self.rpm_embedding(rpm.unsqueeze(1))
         rpm_vec = rpm_vec.unsqueeze(1).expand(-1, frames, -1)
-        
+
         video_features = self.cnn(x) 
         video_features = video_features.view(batch_size, frames, -1) 
+
         # video_features = self.cnn_dropout(video_features)
-
         concat = video_features + self.weight * rpm_vec
-
+    
         lstm_out, _ = self.lstm(concat)
         lstm_last_out = lstm_out[:, -1, :]
 

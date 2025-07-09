@@ -21,7 +21,7 @@ from utils import MAPEcalculator, MAPEflowcalculator, MAPEtestcalculator, set_se
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, required=True, default="configs/config0.yaml")
-parser.add_argument("-m", "--method", type=str, required=False, default="real")
+parser.add_argument("-m", "--method", type=str, required=True)
 args = parser.parse_args()
 
 with open(args.config, "r") as file:
@@ -48,6 +48,7 @@ LSTM_LAYERS     = int(cfg["model"]["encoder"]["lstm_layers"])
 OUTPUT_SIZE     = int(cfg["model"]["encoder"]["output_size"])
 DROP_RATE       = float(cfg["model"]["encoder"]["drop_rate"])
 EMBED_SIZE      = int(cfg["model"]["encoder"]["embedding_size"])
+WEIGHT          = float(cfg["model"]["encoder"]["embed_weight"])
 FLOW            = cfg["model"]["flow"]["flow"]
 FLOW_BOOL       = cfg["model"]["flow"]["flow_bool"]
 DIM             = int(cfg["model"]["flow"]["dim"])
@@ -64,7 +65,7 @@ VIDEO_SUBDIR    = repo["video_subdir"]
 PARA_SUBDIR     = repo["para_subdir"]
 NORM_SUBDIR     = repo["norm_subdir"]
 
-wandb.init(project="viscosity estimation testing", name="inference", reinit=True, resume="never", config= config)
+wandb.init(project="viscosity estimation testing", name="inferencev0", reinit=True, resume="never", config= config)
 
 # model load
 dataset_module = importlib.import_module(f"datasets.{DATASET}")
@@ -75,7 +76,7 @@ dataset_class = getattr(dataset_module, DATASET)
 encoder_class = getattr(encoder_module, ENCODER)
 flow_class = getattr(flow_module, FLOW)
 
-encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE)
+encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -101,15 +102,16 @@ dl = DataLoader(ds, batch_size=1, shuffle=False, num_workers=NUM_WORKERS, prefet
 
 # Error Calculation
 errors = []
-for frames, parameters, _, rpm_class in dl:
-    frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
-    outputs = encoder(frames, rpm_class)
-
+for frames, parameters, _, rpm in dl:
+    frames, parameters, rpm = frames.to(device), parameters.to(device), rpm.to(device)
+    outputs = encoder(frames, rpm)
+    
     if FLOW_BOOL:
         z, log_det_jacobian = flow(parameters, outputs)
         visc = flow.inverse(z, outputs)
         error = MAPEtestcalculator(visc.detach(), parameters.detach(), DESCALER, METHOD, repo[f"{METHOD}_root"])
-    else:   
+    else:
+        wandb.log({"xsph estimation": outputs.detach().cpu()}) 
         error = MAPEtestcalculator(outputs.detach(), parameters.detach(), DESCALER, "real", REAL_ROOT)
     errors.append(error.detach().cpu())
 
