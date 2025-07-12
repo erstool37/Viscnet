@@ -5,16 +5,18 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import os.path as osp
-from transformers import VideoMAEImageProcessor
+# from transformers import VideoMAEImageProcessor
+from transformers import VivitImageProcessor
 import albumentations as A
 
-class VideoDatasetMAE(Dataset):
+class VideoDatasetTrans(Dataset):
     def __init__(self, video_paths, para_paths, frame_num, time, aug_bool=False):
         '''Initialize dataset'''
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = frame_num * time
-        self.processor = VideoMAEImageProcessor.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
+        self.processor = VivitImageProcessor.from_pretrained("google/vivit-b-16x2-kinetics400")
+        # self.processor = VideoMAEImageProcessor.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
 
         self.aug_bool = aug_bool
         self.augmentation = A.Compose([
@@ -50,11 +52,11 @@ class VideoDatasetMAE(Dataset):
                 frames.append(small)
                 selected_count += 1
             frame_idx += 1
-            
         cap.release()
         
         preprocessed = self.processor(images=frames, return_tensors="pt") # only implemented for 50frame set videos, not ready for inference(versatile fps videos)
-        return preprocessed["pixel_values"].squeeze(0).permute(1, 0, 2, 3)
+        print(preprocessed["pixel_values"].shape)
+        return preprocessed["pixel_values"].squeeze(0)
     
     def _loadparameters(self, para_path):
         try :
