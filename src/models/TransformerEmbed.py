@@ -5,11 +5,11 @@ from transformers import VivitModel, VivitConfig
 class TransformerEmbed(nn.Module):
     def __init__(self, dropout, output_size, flow_bool):
         super(TransformerEmbed, self).__init__()
-        self.config = VivitConfig.from_pretrained("google/vivit-b-16x2-kinetics400", trust_remote_code=True)
-        tube = self.config.tubelet_size
-        tube = tube[0]
-        self.config.num_frames = self.config.num_frames // tube
-        self.featureextractor = VivitModel.from_pretrained("google/vivit-b-16x2-kinetics400", config=self.config, trust_remote_code=True)
+        self.config = VivitConfig.from_pretrained("google/vivit-b-16x2-kinetics400")
+        # tube = self.config.tubelet_size
+        # tube = tube[0]
+        # self.config.num_frames = self.config.num_frames // tube
+        self.featureextractor = VivitModel.from_pretrained("google/vivit-b-16x2-kinetics400", config=self.config)
         self.hidden_size = self.config.hidden_size  # Usually 768 for ViViT-base
 
         # RPM EMBEDDING
