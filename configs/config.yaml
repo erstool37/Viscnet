@@ -1,5 +1,5 @@
 project: "sph_test_run"
-name: "initial_test_run"
+name: "transformer_test_run"
 version: v0
 
 regression:
@@ -8,7 +8,7 @@ regression:
     num_epochs : 100
     num_workers : 0
     seed : 1205
-    dataset : "VideoDatasetEmbed"
+    dataset : "VideoDatasetTrans"
 
   preprocess:
     scaler : "zscaler"    # log scaled, inter scaling works best 
@@ -18,11 +18,11 @@ regression:
     test_size : 0.2
     random_state : 37
     rpm_class : 7
-    aug_bool : False
+    aug_bool : True
   
   model:
     encoder:
-      encoder: ResnetLSTMEmbedAdd
+      encoder: TransformerEmbed
       cnn : "resnet34"
       cnn_train : True
       lstm_size : 256
@@ -45,7 +45,7 @@ regression:
     lr : 1e-4
     weight_decay : 1e-5
 
-  loss : "MAPErpm"
+  loss : "MAPE"
 
   optimizer:
     optim_class: Adam

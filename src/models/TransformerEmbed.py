@@ -1,10 +1,61 @@
 import torch
 import torch.nn as nn
-from transformers import AutoModel, AutoConfig
+from transformers import VivitModel, VivitConfig
 
-class VideoMAEEmbed(nn.Module):
+class TransformerEmbed(nn.Module):
     def __init__(self, dropout, output_size, flow_bool):
-        super(VideoMAEEmbed, self).__init__()
+        super(TransformerEmbed, self).__init__()
+        self.config = VivitConfig.from_pretrained("google/vivit-b-16x2-kinetics400", trust_remote_code=True)
+        tube = self.config.tubelet_size
+        tube = tube[0]
+        self.config.num_frames = self.config.num_frames // tube
+        self.featureextractor = VivitModel.from_pretrained("google/vivit-b-16x2-kinetics400", config=self.config, trust_remote_code=True)
+        self.hidden_size = self.config.hidden_size  # Usually 768 for ViViT-base
+
+        # RPM EMBEDDING
+        self.rpm_embedding = nn.Sequential(
+            nn.Linear(1, self.hidden_size),
+            nn.ReLU(inplace=True),
+            nn.Linear(self.hidden_size, self.hidden_size),
+        )
+
+        # FC HEAD
+        self.flow_bool = flow_bool
+        self.fc = nn.Sequential(
+            nn.Linear(self.hidden_size * 2, 192),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+
+            nn.Linear(192, 24),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+
+            nn.Linear(24, output_size),
+        )
+
+    def forward(self, video: torch.Tensor, rpm: torch.Tensor):
+        """
+        video: (B, T, C, H, W)
+        """
+        # ViViT expects (B, T, C, H, W)
+        outputs = self.featureextractor(video)
+        video_features = outputs.pooler_output  # (B, hidden_size)
+
+        rpm_vec = self.rpm_embedding(rpm.unsqueeze(1))  # (B, hidden_size)
+
+        concat = torch.cat((video_features, rpm_vec), dim=-1)
+
+        if self.flow_bool:
+            viscosity = concat
+        else:
+            viscosity = self.fc(concat)
+
+        return viscosity
+
+
+
+
+"""
         # VideoMAE encoder
         self.config = AutoConfig.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
         self.config.model_config["use_mean_pooling"] = False
@@ -35,9 +86,7 @@ class VideoMAEEmbed(nn.Module):
         )
 
     def forward(self, video:torch.Tensor, rpm:torch.Tensor):
-        """
         video: (B, 3, T, H, W)
-        """
         # B, C, T, H, W = video.shape
         
         video_features = self.featureextractor(video)
@@ -54,7 +103,7 @@ class VideoMAEEmbed(nn.Module):
         return viscosity
     
 # config structure for videoMAE v2 Base
-"""
+
 {
     "_name_or_path": "./",
     "model_type": "VideoMAEv2_Base",
