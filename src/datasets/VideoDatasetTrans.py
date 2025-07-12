@@ -8,6 +8,7 @@ import os.path as osp
 # from transformers import VideoMAEImageProcessor
 from transformers import VivitImageProcessor
 import albumentations as A
+from collections import deque
 
 class VideoDatasetTrans(Dataset):
     def __init__(self, video_paths, para_paths, frame_num, time, aug_bool=False):
@@ -35,27 +36,20 @@ class VideoDatasetTrans(Dataset):
 
     def _loadvideo(self, video_path):
         cap = cv2.VideoCapture(video_path)
-        frames = []
-        frame_idx = 0
-        selected_count = 0
+        frames = deque(maxlen=self.frame_limit)
 
-        while selected_count < 16:
+        while True:
             ret, frame = cap.read()
             if not ret:
                 break
-            if frame_idx >= 32:
-                break
-            if frame_idx % 2 == 0:  # even-numbered frame
-                small = cv2.resize(frame, (256, 256), interpolation=cv2.INTER_AREA)
-                if self.aug_bool:
-                    small = self.augmentation(image=small)["image"]
-                frames.append(small)
-                selected_count += 1
-            frame_idx += 1
+            if self.aug_bool:
+                frame = self.augmentation(image=frame)["image"]
+            frames.append(frame)
         cap.release()
-        
-        preprocessed = self.processor(images=frames, return_tensors="pt") # only implemented for 50frame set videos, not ready for inference(versatile fps videos)
-        print(preprocessed["pixel_values"].shape)
+
+        frames = np.stack(frames, axis=0) # no idea, but numpy stacking makes distribution faster, making ddp available
+        preprocessed = self.processor(images=frames, return_tensors="pt")
+
         return preprocessed["pixel_values"].squeeze(0)
     
     def _loadparameters(self, para_path):
