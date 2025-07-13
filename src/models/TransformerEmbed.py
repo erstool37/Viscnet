@@ -15,7 +15,7 @@ class TransformerEmbed(nn.Module):
         # RPM EMBEDDING
         self.rpm_embedding = nn.Sequential(
             nn.Linear(1, self.hidden_size),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.Linear(self.hidden_size, self.hidden_size),
         )
 
@@ -43,7 +43,7 @@ class TransformerEmbed(nn.Module):
 
         rpm_vec = self.rpm_embedding(rpm.unsqueeze(1))  # (B, hidden_size)
 
-        concat = torch.cat((video_features, rpm_vec), dim=-1)
+        concat = torch.cat((video_features, rpm_vec), dim=-1).contiguous()
 
         if self.flow_bool:
             viscosity = concat

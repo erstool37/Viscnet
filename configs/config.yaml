@@ -1,11 +1,11 @@
 project: "sph_test_run"
 name: "transformer_test_run"
-version: v0
+version: v1
 
 regression:
   train_settings:
-    batch_size : 1
-    num_epochs : 100
+    batch_size : 3
+    num_epochs : 30
     num_workers : 0
     seed : 1205
     dataset : "VideoDatasetTrans"
@@ -61,7 +61,7 @@ regression:
       inf_checkpoint : "src/weights/initial_test_run_0709_v0.pth"
 
     data :
-      data_root : "dataset/CFDArchive/sph_test"
+      data_root : "dataset/CFDArchive/sph_improved"
       test_root : "dataset/CFDArchive/test"
       real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"
       video_subdir : "videos"

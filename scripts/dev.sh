@@ -1,7 +1,8 @@
 export CUBLAS_WORKSPACE_CONFIG=:4096:8
 
 wandb login e4fc630ae5f28ea9dc5453b32b848681d664e9a1
-# python3 src/utils/preprocess.py -c configs/config.yaml -m train
+python3 src/utils/preprocess.py -c configs/config.yaml -m train
+export OMP_NUM_THREADS=1
 torchrun --nproc_per_node=8 --nnodes=1 --node_rank=0 src/main_rpm.py -c configs/config.yaml 
 
 # nproc_per_node=2 is the number of GPUs per node

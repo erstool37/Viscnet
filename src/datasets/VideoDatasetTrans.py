@@ -15,7 +15,7 @@ class VideoDatasetTrans(Dataset):
         '''Initialize dataset'''
         self.video_paths = video_paths
         self.para_paths = para_paths
-        self.frame_limit = frame_num * time
+        self.frame_limit = int(frame_num * time)
         self.processor = VivitImageProcessor.from_pretrained("google/vivit-b-16x2-kinetics400")
         # self.processor = VideoMAEImageProcessor.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
 
@@ -36,7 +36,7 @@ class VideoDatasetTrans(Dataset):
 
     def _loadvideo(self, video_path):
         cap = cv2.VideoCapture(video_path)
-        frames = deque(maxlen=self.frame_limit)
+        frames = []
 
         while True:
             ret, frame = cap.read()
@@ -46,11 +46,14 @@ class VideoDatasetTrans(Dataset):
                 frame = self.augmentation(image=frame)["image"]
             frames.append(frame)
         cap.release()
+        frames = frames[-self.frame_limit:]
+        frames = np.stack(frames, axis=0)
+        frames = torch.from_numpy(frames).float().permute(0, 3, 1, 2)  # Convert to tensor
 
-        frames = np.stack(frames, axis=0) # no idea, but numpy stacking makes distribution faster, making ddp available
-        preprocessed = self.processor(images=frames, return_tensors="pt")
-
-        return preprocessed["pixel_values"].squeeze(0)
+        # frames = np.stack(frames, axis=0)
+        # preprocessed = self.processor(images=frames, return_tensors="pt").squeeze(0)
+        # print(frames.shape)
+        return frames
     
     def _loadparameters(self, para_path):
         try :
