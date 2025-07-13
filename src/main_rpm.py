@@ -14,6 +14,9 @@ from sklearn.model_selection import train_test_split
 from utils.utils import MAPEcalculator, MAPEflowcalculator
 from utils import set_seed, ddp_setup, ddp_cleanup
 from torch.nn.parallel import DistributedDataParallel as DDP
+import warnings
+
+warnings.filterwarnings("ignore", message=".*resume_download.*", category=FutureWarning) # filter out warnings from transformer on classificatio head initialzation which is irrelevant
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, required=True, default="configs/config.yaml")
@@ -30,8 +33,8 @@ SCALER          = cfg["preprocess"]["scaler"]
 DESCALER        = cfg["preprocess"]["descaler"]
 TEST_SIZE       = float(cfg["preprocess"]["test_size"])
 RAND_STATE      = int(cfg["preprocess"]["random_state"])
-FRAME_NUM       = int(cfg["preprocess"]["frame_num"])
-TIME            = int(cfg["preprocess"]["time"])
+FRAME_NUM       = float(cfg["preprocess"]["frame_num"])
+TIME            = float(cfg["preprocess"]["time"])
 RPM_CLASS       = int(cfg["preprocess"]["rpm_class"])
 AUG_BOOL        = cfg["preprocess"]["aug_bool"]
 BATCH_SIZE      = int(cfg["train_settings"]["batch_size"])
@@ -93,7 +96,7 @@ train_video_paths, val_video_paths = train_test_split(video_paths, test_size=TES
 train_para_paths, val_para_paths = train_test_split(para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
 train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME, AUG_BOOL)
-val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME, AUG_BOOL)
+val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME, aug_bool=False)
 # train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME)
 # val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME)
 
@@ -113,7 +116,7 @@ device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
 # encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
 encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
-encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
+encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank) #, find_unused_parameters=True)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
 criterion = criterion_class(DESCALER, DATA_ROOT)
 
@@ -165,21 +168,23 @@ for epoch in range(NUM_EPOCHS):
     val_losses = []
     with torch.no_grad():
         if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
-    for frames, parameters, _, rpm_class in tqdm(val_dl):
-        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
-        outputs = encoder(frames, rpm_class)
 
-        if FLOW_BOOL:
-            z, log_det_jacobian = flow(parameters, outputs)
-            val_loss = criterion(z, log_det_jacobian)
-            visc = flow.inverse(z, outputs)
-            if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "val", DATA_ROOT)
-        else:
-            val_loss = criterion(outputs, parameters)
-            if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
-        torch.distributed.all_reduce(val_loss, op=torch.distributed.ReduceOp.SUM)
-        avg_val_loss = val_loss / world_size
-        val_losses.append(avg_val_loss.item())
+        for frames, parameters, _, rpm_class in tqdm(val_dl):
+            frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+            outputs = encoder(frames, rpm_class)
+
+            if FLOW_BOOL:
+                z, log_det_jacobian = flow(parameters, outputs)
+                val_loss = criterion(z, log_det_jacobian)
+                visc = flow.inverse(z, outputs)
+                if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "val", DATA_ROOT)
+            else:
+                val_loss = criterion(outputs, parameters)
+                if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
+            torch.distributed.all_reduce(val_loss, op=torch.distributed.ReduceOp.SUM)
+            avg_val_loss = val_loss / world_size
+            val_losses.append(avg_val_loss.item())
+
     mean_val_loss = mean(val_losses)
     val_losses.clear()
     if rank == 0: wandb.log({"val_loss": mean_val_loss})
@@ -197,6 +202,7 @@ for epoch in range(NUM_EPOCHS):
     current_lr = scheduler.get_last_lr()[0]
     if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.7f}")
     val_losses.clear()
+
 if rank == 0:
     wandb.finish()
     torch.save(encoder.module.state_dict(), checkpoint)
