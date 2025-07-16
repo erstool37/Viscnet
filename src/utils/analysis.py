@@ -41,3 +41,27 @@ def MAPEtestcalculator(pred, target, descaler, method, path):
 
     wandb.log({"predict visc": pred_dynvisc, "answer visc": target_dynvisc})
     return error
+
+def visualize_logits(logits_batch):
+    print((len(logits_batch)))
+    cmap='viridis'
+    title='Batch Logits Heatmap'
+    figsize=(12, 6)
+    v = np.array(logits_batch).squeeze()
+    
+    # Find index of max logit in each row
+    max_indices = np.argmax(v, axis=1)  # shape (N,)
+    
+    fig, ax = plt.subplots(figsize=figsize)
+    im = ax.imshow(v, aspect='auto', cmap=cmap)
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label('Logit Value')
+    
+    # Overlay red squares on max positions
+    for i, j in enumerate(max_indices):
+        ax.scatter(j, i, s=50, facecolors='none', edgecolors='red', linewidths=1.5)
+    
+    ax.set_xlabel('Class Index')
+    ax.set_ylabel('Sample Index')
+    ax.set_title(title)
+    fig.savefig("src/inference/heatmap.png", dpi=300)

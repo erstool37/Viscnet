@@ -6,54 +6,67 @@ class TransformerEmbed(nn.Module):
     def __init__(self, dropout, output_size, flow_bool):
         super(TransformerEmbed, self).__init__()
         self.config = VivitConfig.from_pretrained("google/vivit-b-16x2-kinetics400")
-        # tube = self.config.tubelet_size
-        # tube = tube[0]
-        # self.config.num_frames = self.config.num_frames // tube
         self.featureextractor = VivitModel.from_pretrained("google/vivit-b-16x2-kinetics400", config=self.config)
-        self.hidden_size = self.config.hidden_size  # Usually 768 for ViViT-base
+        self.hidden_size = self.config.hidden_size
 
         # RPM EMBEDDING
         self.rpm_embedding = nn.Sequential(
-            nn.Linear(1, self.hidden_size),
+            nn.Linear(1, 96),
             nn.ReLU(),
-            nn.Linear(self.hidden_size, self.hidden_size),
+            nn.Linear(96, self.hidden_size),
         )
 
         # FC HEAD
         self.flow_bool = flow_bool
         self.fc = nn.Sequential(
-            nn.Linear(self.hidden_size * 2, 192),
+            nn.Linear(self.hidden_size, 192),
             nn.ReLU(),
             nn.Dropout(p=dropout),
 
-            nn.Linear(192, 24),
+            nn.Linear(192, 48),
             nn.ReLU(),
             nn.Dropout(p=dropout),
 
-            nn.Linear(24, output_size),
+            nn.Linear(48, 12),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+
+            nn.Linear(12, output_size),
         )
 
+        self.classifier = nn.Sequential(
+            nn.Linear(self.hidden_size * 2, 384),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+
+            nn.Linear(384, 192),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+
+            nn.Linear(192, 96),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+
+            nn.Linear(96, 50)
+        )
+
+
     def forward(self, video: torch.Tensor, rpm: torch.Tensor):
-        """
-        video: (B, T, C, H, W)
-        """
         # ViViT expects (B, T, C, H, W)
         outputs = self.featureextractor(video)
         video_features = outputs.pooler_output  # (B, hidden_size)
-
-        rpm_vec = self.rpm_embedding(rpm.unsqueeze(1))  # (B, hidden_size)
+        concat = video_features
+        rpm_vec = self.rpm_embedding(rpm.unsqueeze(1))
 
         concat = torch.cat((video_features, rpm_vec), dim=-1).contiguous()
 
         if self.flow_bool:
             viscosity = concat
         else:
-            viscosity = self.fc(concat)
+            # viscosity = self.fc(concat)
+            viscosity = self.classifier(concat)
 
         return viscosity
-
-
-
 
 """
         # VideoMAE encoder

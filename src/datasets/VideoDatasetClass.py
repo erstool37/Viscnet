@@ -5,21 +5,34 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import os.path as osp
+import albumentations as A
 
-class VideoDatasetEmbed(Dataset):
-    def __init__(self, video_paths, para_paths, frame_num, time):
+class VideoDatasetClass(Dataset):
+    def __init__(self, video_paths, para_paths, frame_num, time, aug_bool=True):
         '''Initialize dataset'''
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = 32
+        self.aug_bool = aug_bool
+
+        self.augmentation = A.Compose([
+            A.GaussNoise(var_limit=(10,50), p=0.3),
+            A.MotionBlur(blur_limit=5, p=0.2),
+            A.RandomBrightnessContrast(0.2, 0.2, p=0.3),
+        ])
 
     def __getitem__(self, index):
         frames = self._loadvideo(self.video_paths[index], self.frame_limit)
-        parameters = self._loadparameters(self.para_paths[index])
+        parameters, hotvector = self._loadparameters(self.para_paths[index])
         names = self._loadname(self.para_paths[index])
         # rpm_idx = parameters[-1] 
         rpm = parameters[-1]
-        return frames, parameters, names, rpm
+        return frames, parameters, hotvector, names, rpm
+
+    def _loadhotvector(self, cls):
+        hot = torch.zeros(50, dtype=torch.float32)
+        hot[cls] = 1.0
+        return torch.tensor(hot)
 
     def _loadvideo(self, video_path, frame_limit=32):
         cap = cv2.VideoCapture(video_path)
@@ -29,6 +42,8 @@ class VideoDatasetEmbed(Dataset):
             ret, frame = cap.read()
             if not ret:
                 break
+            if self.aug_bool:
+                frame = self.augmentation(image=frame)["image"]
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = cv2.resize(frame, (224, 224))
             all_frames.append(frame)
@@ -56,23 +71,20 @@ class VideoDatasetEmbed(Dataset):
             with open(para_path, 'r') as file:
                 data = json.load(file)
                 density = float(data["density"])
-                dynVisc = float(data["dynamic_viscosity"])
+                # hotvector = self._loadhotvector(data["visc_index"])
+                hotvector = data["visc_index"]
+                # dynVisc = float(data["dynamic_viscosity"])
                 kinVisc = float(data["kinematic_viscosity"])
                 surfT = float(data["surface_tension"])
                 # rpm_index = int(data["rpm_idx"])
                 rpm = float(data["rpm"])
-            return torch.tensor([density, dynVisc, surfT, kinVisc, rpm], dtype=torch.float32)
+            return torch.tensor([density, surfT, kinVisc, rpm], dtype=torch.float32), hotvector
         except json.JSONDecodeError as e:
             print(f"Failed to parse JSON at: {para_path}")
     
     def _loadname(self, video_path):
         name = osp.splitext(osp.basename(video_path))
         return name[0]
-
-    def _loadhotvector(self, cls):
-        hot = torch.zeros(50, dtype=torch.float32)
-        hot[cls] = 1.0
-        return torch.tensor(hot)
 
     def __len__(self):
         return len(self.video_paths)

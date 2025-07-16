@@ -15,7 +15,8 @@ from .utils import (
 
 from .analysis import (
     distribution,
-    MAPEtestcalculator
+    MAPEtestcalculator,
+    visualize_logits
 )
 
 from .setseed import (

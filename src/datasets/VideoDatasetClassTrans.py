@@ -5,12 +5,11 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import os.path as osp
-# from transformers import VideoMAEImageProcessor
 from transformers import VivitImageProcessor
 import albumentations as A
 from collections import deque
 
-class VideoDatasetTrans(Dataset):
+class VideoDatasetClassTrans(Dataset):
     def __init__(self, video_paths, para_paths, frame_num, time, aug_bool=False):
         '''Initialize dataset'''
         self.video_paths = video_paths
@@ -28,12 +27,11 @@ class VideoDatasetTrans(Dataset):
 
     def __getitem__(self, index):
         frames = self._loadvideo(self.video_paths[index])
-        parameters = self._loadparameters(self.para_paths[index])
+        parameters, hotvector = self._loadparameters(self.para_paths[index])
         names = self._loadname(self.para_paths[index])
         # rpm_idx = parameters[-1] 
         rpm = parameters[-1]
-        # print("parameters", parameters)
-        return frames, parameters, names, rpm
+        return frames, parameters, hotvector, names, rpm
 
     def _loadvideo(self, video_path):
         cap = cv2.VideoCapture(video_path)
@@ -45,28 +43,32 @@ class VideoDatasetTrans(Dataset):
                 break
             if self.aug_bool:
                 frame = self.augmentation(image=frame)["image"]
-            # ensure 224×224
-            if frame.shape[:2] != (224, 224):
-                frame = cv2.resize(frame, (224, 224), interpolation=cv2.INTER_LINEAR)
+            # print(frame.shape)
+            # print("input", frame.shape)
+            frame = self.processor(images=frame, do_normalize = True, return_tensors="np", input_data_format = "channels_last")["pixel_values"].squeeze(0).squeeze(0)
+            # print("frame", frame.shape)
             frames.append(frame)
         cap.release()
-        frames = np.stack(frames[-self.frame_limit:], axis=0)
-        # print(len(frames))
-        frames = torch.from_numpy(frames).float().permute(0, 3, 1, 2)
 
-        # frames = np.stack(frames, axis=0)
-        # preprocessed = self.processor(images=frames, return_tensors="pt").squeeze(0)
+        frames = torch.tensor(frames[-self.frame_limit:]) # parse
         # print(frames.shape)
+
         return frames
-    
+
+    def _loadhotvector(self, cls):
+        hot = torch.zeros(50, dtype=torch.float32)
+        hot[cls] = 1.0
+        return torch.tensor(hot)
+
     def _loadparameters(self, para_path):
         try :
             with open(para_path, 'r') as file:
                 data = json.load(file)
                 density = data["density"]
-                dynVisc = float(data["dynamic_viscosity"])
-                # dynVisc = _loadhotvector(para_path, num_classes=50)
-                surfT = float(data["surface_tension"])
+                # dynVisc = float(data["dynamic_viscosity"])
+                hotvector = self._loadhotvector(data["visc_index"])
+                hotvector = data["visc_index"]
+                surfT = (data["surface_tension"])
                 kinVisc = float(data["kinematic_viscosity"])
                 # rpm_index = int(data["rpm_idx"])
                 rpm = int(data["rpm"])
@@ -80,3 +82,4 @@ class VideoDatasetTrans(Dataset):
 
     def __len__(self):
         return len(self.video_paths)
+
