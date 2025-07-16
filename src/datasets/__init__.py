@@ -1,3 +1,5 @@
 from .VideoDataset import VideoDataset
 from .VideoDatasetEmbed import VideoDatasetEmbed
 from .VideoDatasetTrans import VideoDatasetTrans
+from .VideoDatasetClassTrans import VideoDatasetClassTrans
+from .VideoDatasetClass import VideoDatasetClass

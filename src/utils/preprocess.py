@@ -56,15 +56,21 @@ rpm = []
 for path in para_paths:
     with open(path, 'r') as file:
         data = json.load(file)
-        # dynVisc.append(data["dynamic_viscosity"])
-        dynVisc.append(data["xsph"])
-        kinVisc.append(float(1.0))
-        # kinVisc.append(data["kinematic_viscosity"])
-        # surfT.append(data["surface_tension"])
-        surfT.append(data["surfaceTension"])
+
+        # for training
+        # kinVisc.append(float(1.0))
+        # density.append(data["density"])
+        # rpm.append(data["rpm"])
+        # dynVisc.append(data["xsph"])
+        # surfT.append(data["surfaceTension"])
+
+        # for real world inference
+        dynVisc.append(data["dynamic_viscosiyy"])
+        surfT.append(data["surface_tension"])
+        kinVisc.append(data["kinematic_viscosity"])
         density.append(data["density"])
-        # rpm.append(data["RPM"])
-        rpm.append(data["rpm"])
+        rpm.append(data["RPM"])
+
 # sanity check
 parameters = [dynVisc, kinVisc, surfT, density, rpm]
 for idx, lst in enumerate(parameters):
@@ -83,6 +89,9 @@ rpmnorm, con1rpm, con2rpm = scaler(rpm)
 
 rpm_unique = sorted(set(rpm))
 rpm_to_idx = {r: i for i, r in enumerate(rpm_unique)}
+
+visc_unique = sorted(set(dynVisc))
+visc_to_idx = {v: i for i, v in enumerate(visc_unique)}
 
 if "z" in NORMALIZE:
     stats = {
@@ -104,7 +113,7 @@ else:
 # store normalized data
 for idx in range(len(dynViscnorm)):
     data = {"dynamic_viscosity": float(dynViscnorm[idx]), "kinematic_viscosity": float(kinViscnorm[idx]), 
-    "surface_tension": float(surfTnorm[idx]),  "density": float(densitynorm[idx]), 
+    "surface_tension": float(surfTnorm[idx]),  "density": float(densitynorm[idx]), "visc_index": visc_to_idx[dynVisc[idx]], 
     "rpm": float(rpmnorm[idx]), "rpm_idx": rpm_to_idx[rpm[idx]]}
     with open(f'{norm_path}/config_{(idx+1):04d}.json', 'w') as file:
         json.dump(data, file, indent=4)
@@ -114,4 +123,4 @@ with open(f'{norm_path}/../statistics.json', 'w') as file:
     json.dump(stats, file, indent=4)
 
 print(f"Normalization complete")
-# print(f"Total unique RPM classes: {len(rpm_to_idx)}") 
+# print(f"Total unique visc classes: {len(visc_to_idx)}") 

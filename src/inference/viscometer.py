@@ -17,7 +17,8 @@ import yaml
 import json
 from torch.utils.data import TensorDataset, DataLoader, Dataset, Subset
 from sklearn.model_selection import train_test_split
-from utils import MAPEcalculator, MAPEflowcalculator, MAPEtestcalculator, set_seed, distribution
+from utils import MAPEcalculator, MAPEflowcalculator, MAPEtestcalculator, set_seed, distribution, visualize_logits
+from torch.nn import functional as F
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, required=True, default="configs/config0.yaml")
@@ -32,9 +33,9 @@ METHOD          = args.method
 SCALER          = cfg["preprocess"]["scaler"]
 DESCALER        = cfg["preprocess"]["descaler"]
 TEST_SIZE       = float(cfg["preprocess"]["test_size"])
-RAND_STATE      = int(cfg["preprocess"]["random_state"])
-FRAME_NUM       = int(cfg["preprocess"]["frame_num"])
-TIME            = int(cfg["preprocess"]["time"])
+RAND_STATE      = float(cfg["preprocess"]["random_state"])
+FRAME_NUM       = float(cfg["preprocess"]["frame_num"])
+TIME            = float(cfg["preprocess"]["time"])
 BATCH_SIZE      = int(cfg["train_settings"]["batch_size"])
 NUM_WORKERS     = int(cfg["train_settings"]["num_workers"])
 NUM_EPOCHS      = int(cfg["train_settings"]["num_epochs"])
@@ -65,7 +66,7 @@ VIDEO_SUBDIR    = repo["video_subdir"]
 PARA_SUBDIR     = repo["para_subdir"]
 NORM_SUBDIR     = repo["norm_subdir"]
 
-wandb.init(project="viscosity estimation testing", name="inferencev0", reinit=True, resume="never", config= config)
+# wandb.init(project="viscosity estimation testing", name="inferenceTrans", reinit=True, resume="never", config= config)
 
 # model load
 dataset_module = importlib.import_module(f"datasets.{DATASET}")
@@ -77,6 +78,7 @@ encoder_class = getattr(encoder_module, ENCODER)
 flow_class = getattr(flow_module, FLOW)
 
 encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT)
+# encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -94,6 +96,7 @@ elif METHOD == "test":
 else:
     val_video_paths = sorted(glob.glob(osp.join(VAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
     val_para_paths = sorted(glob.glob(osp.join(VAL_ROOT, NORM_SUBDIR, "*.json")))
+    
     _, video_paths = train_test_split(val_video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
     _, para_paths = train_test_split(val_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
@@ -102,29 +105,38 @@ dl = DataLoader(ds, batch_size=1, shuffle=False, num_workers=NUM_WORKERS, prefet
 
 # Error Calculation
 errors = []
-for frames, parameters, _, rpm in dl:
-    frames, parameters, rpm = frames.to(device), parameters.to(device), rpm.to(device)
+logits = []
+for frames, parameters, hotvector, names, rpm in tqdm(dl):
+    frames, parameters, hotvector, rpm = frames.to(device), parameters.to(device), hotvector.to(device), rpm.to(device)
+    # print(frames[0][0])
+    print(names, hotvector)
     outputs = encoder(frames, rpm)
+    # print(outputs)
     
     if FLOW_BOOL:
         z, log_det_jacobian = flow(parameters, outputs)
         visc = flow.inverse(z, outputs)
         error = MAPEtestcalculator(visc.detach(), parameters.detach(), DESCALER, METHOD, repo[f"{METHOD}_root"])
     else:
-        wandb.log({"xsph estimation": outputs.detach().cpu()}) 
-        error = MAPEtestcalculator(outputs.detach(), parameters.detach(), DESCALER, "real", REAL_ROOT)
-    errors.append(error.detach().cpu())
+        # wandb.log({"xsph estimation": outputs.detach().cpu()}) 
+        probs = F.softmax(outputs, dim=1)
+        logits.append(probs.detach().cpu())
+        # print(probs)
 
-errors_tensor = torch.cat(errors, dim=0)
-meanerror = errors_tensor.mean(dim=0)  # shape: [3]
+        # error = MAPEtestcalculator(outputs.detach(), parameters.detach(), DESCALER, "real", REAL_ROOT)
+    # errors.append(error.detach().cpu())
 
-distribution(data=errors_tensor[:,0], ref = 0, save_path='src/inference/error/dist_den.png')
-distribution(data=errors_tensor[:,1], ref = 0, save_path='src/inference/error/dist_visco.png')
-distribution(data=errors_tensor[:,2], ref = 0, save_path='src/inference/error/dist_surf.png')
+visualize_logits(logits)
+# errors_tensor = torch.cat(errors, dim=0)
+# meanerror = errors_tensor.mean(dim=0)  # shape: [3]
 
-print(f"density MAPE: {float(meanerror[0]):.2f}%")
-print(f"dynamic viscosity MAPE: {float(meanerror[1]):.2f}%")
-print(f"surface tension MAPE: {float(meanerror[2]):.2f}%")
+# distribution(data=errors_tensor[:,0], ref = 0, save_path='src/inference/error/dist_den.png')
+# distribution(data=errors_tensor[:,1], ref = 0, save_path='src/inference/error/dist_visco.png')
+# distribution(data=errors_tensor[:,2], ref = 0, save_path='src/inference/error/dist_surf.png')
+
+# print(f"density MAPE: {float(meanerror[0]):.2f}%")
+# print(f"dynamic viscosity MAPE: {float(meanerror[1]):.2f}%")
+# print(f"surface tension MAPE: {float(meanerror[2]):.2f}%")
 
 # Regression Validation test
 """

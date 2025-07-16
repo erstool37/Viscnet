@@ -1,28 +1,28 @@
 project: "sph_test_run"
-name: "transformer_test_run"
-version: v2
+name: "classification_vivit_run"
+version: v0
 
 regression:
   train_settings:
     batch_size : 2
-    num_epochs : 25
+    num_epochs : 20
     num_workers : 0
-    seed : 1204
-    dataset : "VideoDatasetTrans"
+    seed : 1205
+    dataset : "VideoDatasetClass"
 
   preprocess:
-    scaler : "zscaler"    # log scaled, inter scaling works best 
-    descaler : "zdescaler"
+    scaler : "interscaler"    # log scaled, inter scaling works best 
+    descaler : "interdescaler"
     frame_num : 10
     time : 3.2
     test_size : 0.2
     random_state : 37
-    rpm_class : 7
-    aug_bool : True
+    rpm_class : 50
+    aug_bool : False
   
   model:
     encoder:
-      encoder: TransformerEmbed
+      encoder: ResnetLSTMClass
       cnn : "resnet34"
       cnn_train : True
       lstm_size : 256
@@ -30,7 +30,7 @@ regression:
       output_size : 3
       drop_rate : 0.2
       embedding_size : 512
-      embed_weight : 0.7
+      embed_weight : 0.0
 
     flow: 
       flow : "RealNVP"
@@ -42,23 +42,23 @@ regression:
 
   real_model:
     real_epochs : 50
-    lr : 1e-5
+    lr : 1e-4
     weight_decay : 1e-5
 
-  loss : "MAPE"
+  loss : "CE"
 
   optimizer:
     optim_class: Adam
     scheduler_class: CosineAnnealingLR
-    lr: 1e-5
-    eta_min : 1e-10
+    lr: 1e-3
+    eta_min : 1e-9
     weight_decay: 0
-    patience : 5
+    patience : 10
   
   directories:
     checkpoint :
       ckpt_root : "src/weights/"
-      inf_checkpoint : "src/weights/transformer_test_run_0713_v1.pth"
+      inf_checkpoint : "src/weights/classification_lstm_run_0715_v0.pth"
 
     data :
       data_root : "dataset/CFDArchive/sph_improved"

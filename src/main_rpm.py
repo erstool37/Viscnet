@@ -114,9 +114,9 @@ optim_class = getattr(optim, OPTIM_CLASS)
 scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
 device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
-# encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
-encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
-encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank) #, find_unused_parameters=True)
+encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
+# encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
+encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
 criterion = criterion_class(DESCALER, DATA_ROOT)
 
@@ -138,8 +138,8 @@ for epoch in range(NUM_EPOCHS):
     train_losses = []
     if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training")
     encoder.train()
-    for frames, parameters, _, rpm_class in tqdm(train_dl):
-        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+    for frames, parameters, hotvector, _, rpm_class in tqdm(train_dl):
+        frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
         outputs = encoder(frames, rpm_class)
 
         if FLOW_BOOL:
@@ -148,8 +148,8 @@ for epoch in range(NUM_EPOCHS):
             visc = flow.inverse(z, outputs)
             if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "train", DATA_ROOT)
         else:
-            train_loss = criterion(outputs, parameters)
-            if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
+            train_loss = criterion(outputs, parameters, hotvector)
+            # if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
         optimizer.zero_grad()
         train_loss.backward()
         optimizer.step()
@@ -169,8 +169,8 @@ for epoch in range(NUM_EPOCHS):
     with torch.no_grad():
         if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
 
-        for frames, parameters, _, rpm_class in tqdm(val_dl):
-            frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+        for frames, parameters, hotvector, _, rpm_class in tqdm(val_dl):
+            frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
             outputs = encoder(frames, rpm_class)
 
             if FLOW_BOOL:
@@ -179,8 +179,8 @@ for epoch in range(NUM_EPOCHS):
                 visc = flow.inverse(z, outputs)
                 if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "val", DATA_ROOT)
             else:
-                val_loss = criterion(outputs, parameters)
-                if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
+                val_loss = criterion(outputs, parameters, hotvector)
+                # if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
             torch.distributed.all_reduce(val_loss, op=torch.distributed.ReduceOp.SUM)
             avg_val_loss = val_loss / world_size
             val_losses.append(avg_val_loss.item())
@@ -204,11 +204,49 @@ for epoch in range(NUM_EPOCHS):
     val_losses.clear()
 
 if rank == 0:
-    wandb.finish()
     torch.save(encoder.module.state_dict(), checkpoint)
+    print(f"Model saved to {checkpoint}")
+    wandb.finish()
 ddp_cleanup()
 
 
+"""
+########### Embedding check ###########
+import numpy as np
+from sklearn.decomposition import PCA
+
+# Load model
+encoder.load_state_dict(torch.load(checkpoint, map_location=device))
+encoder.to(device).eval()
+
+all_embeddings = []
+all_labels = []
+
+with torch.no_grad():
+    for frames, parameters, hotvector, _, rpm in tqdm(val_dl):
+        rpm_class = rpm.to(device)
+        rpm_vec = encoder.rpm_embedding(rpm_class.unsqueeze(-1))
+        all_embeddings.append(rpm_vec.cpu().numpy())
+        all_labels.append(rpm.cpu().numpy())
+
+embeddings = np.vstack(all_embeddings)
+labels = np.hstack(all_labels)
+
+pca = PCA(n_components=2)
+emb_2d = pca.fit_transform(embeddings)
+
+plt.figure(figsize=(8, 6))
+for cls in np.unique(labels):
+    idx = labels == cls
+    plt.scatter(emb_2d[idx, 0], emb_2d[idx, 1], label=f"RPM {cls}", alpha=0.7)
+
+plt.legend(title="RPM Class", bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.title("PCA of RPM Embeddings")
+plt.xlabel("Principal Component 1")
+plt.ylabel("Principal Component 2")
+plt.tight_layout()
+plt.savefig("src/inference/rpm_embeddings_pca.png")
+"""
 """
 # REAL WORLD calibration
 encoder.load_state_dict(torch.load(checkpoint))
