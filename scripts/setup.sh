@@ -5,3 +5,4 @@ apt install -y tmux
 # vessl storage copy-file volume://vessl-storage/decay-visconly . 
 # tmux new-session -d -s slave1
 # tmux attach -t slave1
+# vessl storage copy-file volume://vessl-storage/sph-final . 

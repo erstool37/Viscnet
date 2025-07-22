@@ -16,7 +16,7 @@ class VideoDatasetTrans(Dataset):
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = int(frame_num * time)
-        self.processor = VivitImageProcessor.from_pretrained("google/vivit-b-16x2-kinetics400")
+        self.processor = VivitImageProcessor.from_pretrained("google/vivit-b-16x2")
         # self.processor = VideoMAEImageProcessor.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
 
         self.aug_bool = aug_bool
@@ -71,9 +71,9 @@ class VideoDatasetTrans(Dataset):
                 # rpm_index = int(data["rpm_idx"])
                 rpm = int(data["rpm"])
             return torch.tensor([density, surfT, kinVisc, rpm], dtype=torch.float32), hotvector
+    
         except json.JSONDecodeError as e:
             print(f"Failed to parse JSON at: {para_path}")
-    
     def _loadname(self, video_path):
         name = osp.splitext(osp.basename(video_path))
         return name[0]

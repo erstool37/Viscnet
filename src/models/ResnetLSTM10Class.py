@@ -19,29 +19,34 @@ class ResnetLSTMClass(nn.Module):
         self.embed_features = embedding_size
         self.weight = weight
 
-        self.rpm_embedding = nn.Sequential(
-            nn.Linear(1, self.embed_features),
-            nn.ReLU(inplace=True),
-            nn.Linear(self.embed_features, self.embed_features),
-        )
+        # self.rpm_embedding = nn.Sequential(
+        #     nn.Linear(1, self.embed_features),
+        #     nn.ReLU(inplace=True),
+        #     nn.Linear(self.embed_features, self.embed_features),
+        # )
 
         # LSTM
-        self.lstm = nn.LSTM(input_size=self.cnn_out_features, hidden_size=lstm_hidden_size, 
-                            num_layers=lstm_layers, batch_first=True, dropout=dropout)
+        # self.lstm = nn.LSTM(input_size=self.cnn_out_features, hidden_size=lstm_hidden_size, 
+        #                     num_layers=lstm_layers, batch_first=True, dropout=dropout)
         
         # FC LAYER
         self.flow_bool = flow_bool
         self.fc =nn.Sequential(
-            nn.Linear(lstm_hidden_size, 128),
+            nn.Linear(2048, 512),
             nn.ReLU(),
             nn.Dropout(p=dropout),
 
-            nn.Linear(128, 64),
+            nn.Linear(512, 128),
             nn.ReLU(),
             nn.Dropout(p=dropout),
 
-            nn.Linear(64, 50)
+            nn.Linear(128, 32),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+
+            nn.Linear(32, 10)
         )
+        
         
     def forward(self, x, rpm):              
         batch_size, frames, C, H, W = x.shape
@@ -54,8 +59,7 @@ class ResnetLSTMClass(nn.Module):
         video_features = video_features.view(batch_size, frames, -1) 
 
         # video_features = self.cnn_dropout(video_features)
-        # concat = video_features + self.weight * rpm_vec
-        concat = video_features
+        concat = video_features + self.weight * rpm_vec
     
         lstm_out, _ = self.lstm(concat)
         lstm_last_out = lstm_out[:, -1, :]

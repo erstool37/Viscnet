@@ -15,6 +15,7 @@ class VideoDatasetClassTrans(Dataset):
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = int(frame_num * time)
+        self.cluster_map = {i: i // 5 for i in range(50)}
         self.processor = VivitImageProcessor.from_pretrained("google/vivit-b-16x2-kinetics400")
         # self.processor = VideoMAEImageProcessor.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
 
@@ -44,15 +45,14 @@ class VideoDatasetClassTrans(Dataset):
             if self.aug_bool:
                 frame = self.augmentation(image=frame)["image"]
             # print(frame.shape)
-            # print("input", frame.shape)
-            frame = self.processor(images=frame, do_normalize = True, return_tensors="np", input_data_format = "channels_last")["pixel_values"].squeeze(0).squeeze(0)
-            # print("frame", frame.shape)
+            # frame = self.processor(images=frame, do_normalize = True, return_tensors="np", input_data_format = "channels_last")["pixel_values"].squeeze(0).squeeze(0)
+            frame = frame / 127.5 - 1.0
             frames.append(frame)
         cap.release()
 
-        frames = torch.tensor(frames[-self.frame_limit:]) # parse
-        # print(frames.shape)
-
+        frames = np.array(frames[-self.frame_limit:], dtype=np.float32)
+        frames = torch.tensor(frames).permute(0, 3, 1, 2)
+        
         return frames
 
     def _loadhotvector(self, cls):
@@ -60,14 +60,18 @@ class VideoDatasetClassTrans(Dataset):
         hot[cls] = 1.0
         return torch.tensor(hot)
 
+    def _get_cluster(self, vis_idx: int) -> int:
+        return self.cluster_map[vis_idx]
+
     def _loadparameters(self, para_path):
         try :
             with open(para_path, 'r') as file:
                 data = json.load(file)
                 density = data["density"]
                 # dynVisc = float(data["dynamic_viscosity"])
-                hotvector = self._loadhotvector(data["visc_index"])
-                hotvector = data["visc_index"]
+                # hotvector = self._loadhotvector(data["visc_index"])
+                hotvector = self._get_cluster(int(data["visc_index"]))
+                # hotvector = data["visc_index"]
                 surfT = (data["surface_tension"])
                 kinVisc = float(data["kinematic_viscosity"])
                 # rpm_index = int(data["rpm_idx"])
@@ -81,5 +85,5 @@ class VideoDatasetClassTrans(Dataset):
         return name[0]
 
     def __len__(self):
+        print(len(self.video_paths))
         return len(self.video_paths)
-

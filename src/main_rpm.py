@@ -5,7 +5,7 @@ import argparse
 import os.path as osp
 import glob
 import torch.optim as optim
-from tqdm import tqdm
+from tqdm import tqdm 
 from statistics import mean
 import importlib
 import yaml
@@ -114,8 +114,8 @@ optim_class = getattr(optim, OPTIM_CLASS)
 scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
 device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
-encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
-# encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
+# encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
+encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
 encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
 criterion = criterion_class(DESCALER, DATA_ROOT)
@@ -131,6 +131,7 @@ if rank == 0:
     wandb.watch(encoder, log="all", log_freq=10)
 
 # TRAIN MODEL
+# encoder.load_state_dict(torch.load("src/weights/classification_trans_run_0718_v4.pth", map_location=device))
 best_val_loss = float("inf")
 counter = 0
 for epoch in range(NUM_EPOCHS):
@@ -138,15 +139,16 @@ for epoch in range(NUM_EPOCHS):
     train_losses = []
     if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training")
     encoder.train()
-    for frames, parameters, hotvector, _, rpm_class in tqdm(train_dl):
+    for frames, parameters, hotvector, names, rpm_class in tqdm(train_dl):
         frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
+        # print(hotvector)
         outputs = encoder(frames, rpm_class)
 
         if FLOW_BOOL:
             z, log_det_jacobian = flow(parameters, outputs)
             train_loss = criterion(z, log_det_jacobian)
             visc = flow.inverse(z, outputs)
-            if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "train", DATA_ROOT)
+            if rank == 0: MAPEflowcalculator(vissc.detach(), parameters.detach(), DESCALER, "train", DATA_ROOT)
         else:
             train_loss = criterion(outputs, parameters, hotvector)
             # if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
@@ -207,6 +209,7 @@ if rank == 0:
     torch.save(encoder.module.state_dict(), checkpoint)
     print(f"Model saved to {checkpoint}")
     wandb.finish()
+
 ddp_cleanup()
 
 
