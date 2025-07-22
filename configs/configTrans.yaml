@@ -1,11 +1,11 @@
 project: "sph_test_run"
-name: "classification_trans_run"
-version: v2
+name: "classification_10_trans_total"
+version: v0
 
 regression:
   train_settings:
     batch_size : 2
-    num_epochs : 8
+    num_epochs : 30
     num_workers : 0
     seed : 1205
     dataset : "VideoDatasetClassTrans"
@@ -22,7 +22,7 @@ regression:
   
   model:
     encoder:
-      encoder: TransformerVanilla
+      encoder: TransformerEmbed
       cnn : "resnet34"
       cnn_train : True
       lstm_size : 256
@@ -48,17 +48,17 @@ regression:
   loss : "CE"
 
   optimizer:
-    optim_class: Adam
+    optim_class: AdamW
     scheduler_class: CosineAnnealingLR
-    lr: 1e-5
+    lr: 1e-4
     eta_min : 1e-10
-    weight_decay: 0
-    patience : 3
+    weight_decay: 1e-4
+    patience : 5
   
   directories:
     checkpoint :
       ckpt_root : "src/weights/"
-      inf_checkpoint : "src/weights/classification_new_run_0714_v0.pth"
+      inf_checkpoint : "src/weights/classification_10_trans_selected_1_0721_v0.pth"
 
     data :
       data_root : "dataset/CFDArchive/sph_improved"
@@ -67,3 +67,9 @@ regression:
       video_subdir : "videos"
       para_subdir : "parameters"
       norm_subdir : "parametersNorm"
+
+      # selected 1 : high rpm, all visc, all render 200
+      # selected 2 : low rpm, all visc, all render 200
+      # selected 3 : high rpm, all visc, no render 50
+      # selected 4 : high rpm, one render, 2500
+      # selected 5: 

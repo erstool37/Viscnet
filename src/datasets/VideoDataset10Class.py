@@ -7,13 +7,14 @@ import torch.nn.functional as F
 import os.path as osp
 import albumentations as A
 
-class VideoDatasetClass(Dataset):
+class VideoDataset10Class(Dataset):
     def __init__(self, video_paths, para_paths, frame_num, time, aug_bool=True):
         '''Initialize dataset'''
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = 32
         self.aug_bool = aug_bool
+        self.cluster_map = {i: i // 5 for i in range(50)}
         
 
         self.augmentation = A.Compose([
@@ -30,13 +31,13 @@ class VideoDatasetClass(Dataset):
         rpm = parameters[-1]
         return frames, parameters, hotvector, names, rpm
 
-    def _get_cluster(self, vis_idx: int) -> int:
-        return self.cluster_map[vis_idx]
-
     def _loadhotvector(self, cls):
         hot = torch.zeros(50, dtype=torch.float32)
         hot[cls] = 1.0
         return torch.tensor(hot)
+
+    def _get_cluster(self, vis_idx: int) -> int:
+        return self.cluster_map[vis_idx]
 
     def _loadvideo(self, video_path, frame_limit=32):
         cap = cv2.VideoCapture(video_path)
@@ -76,7 +77,7 @@ class VideoDatasetClass(Dataset):
                 data = json.load(file)
                 density = float(data["density"])
                 # hotvector = self._loadhotvector(data["visc_index"])
-                hotvector = data["visc_index"]
+                hotvector = self._get_cluster(int(data["visc_index"]))
                 # dynVisc = float(data["dynamic_viscosity"])
                 kinVisc = float(data["kinematic_viscosity"])
                 surfT = float(data["surface_tension"])

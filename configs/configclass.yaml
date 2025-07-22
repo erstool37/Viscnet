@@ -1,14 +1,14 @@
 project: "sph_test_run"
-name: "classification_vivit_run"
+name: "classification_norpm_lstm"
 version: v0
 
 regression:
   train_settings:
-    batch_size : 2
-    num_epochs : 20
+    batch_size : 4
+    num_epochs : 200
     num_workers : 0
     seed : 1205
-    dataset : "VideoDatasetClass"
+    dataset : "VideoDataset10Class"
 
   preprocess:
     scaler : "interscaler"    # log scaled, inter scaling works best 
@@ -22,13 +22,13 @@ regression:
   
   model:
     encoder:
-      encoder: ResnetLSTMClass
-      cnn : "resnet34"
+      encoder: ResnetCNN10Class
+      cnn : "resnet50"
       cnn_train : True
-      lstm_size : 256
-      lstm_layers : 5
+      lstm_size : 2048
+      lstm_layers : 4
       output_size : 3
-      drop_rate : 0.2
+      drop_rate : 0.1
       embedding_size : 512
       embed_weight : 0.0
 
@@ -42,7 +42,7 @@ regression:
 
   real_model:
     real_epochs : 50
-    lr : 1e-4
+    lr : 1e-3
     weight_decay : 1e-5
 
   loss : "CE"
@@ -50,20 +50,20 @@ regression:
   optimizer:
     optim_class: Adam
     scheduler_class: CosineAnnealingLR
-    lr: 1e-3
-    eta_min : 1e-9
+    lr: 5e-5
+    eta_min : 1e-10
     weight_decay: 0
-    patience : 10
+    patience : 50
   
   directories:
     checkpoint :
       ckpt_root : "src/weights/"
-      inf_checkpoint : "src/weights/classification_lstm_run_0715_v0.pth"
+      inf_checkpoint : "src/weights/classification_norpm_lstm_0718_v0.pth"
 
     data :
-      data_root : "dataset/CFDArchive/sph_improved"
+      data_root : "dataset/CFDArchive/sph_selected"
       test_root : "dataset/CFDArchive/test"
-      real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"
+      real_root : "dataset/realfluid/RealArchive/impeller_new"
       video_subdir : "videos"
       para_subdir : "parameters"
       norm_subdir : "parametersNorm"

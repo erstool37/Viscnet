@@ -14,36 +14,34 @@ class TransformerVanilla(nn.Module):
 
         # FC HEAD
         self.flow_bool = flow_bool
-        self.fc = nn.Sequential(
+        # self.fc = nn.Sequential(
+        #     nn.Linear(self.hidden_size, 192),
+        #     nn.ReLU(),
+        #     nn.Dropout(p=dropout),
+
+        #     nn.Linear(192, 48),
+        #     nn.ReLU(),
+        #     nn.Dropout(p=dropout),
+
+        #     nn.Linear(48, 12),
+        #     nn.ReLU(),
+        #     nn.Dropout(p=dropout),
+
+        #     nn.Linear(12, output_size),
+        # )
+
+        self.rpm_embedding = nn.Sequential(
+            nn.Linear(1, 96),
+            nn.ReLU(),
+            nn.Linear(96, self.hidden_size),
+        )
+
+        self.classifier = nn.Sequential(
             nn.Linear(self.hidden_size, 192),
             nn.ReLU(),
             nn.Dropout(p=dropout),
 
-            nn.Linear(192, 48),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
-
-            nn.Linear(48, 12),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
-
-            nn.Linear(12, output_size),
-        )
-
-        self.classifier = nn.Sequential(
-            nn.Linear(self.hidden_size, 384),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
-
-            nn.Linear(384, 192),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
-
-            nn.Linear(192, 96),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
-
-            nn.Linear(96, 50)
+            nn.Linear(192, 10)
         )
 
     def forward(self, video: torch.Tensor, rpm: torch.Tensor):
@@ -53,7 +51,9 @@ class TransformerVanilla(nn.Module):
         # ViViT expects (B, T, C, H, W)
         outputs = self.featureextractor(video)
         video_features = outputs.pooler_output
+        
         concat = video_features
+        # concat = video_features + self.rpm_embedding(rpm.unsqueeze(1))
 
         if self.flow_bool:
             viscosity = concat

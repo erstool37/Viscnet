@@ -39,15 +39,7 @@ class TransformerEmbed(nn.Module):
             nn.ReLU(),
             nn.Dropout(p=dropout),
 
-            nn.Linear(384, 192),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
-
-            nn.Linear(192, 96),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
-
-            nn.Linear(96, 50)
+            nn.Linear(384, 10)
         )
 
 
