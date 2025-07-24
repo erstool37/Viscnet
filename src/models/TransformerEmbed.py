@@ -18,28 +18,28 @@ class TransformerEmbed(nn.Module):
 
         # FC HEAD
         self.flow_bool = flow_bool
-        self.fc = nn.Sequential(
-            nn.Linear(self.hidden_size, 192),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
+        # self.fc = nn.Sequential(
+        #     nn.Linear(self.hidden_size, 192),
+        #     nn.ReLU(),
+        #     nn.Dropout(p=dropout),
 
-            nn.Linear(192, 48),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
+        #     nn.Linear(192, 48),
+        #     nn.ReLU(),
+        #     nn.Dropout(p=dropout),
 
-            nn.Linear(48, 12),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
+        #     nn.Linear(48, 12),
+        #     nn.ReLU(),
+        #     nn.Dropout(p=dropout),
 
-            nn.Linear(12, output_size),
-        )
+        #     nn.Linear(12, output_size),
+        # )
 
         self.classifier = nn.Sequential(
-            nn.Linear(self.hidden_size * 2, 384),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
+            nn.Linear(self.hidden_size * 2, 10),
+            # nn.ReLU(),
+            # nn.Dropout(p=dropout),
 
-            nn.Linear(384, 10)
+            # nn.Linear(384, 10)
         )
 
 

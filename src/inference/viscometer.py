@@ -33,7 +33,7 @@ METHOD          = args.method
 SCALER          = cfg["preprocess"]["scaler"]
 DESCALER        = cfg["preprocess"]["descaler"]
 TEST_SIZE       = float(cfg["preprocess"]["test_size"])
-RAND_STATE      = float(cfg["preprocess"]["random_state"])
+RAND_STATE      = int(cfg["preprocess"]["random_state"])
 FRAME_NUM       = float(cfg["preprocess"]["frame_num"])
 TIME            = float(cfg["preprocess"]["time"])
 BATCH_SIZE      = int(cfg["train_settings"]["batch_size"])
@@ -66,7 +66,7 @@ VIDEO_SUBDIR    = repo["video_subdir"]
 PARA_SUBDIR     = repo["para_subdir"]
 NORM_SUBDIR     = repo["norm_subdir"]
 
-# wandb.init(project="viscosity estimation testing", name="inferenceTrans", reinit=True, resume="never", config= config)
+wandb.init(project="viscosity estimation testing", name="inferenceTrans", reinit=True, resume="never", config= config)
 
 # model load
 dataset_module = importlib.import_module(f"datasets.{DATASET}")
@@ -77,8 +77,8 @@ dataset_class = getattr(dataset_module, DATASET)
 encoder_class = getattr(encoder_module, ENCODER)
 flow_class = getattr(flow_module, FLOW)
 
-encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT)
-# encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL)
+# encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT)
+encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -106,27 +106,28 @@ dl = DataLoader(ds, batch_size=1, shuffle=False, num_workers=NUM_WORKERS, prefet
 # Error Calculation
 errors = []
 logits = []
-for frames, parameters, hotvector, names, rpm in tqdm(dl):
-    frames, parameters, hotvector, rpm = frames.to(device), parameters.to(device), hotvector.to(device), rpm.to(device)
-    # print(frames[0][0])
-    print(names, hotvector)
+for frames, parameters, names, rpm in tqdm(dl):
+    frames, parameters, rpm = frames.to(device), parameters.to(device), rpm.to(device)
+# for frames, parameters, hotvector, names, rpm in tqdm(dl):
+#     frames, parameters, hotvector, rpm = frames.to(device), parameters.to(device), hotvector.to(device), rpm.to(device)
+    # print(names, hotvector)
     outputs = encoder(frames, rpm)
-    # print(outputs)
+    print(outputs, rpm)
     
     if FLOW_BOOL:
         z, log_det_jacobian = flow(parameters, outputs)
         visc = flow.inverse(z, outputs)
         error = MAPEtestcalculator(visc.detach(), parameters.detach(), DESCALER, METHOD, repo[f"{METHOD}_root"])
     else:
-        # wandb.log({"xsph estimation": outputs.detach().cpu()}) 
-        probs = F.softmax(outputs, dim=1)
-        logits.append(probs.detach().cpu())
+        wandb.log({"xsph estimation": outputs.detach().cpu()}) 
+        # probs = F.softmax(outputs, dim=1)
+        # logits.append(probs.detach().cpu())
         # print(probs)
 
-        # error = MAPEtestcalculator(outputs.detach(), parameters.detach(), DESCALER, "real", REAL_ROOT)
+        error = MAPEtestcalculator(outputs.detach(), parameters.detach(), DESCALER, "real", REAL_ROOT)
     # errors.append(error.detach().cpu())
 
-visualize_logits(logits)
+# visualize_logits(logits)
 # errors_tensor = torch.cat(errors, dim=0)
 # meanerror = errors_tensor.mean(dim=0)  # shape: [3]
 
