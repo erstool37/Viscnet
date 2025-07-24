@@ -70,10 +70,11 @@ class VideoDatasetTrans(Dataset):
                 kinVisc = float(data["kinematic_viscosity"])
                 # rpm_index = int(data["rpm_idx"])
                 rpm = int(data["rpm"])
-            return torch.tensor([density, surfT, kinVisc, rpm], dtype=torch.float32), hotvector
+            return torch.tensor([density, surfT, kinVisc, rpm], dtype=torch.float32)
     
         except json.JSONDecodeError as e:
             print(f"Failed to parse JSON at: {para_path}")
+            
     def _loadname(self, video_path):
         name = osp.splitext(osp.basename(video_path))
         return name[0]

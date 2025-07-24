@@ -18,11 +18,12 @@ class MSLE(nn.Module):
         loss_dynvisc = loss[:, 1].mean()
         loss_surfT = loss[:, 2].mean()
 
-        loss_total = loss_den + loss_dynvisc + loss_surfT
+        # loss_total = loss_den + loss_dynvisc + loss_surfT
+        loss_total = loss_dynvisc
 
-        wandb.log({"loss_den": loss_den})
-        wandb.log({"loss_visc": loss_dynvisc})
-        wandb.log({"loss_surf": loss_surfT})        
+        # wandb.log({"loss_den": loss_den})
+        # wandb.log({"loss_visc": loss_dynvisc})
+        # wandb.log({"loss_surf": loss_surfT})        
 
         return loss_total
 

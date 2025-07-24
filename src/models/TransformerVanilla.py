@@ -15,15 +15,15 @@ class TransformerVanilla(nn.Module):
         # FC HEAD
         self.flow_bool = flow_bool
         # self.fc = nn.Sequential(
-        #     nn.Linear(self.hidden_size, 192),
+        #     nn.Linear(self.hidden_size * 2, 512),
         #     nn.ReLU(),
         #     nn.Dropout(p=dropout),
 
-        #     nn.Linear(192, 48),
+        #     nn.Linear(512, 96),
         #     nn.ReLU(),
         #     nn.Dropout(p=dropout),
 
-        #     nn.Linear(48, 12),
+        #     nn.Linear(96, 12),
         #     nn.ReLU(),
         #     nn.Dropout(p=dropout),
 
@@ -37,11 +37,7 @@ class TransformerVanilla(nn.Module):
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(self.hidden_size, 192),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
-
-            nn.Linear(192, 10)
+            nn.Linear(self.hidden_size, 5),
         )
 
     def forward(self, video: torch.Tensor, rpm: torch.Tensor):
@@ -51,9 +47,10 @@ class TransformerVanilla(nn.Module):
         # ViViT expects (B, T, C, H, W)
         outputs = self.featureextractor(video)
         video_features = outputs.pooler_output
+        rpm_vec = self.rpm_embedding(rpm.unsqueeze(1))
         
-        concat = video_features
-        # concat = video_features + self.rpm_embedding(rpm.unsqueeze(1))
+        # concat = video_features
+        concat = torch.cat((video_features, rpm_vec), dim=-1).contiguous()
 
         if self.flow_bool:
             viscosity = concat

@@ -15,15 +15,20 @@ class VideoDatasetClassTrans(Dataset):
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = int(frame_num * time)
-        self.cluster_map = {i: i // 5 for i in range(50)}
+        self.cluster_map = {i: i // 5 for i in range(50)} # 10 clusters
         self.processor = VivitImageProcessor.from_pretrained("google/vivit-b-16x2-kinetics400")
         # self.processor = VideoMAEImageProcessor.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
 
         self.aug_bool = aug_bool
+
         self.augmentation = A.Compose([
-            A.GaussNoise(var_limit=(10,50), p=0.3),
-            A.MotionBlur(blur_limit=5, p=0.2),
-            A.RandomBrightnessContrast(0.2, 0.2, p=0.3),
+            A.Perspective(scale=(0.02, 0.03), keep_size=True, p=0.6),
+            A.MotionBlur(blur_limit=(3, 9), p=0.6),
+            A.RandomBrightnessContrast(0.2, 0.2, p=0.5),
+        ])
+
+        self.center_resize = A.Compose([
+            A.Resize(224, 224, interpolation=1)
         ])
 
     def __getitem__(self, index):
@@ -42,18 +47,23 @@ class VideoDatasetClassTrans(Dataset):
             ret, frame = cap.read()
             if not ret:
                 break
-            if self.aug_bool:
-                frame = self.augmentation(image=frame)["image"]
-            # print(frame.shape)
-            # frame = self.processor(images=frame, do_normalize = True, return_tensors="np", input_data_format = "channels_last")["pixel_values"].squeeze(0).squeeze(0)
-            frame = frame / 127.5 - 1.0
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frames.append(frame)
         cap.release()
+        frames = frames[-self.frame_limit:]
 
-        frames = np.array(frames[-self.frame_limit:], dtype=np.float32)
-        frames = torch.tensor(frames).permute(0, 3, 1, 2)
+        if self.aug_bool:
+            data = {f"image{i}": frames[i] for i in range(self.frame_limit)}
+            data["image"] = frames[0]  # dummy required
+            out = self.augmentation(**data)
+            frames_aug = [out[f"image{i}"] for i in range(self.frame_limit)]
+        else:
+            frames_aug = [self.center_resize(image=f)["image"] for f in frames] # mostly for real images
+
+        frames_aug = [(f / 127.5 - 1.0).astype(np.float32) for f in frames_aug]
+        frames_tensor = torch.tensor(np.stack(frames_aug)).permute(0, 3, 1, 2)
         
-        return frames
+        return frames_tensor
 
     def _loadhotvector(self, cls):
         hot = torch.zeros(50, dtype=torch.float32)

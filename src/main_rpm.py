@@ -115,11 +115,12 @@ scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
 device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
 # encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
-encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
-encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
-flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
-criterion = criterion_class(DESCALER, DATA_ROOT)
+# encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
+# encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
+# flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
+# criterion = criterion_class(DESCALER, DATA_ROOT)
 
+"""
 if FLOW_BOOL:
     optimizer = optim_class(list(encoder.parameters()) + list(flow.parameters()), lr=LR, weight_decay=W_DECAY)
 else:
@@ -139,6 +140,8 @@ for epoch in range(NUM_EPOCHS):
     train_losses = []
     if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training")
     encoder.train()
+    # for frames, parameters, names, rpm_class in tqdm(train_dl):
+    #     frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
     for frames, parameters, hotvector, names, rpm_class in tqdm(train_dl):
         frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
         # print(hotvector)
@@ -151,7 +154,8 @@ for epoch in range(NUM_EPOCHS):
             if rank == 0: MAPEflowcalculator(vissc.detach(), parameters.detach(), DESCALER, "train", DATA_ROOT)
         else:
             train_loss = criterion(outputs, parameters, hotvector)
-            # if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
+            # train_loss = criterion(outputs, parameters)
+            if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
         optimizer.zero_grad()
         train_loss.backward()
         optimizer.step()
@@ -160,7 +164,7 @@ for epoch in range(NUM_EPOCHS):
             avg_train_loss = train_loss / world_size
             train_losses.append(avg_train_loss.item())
 
-        if (len(train_losses)) % 2 == 0:
+        if (len(train_losses)) % 50 == 0:
             mean_train_loss = mean(train_losses)
             if rank == 0: wandb.log({"train_loss": mean_train_loss})
     train_losses.clear()
@@ -170,7 +174,8 @@ for epoch in range(NUM_EPOCHS):
     val_losses = []
     with torch.no_grad():
         if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
-
+        # for frames, parameters, _, rpm_class in tqdm(val_dl):
+        #     frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
         for frames, parameters, hotvector, _, rpm_class in tqdm(val_dl):
             frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
             outputs = encoder(frames, rpm_class)
@@ -182,7 +187,8 @@ for epoch in range(NUM_EPOCHS):
                 if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "val", DATA_ROOT)
             else:
                 val_loss = criterion(outputs, parameters, hotvector)
-                # if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
+                # val_loss = criterion(outputs, parameters)
+                if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
             torch.distributed.all_reduce(val_loss, op=torch.distributed.ReduceOp.SUM)
             avg_val_loss = val_loss / world_size
             val_losses.append(avg_val_loss.item())
@@ -211,121 +217,138 @@ if rank == 0:
     wandb.finish()
 
 ddp_cleanup()
-
-
 """
-########### Embedding check ###########
-import numpy as np
-from sklearn.decomposition import PCA
 
-# Load model
-encoder.load_state_dict(torch.load(checkpoint, map_location=device))
-encoder.to(device).eval()
-
-all_embeddings = []
-all_labels = []
-
-with torch.no_grad():
-    for frames, parameters, hotvector, _, rpm in tqdm(val_dl):
-        rpm_class = rpm.to(device)
-        rpm_vec = encoder.rpm_embedding(rpm_class.unsqueeze(-1))
-        all_embeddings.append(rpm_vec.cpu().numpy())
-        all_labels.append(rpm.cpu().numpy())
-
-embeddings = np.vstack(all_embeddings)
-labels = np.hstack(all_labels)
-
-pca = PCA(n_components=2)
-emb_2d = pca.fit_transform(embeddings)
-
-plt.figure(figsize=(8, 6))
-for cls in np.unique(labels):
-    idx = labels == cls
-    plt.scatter(emb_2d[idx, 0], emb_2d[idx, 1], label=f"RPM {cls}", alpha=0.7)
-
-plt.legend(title="RPM Class", bbox_to_anchor=(1.05, 1), loc='upper left')
-plt.title("PCA of RPM Embeddings")
-plt.xlabel("Principal Component 1")
-plt.ylabel("Principal Component 2")
-plt.tight_layout()
-plt.savefig("src/inference/rpm_embeddings_pca.png")
-"""
-"""
 # REAL WORLD calibration
-encoder.load_state_dict(torch.load(checkpoint))
-for param in encoder.cnn.parameters():
-    param.requires_grad = False
-for param in encoder.lstm.parameters():
-    param.requires_grad = False
+encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
+criterion = criterion_class(DESCALER, DATA_ROOT)
+state_dict = torch.load("src/weights/classification_10_trans_with_aug_0723_v0.pth")
+
+# Remove the old FC layer weights
+keys_to_remove = [k for k in state_dict if k.startswith("classifier.")]
+for k in keys_to_remove:
+    del state_dict[k]
+
+# Load encoder weights only
+encoder.load_state_dict(state_dict, strict=False)
+
+for param in encoder.featureextractor.parameters():
+    param.requires_grad = True
 
 # Model Definition
-optimizer = torch.optim.Adam(encoder.fc.parameters(), lr=REAL_LR, weight_decay=REAL_W_DECAY) 
+encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
+optimizer = torch.optim.Adam(encoder.parameters(), lr=REAL_LR, weight_decay=REAL_W_DECAY) 
 scheduler = scheduler_class(optimizer, T_max=REAL_EPOCHS, eta_min=ETA_MIN)
-criterion = nn.MSELoss(512, 4)
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-encoder.to(device)
+
+if rank == 0:
+    wandb.init(project=PROJECT, name=run_name, reinit=True, resume="never", config= config)
+    wandb.watch(encoder, log="all", log_freq=10)
 
 # Data Loader
-real_video_paths = sorted(glob.glob(osp.join(REAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
-real_para_paths = sorted(glob.glob(osp.join(REAL_ROOT, NORM_SUBDIR, "*.json")))
+# real_video_paths = sorted(glob.glob(osp.join(REAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
+# real_para_paths = sorted(glob.glob(osp.join(REAL_ROOT, NORM_SUBDIR, "*.json")))
 
-real_train_video_paths, real_val_video_paths = train_test_split(real_video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
-real_train_para_paths, real_val_para_paths = train_test_split(real_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
+# real_train_video_paths, real_val_video_paths = train_test_split(real_video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
+# real_train_para_paths, real_val_para_paths = train_test_split(real_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
-real_train_ds = dataset_class(real_train_video_paths, real_train_para_paths, FRAME_NUM, TIME)
-real_val_ds = dataset_class(real_val_video_paths, real_val_para_paths, FRAME_NUM, TIME)
+# real_train_ds = dataset_class(real_train_video_paths, real_train_para_paths, FRAME_NUM, TIME)
+# real_val_ds = dataset_class(real_val_video_paths, real_val_para_paths, FRAME_NUM, TIME)
 
-real_train_sampler = DistributedSampler(real_train_ds, num_replicas=world_size, rank=rank, shuffle=True)
-real_val_sampler = DistributedSampler(real_val_ds, num_replicas=world_size, rank=rank, shuffle=False)
+# real_train_sampler = DistributedSampler(real_train_ds, num_replicas=world_size, rank=rank, shuffle=True)
+# real_val_sampler = DistributedSampler(real_val_ds, num_replicas=world_size, rank=rank, shuffle=False)
 
-real_train_dl = DataLoader(real_train_ds, batch_size=BATCH_SIZE, sampler=real_train_sampler, num_workers=NUM_WORKERS)
-real_val_dl = DataLoader(real_val_ds, batch_size=BATCH_SIZE, sampler=real_val_sampler, num_workers=NUM_WORKERS)
+# real_train_dl = DataLoader(real_train_ds, batch_size=BATCH_SIZE, sampler=real_train_sampler, num_workers=NUM_WORKERS)
+# real_val_dl = DataLoader(real_val_ds, batch_size=BATCH_SIZE, sampler=real_val_sampler, num_workers=NUM_WORKERS)
 
 # TRAINING
-for epoch in range(REAL_EPOCHS):  
-    encoder.train()
+best_val_loss = float("inf")
+counter = 0
+for epoch in range(NUM_EPOCHS):
+    train_sampler.set_epoch(epoch)
     train_losses = []
-    print(f"Epoch {epoch+1}/{REAL_EPOCHS} - Training ")
-    for frames, parameters, _, rpm_class in tqdm(real_train_dl):
-        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+    if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training")
+    encoder.train()
+    # for frames, parameters, names, rpm_class in tqdm(train_dl):
+    #     frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+    for frames, parameters, hotvector, names, rpm_class in tqdm(train_dl):
+        frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
+        # print(hotvector)
         outputs = encoder(frames, rpm_class)
-        parameters = torch.cat((parameters[:, :3], parameters[:, 4:]), dim=1)
-        MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "real", REAL_ROOT)
 
-        train_loss = criterion(outputs, parameters)
-        train_losses.append(train_loss.item())
+        if FLOW_BOOL:
+            z, log_det_jacobian = flow(parameters, outputs)
+            train_loss = criterion(z, log_det_jacobian)
+            visc = flow.inverse(z, outputs)
+            if rank == 0: MAPEflowcalculator(vissc.detach(), parameters.detach(), DESCALER, "train", DATA_ROOT)
+        else:
+            train_loss = criterion(outputs, parameters, hotvector)
+            # train_loss = criterion(outputs, parameters)
+            if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
         optimizer.zero_grad()
         train_loss.backward()
         optimizer.step()
+        with torch.no_grad():
+            torch.distributed.all_reduce(train_loss, op=torch.distributed.ReduceOp.SUM)
+            avg_train_loss = train_loss / world_size
+            train_losses.append(avg_train_loss.item())
 
-        if (len(train_losses)) % 10 == 0:
+        if (len(train_losses)) % 50 == 0:
             mean_train_loss = mean(train_losses)
-            wandb.log({"real_train_loss": mean_train_loss})
+            if rank == 0: wandb.log({"train_loss": mean_train_loss})
     train_losses.clear()
 
-    # Validation
+    # VALIDATION
     encoder.eval()
     val_losses = []
     with torch.no_grad():
-        print(f"Epoch {epoch+1}/{REAL_EPOCHS} - Validation")
+        if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
+        # for frames, parameters, _, rpm_class in tqdm(val_dl):
+        #     frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
+        for frames, parameters, hotvector, _, rpm_class in tqdm(val_dl):
+            frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
+            outputs = encoder(frames, rpm_class)
 
-    for frames, parameters, _, rpm_class in tqdm(real_val_dl):
-        frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
-        outputs = encoder(frames, rpm_class)
-        parameters = torch.cat((parameters[:, :3], parameters[:, 4:]), dim=1)
-        MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "real", REAL_ROOT)
+            if FLOW_BOOL:
+                z, log_det_jacobian = flow(parameters, outputs)
+                val_loss = criterion(z, log_det_jacobian)
+                visc = flow.inverse(z, outputs)
+                if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "val", DATA_ROOT)
+            else:
+                val_loss = criterion(outputs, parameters, hotvector)
+                # val_loss = criterion(outputs, parameters)
+                if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
+            torch.distributed.all_reduce(val_loss, op=torch.distributed.ReduceOp.SUM)
+            avg_val_loss = val_loss / world_size
+            val_losses.append(avg_val_loss.item())
 
-        val_loss = criterion(outputs, parameters)
-        val_losses.append(val_loss.item())
     mean_val_loss = mean(val_losses)
-    wandb.log({"real_val_loss": mean_val_loss})
+    val_losses.clear()
+    if rank == 0: wandb.log({"val_loss": mean_val_loss})
 
+    # PATIENCE
+    if mean_val_loss < best_val_loss:
+        best_val_loss = mean_val_loss
+        counter = 0
+    else:
+        counter += 1
+        if counter >= PATIENCE:
+            print(f"Early stopping at epoch {epoch+1}")
+            break
     scheduler.step()
     current_lr = scheduler.get_last_lr()[0]
-    print(f"Epoch {epoch+1}/{REAL_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.5f}")
-wandb.finish() 
+    if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.7f}")
+    val_losses.clear()
+
+if rank == 0:
+    torch.save(encoder.module.state_dict(), checkpoint)
+    print(f"Model saved to {checkpoint}")
+    wandb.finish()
 
 # Save the model
-real_checkpoint = osp.replace(checkpoint, ".pth", "_real.pth")
-torch.save(encoder.state_dict(), real_checkpoint)
-"""
+if rank == 0:
+    real_checkpoint = "src/weights/curriculum.pth"
+    torch.save(encoder.state_dict(), real_checkpoint)
+    print(f"Model saved to {checkpoint}")
+    wandb.finish()
+
+ddp_cleanup()
