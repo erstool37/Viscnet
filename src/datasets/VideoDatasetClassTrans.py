@@ -15,7 +15,7 @@ class VideoDatasetClassTrans(Dataset):
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = int(frame_num * time)
-        self.cluster_map = {i: i // 5 for i in range(50)} # 10 clusters
+        self.cluster_map = {i: i // 10 for i in range(50)} # 5 clusters
         self.processor = VivitImageProcessor.from_pretrained("google/vivit-b-16x2-kinetics400")
         # self.processor = VideoMAEImageProcessor.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
 
@@ -32,9 +32,10 @@ class VideoDatasetClassTrans(Dataset):
         ])
 
     def __getitem__(self, index):
+        names = self._loadname(self.para_paths[index])
         frames = self._loadvideo(self.video_paths[index])
         parameters, hotvector = self._loadparameters(self.para_paths[index])
-        names = self._loadname(self.para_paths[index])
+        
         # rpm_idx = parameters[-1] 
         rpm = parameters[-1]
         return frames, parameters, hotvector, names, rpm
@@ -53,6 +54,7 @@ class VideoDatasetClassTrans(Dataset):
         frames = frames[-self.frame_limit:]
 
         if self.aug_bool:
+            # print(f"Augmenting {len(frames)} frames{video_path}")
             data = {f"image{i}": frames[i] for i in range(self.frame_limit)}
             data["image"] = frames[0]  # dummy required
             out = self.augmentation(**data)
@@ -84,9 +86,9 @@ class VideoDatasetClassTrans(Dataset):
                 # hotvector = data["visc_index"]
                 surfT = (data["surface_tension"])
                 kinVisc = float(data["kinematic_viscosity"])
-                # rpm_index = int(data["rpm_idx"])
-                rpm = int(data["rpm"])
-            return torch.tensor([density, surfT, kinVisc, rpm], dtype=torch.float32), hotvector
+                rpm_index = int(data["rpm_idx"])
+                # rpm = int(data["rpm"])
+            return torch.tensor([density, surfT, kinVisc, rpm_index], dtype=torch.float32), hotvector
         except json.JSONDecodeError as e:
             print(f"Failed to parse JSON at: {para_path}")
     
