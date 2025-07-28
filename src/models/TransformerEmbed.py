@@ -10,47 +10,29 @@ class TransformerEmbed(nn.Module):
         self.hidden_size = self.config.hidden_size
 
         # RPM EMBEDDING
-        self.rpm_embedding = nn.Sequential(
-            nn.Linear(1, 96),
-            nn.ReLU(),
-            nn.Linear(96, self.hidden_size),
-        )
+        # self.rpm_embedding = nn.Sequential(
+        #     nn.Linear(1, 96),
+        #     nn.ReLU(),
+        #     nn.Linear(96, self.hidden_size),
+        # )
+        self.rpm_embedding = nn.Embedding(10, self.hidden_size)
 
         # FC HEAD
         self.flow_bool = flow_bool
-        # self.fc = nn.Sequential(
-        #     nn.Linear(self.hidden_size, 192),
-        #     nn.ReLU(),
-        #     nn.Dropout(p=dropout),
-
-        #     nn.Linear(192, 48),
-        #     nn.ReLU(),
-        #     nn.Dropout(p=dropout),
-
-        #     nn.Linear(48, 12),
-        #     nn.ReLU(),
-        #     nn.Dropout(p=dropout),
-
-        #     nn.Linear(12, output_size),
-        # )
 
         self.classifier = nn.Sequential(
-            nn.Linear(self.hidden_size * 2, 10),
-            # nn.ReLU(),
-            # nn.Dropout(p=dropout),
-
-            # nn.Linear(384, 10)
+            nn.Linear(self.hidden_size,384),
+            nn.SiLU(),
+            nn.Dropout(p=dropout),
+            nn.Linear(384, 5)
         )
 
-
     def forward(self, video: torch.Tensor, rpm: torch.Tensor):
-        # ViViT expects (B, T, C, H, W)
         outputs = self.featureextractor(video)
-        video_features = outputs.pooler_output  # (B, hidden_size)
-        concat = video_features
-        rpm_vec = self.rpm_embedding(rpm.unsqueeze(1))
+        video_features = outputs.pooler_output
+        rpm_vec = self.rpm_embedding(torch.round(rpm).squeeze(-1).long())
 
-        concat = torch.cat((video_features, rpm_vec), dim=-1).contiguous()
+        concat = video_features + rpm_vec
 
         if self.flow_bool:
             viscosity = concat

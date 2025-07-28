@@ -115,12 +115,11 @@ scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
 device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
 # encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
-# encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
-# encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
-# flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
-# criterion = criterion_class(DESCALER, DATA_ROOT)
+encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
+encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
+flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
+criterion = criterion_class(DESCALER, DATA_ROOT)
 
-"""
 if FLOW_BOOL:
     optimizer = optim_class(list(encoder.parameters()) + list(flow.parameters()), lr=LR, weight_decay=W_DECAY)
 else:
@@ -132,7 +131,6 @@ if rank == 0:
     wandb.watch(encoder, log="all", log_freq=10)
 
 # TRAIN MODEL
-# encoder.load_state_dict(torch.load("src/weights/classification_trans_run_0718_v4.pth", map_location=device))
 best_val_loss = float("inf")
 counter = 0
 for epoch in range(NUM_EPOCHS):
@@ -144,7 +142,7 @@ for epoch in range(NUM_EPOCHS):
     #     frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
     for frames, parameters, hotvector, names, rpm_class in tqdm(train_dl):
         frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
-        # print(hotvector)
+        # print(hotvector, names)
         outputs = encoder(frames, rpm_class)
 
         if FLOW_BOOL:
@@ -155,7 +153,7 @@ for epoch in range(NUM_EPOCHS):
         else:
             train_loss = criterion(outputs, parameters, hotvector)
             # train_loss = criterion(outputs, parameters)
-            if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
+            # if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
         optimizer.zero_grad()
         train_loss.backward()
         optimizer.step()
@@ -217,6 +215,7 @@ if rank == 0:
     wandb.finish()
 
 ddp_cleanup()
+
 """
 
 # REAL WORLD calibration
@@ -352,3 +351,4 @@ if rank == 0:
     wandb.finish()
 
 ddp_cleanup()
+"""

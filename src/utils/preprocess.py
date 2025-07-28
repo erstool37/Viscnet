@@ -107,7 +107,7 @@ else:
 for idx in range(len(dynViscnorm)):
     data = {"dynamic_viscosity": float(dynViscnorm[idx]), "kinematic_viscosity": float(kinViscnorm[idx]), 
     "surface_tension": float(surfTnorm[idx]),  "density": float(densitynorm[idx]), "visc_index": visc_to_idx[dynVisc[idx]], 
-    "rpm": float(rpmnorm[idx]), "rpm_idx": rpm_to_idx[rpm[idx]]}
+    "rpm": float(rpmnorm[idx]), "rpm_idx": int(rpm_to_idx[rpm[idx]])}
     with open(f'{norm_path}/config_{(idx+1):04d}.json', 'w') as file:
         json.dump(data, file, indent=4)
 

@@ -1,13 +1,11 @@
 project: "sph_test_run"
-name: "classification_50_curriculum"
+name: "rpm20_classification_5class_big_reg_embedding"
 version: v0
-
-# CHANGE DATALOADER TOO
 
 regression:
   train_settings:
     batch_size : 2
-    num_epochs : 20
+    num_epochs : 30
     num_workers : 0
     seed : 1205
     dataset : "VideoDatasetClassTrans"
@@ -52,10 +50,10 @@ regression:
   optimizer:
     optim_class: AdamW
     scheduler_class: CosineAnnealingLR
-    lr: 1e-7
-    eta_min : 1e-10
-    weight_decay: 5e-1
-    patience : 5
+    lr: 1e-4   # 1e-2 ~ 1e-5 정도 대역으로
+    eta_min : 1e-10 
+    weight_decay: 1e-2 # 1e-2 정도로
+    patience : 10
   
   directories:
     checkpoint :
@@ -63,7 +61,7 @@ regression:
       inf_checkpoint : "src/weights/classification_10_trans_with_aug_0723_v0.pth"
 
     data :
-      data_root : "dataset/CFDArchive/sph_improved"
+      data_root : "dataset/CFDArchive/sph_20rpm_increment"
       test_root : "dataset/CFDArchive/test"
       # real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"
       real_root : "dataset/realfluid/RealArchive/impeller_new"
