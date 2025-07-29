@@ -67,7 +67,7 @@ for path in para_paths:
         # for real world inference
         dynVisc.append(data["dynamic_viscosity"])
         surfT.append(data["surface_tension"])
-        kinVisc.append(data["kinematic_viscosiyy"])
+        kinVisc.append(data["kinematic_viscosity"])
         density.append(data["density"])
         rpm.append(data["RPM"])
 

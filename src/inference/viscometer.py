@@ -17,7 +17,7 @@ import yaml
 import json
 from torch.utils.data import TensorDataset, DataLoader, Dataset, Subset
 from sklearn.model_selection import train_test_split
-from utils import MAPEcalculator, MAPEflowcalculator, MAPEtestcalculator, set_seed, distribution, visualize_logits
+from utils import MAPEcalculator, MAPEflowcalculator, MAPEtestcalculator, set_seed, distribution, visualize_logits, confusion_matrix
 from torch.nn import functional as F
 
 parser = argparse.ArgumentParser()
@@ -66,7 +66,7 @@ VIDEO_SUBDIR    = repo["video_subdir"]
 PARA_SUBDIR     = repo["para_subdir"]
 NORM_SUBDIR     = repo["norm_subdir"]
 
-wandb.init(project="viscosity estimation testing", name="inferenceTrans", reinit=True, resume="never", config= config)
+# wandb.init(project="viscosity estimation testing", name="inferenceTrans", reinit=True, resume="never", config= config)
 
 # model load
 dataset_module = importlib.import_module(f"datasets.{DATASET}")
@@ -90,6 +90,12 @@ encoder.load_state_dict(torch.load(CHECKPOINT))
 if METHOD == "real":
     video_paths = sorted(glob.glob(osp.join(REAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
     para_paths = sorted(glob.glob(osp.join(REAL_ROOT, NORM_SUBDIR, "*.json")))
+    # real_video_paths = sorted(glob.glob(osp.join(REAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
+    # real_para_paths = sorted(glob.glob(osp.join(REAL_ROOT, NORM_SUBDIR, "*.json")))
+
+    # _, video_paths = train_test_split(real_video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
+    # _, para_paths = train_test_split(real_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
+
 elif METHOD == "test":
     video_paths = sorted(glob.glob(osp.join(TEST_ROOT, VIDEO_SUBDIR, "*.mp4")))
     para_paths = sorted(glob.glob(osp.join(TEST_ROOT, NORM_SUBDIR, "*.json")))
@@ -106,28 +112,32 @@ dl = DataLoader(ds, batch_size=1, shuffle=False, num_workers=NUM_WORKERS, prefet
 # Error Calculation
 errors = []
 logits = []
-for frames, parameters, names, rpm in tqdm(dl):
-    frames, parameters, rpm = frames.to(device), parameters.to(device), rpm.to(device)
-# for frames, parameters, hotvector, names, rpm in tqdm(dl):
-#     frames, parameters, hotvector, rpm = frames.to(device), parameters.to(device), hotvector.to(device), rpm.to(device)
-    # print(names, hotvector)
+hotvectors = []
+# for frames, parameters, names, rpm in tqdm(dl):
+#     frames, parameters, rpm = frames.to(device), parameters.to(device), rpm.to(device)
+for frames, parameters, hotvector, names, rpm in tqdm(dl):
+    frames, parameters, hotvector, rpm = frames.to(device), parameters.to(device), hotvector.to(device), rpm.to(device)
+    print(hotvector)
     outputs = encoder(frames, rpm)
-    print(outputs, rpm)
+    # print(outputs)
     
     if FLOW_BOOL:
         z, log_det_jacobian = flow(parameters, outputs)
         visc = flow.inverse(z, outputs)
         error = MAPEtestcalculator(visc.detach(), parameters.detach(), DESCALER, METHOD, repo[f"{METHOD}_root"])
     else:
-        wandb.log({"xsph estimation": outputs.detach().cpu()}) 
-        # probs = F.softmax(outputs, dim=1)
-        # logits.append(probs.detach().cpu())
-        # print(probs)
+        # wandb.log({"xsph estimation": outputs.detach().cpu()}) 
+        probs = F.softmax(outputs, dim=1)
+        logits.append(probs.detach().cpu())
+        hotvectors.append(hotvector.detach().cpu())
 
-        error = MAPEtestcalculator(outputs.detach(), parameters.detach(), DESCALER, "real", REAL_ROOT)
-    # errors.append(error.detach().cpu())
+logits = torch.cat(logits, dim=0).numpy()
+hotvectors = torch.cat(hotvectors, dim=0).numpy()
 
 # visualize_logits(logits)
+confusion_matrix(logits, hotvectors)
+
+
 # errors_tensor = torch.cat(errors, dim=0)
 # meanerror = errors_tensor.mean(dim=0)  # shape: [3]
 

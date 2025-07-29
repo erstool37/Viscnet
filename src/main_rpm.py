@@ -114,11 +114,13 @@ optim_class = getattr(optim, OPTIM_CLASS)
 scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
 device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
+"""
 # encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
 encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
 encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
 criterion = criterion_class(DESCALER, DATA_ROOT)
+
 
 if FLOW_BOOL:
     optimizer = optim_class(list(encoder.parameters()) + list(flow.parameters()), lr=LR, weight_decay=W_DECAY)
@@ -221,7 +223,7 @@ ddp_cleanup()
 # REAL WORLD calibration
 encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
 criterion = criterion_class(DESCALER, DATA_ROOT)
-state_dict = torch.load("src/weights/classification_10_trans_with_aug_0723_v0.pth")
+state_dict = torch.load("src/weights/classification_10_trans_total_0721_v0.pth")
 
 # Remove the old FC layer weights
 keys_to_remove = [k for k in state_dict if k.startswith("classifier.")]
@@ -244,20 +246,20 @@ if rank == 0:
     wandb.watch(encoder, log="all", log_freq=10)
 
 # Data Loader
-# real_video_paths = sorted(glob.glob(osp.join(REAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
-# real_para_paths = sorted(glob.glob(osp.join(REAL_ROOT, NORM_SUBDIR, "*.json")))
+real_video_paths = sorted(glob.glob(osp.join(REAL_ROOT, VIDEO_SUBDIR, "*.mp4")))
+real_para_paths = sorted(glob.glob(osp.join(REAL_ROOT, NORM_SUBDIR, "*.json")))
 
-# real_train_video_paths, real_val_video_paths = train_test_split(real_video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
-# real_train_para_paths, real_val_para_paths = train_test_split(real_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
+real_train_video_paths, real_val_video_paths = train_test_split(real_video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
+real_train_para_paths, real_val_para_paths = train_test_split(real_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
-# real_train_ds = dataset_class(real_train_video_paths, real_train_para_paths, FRAME_NUM, TIME)
-# real_val_ds = dataset_class(real_val_video_paths, real_val_para_paths, FRAME_NUM, TIME)
+real_train_ds = dataset_class(real_train_video_paths, real_train_para_paths, FRAME_NUM, TIME)
+real_val_ds = dataset_class(real_val_video_paths, real_val_para_paths, FRAME_NUM, TIME)
 
-# real_train_sampler = DistributedSampler(real_train_ds, num_replicas=world_size, rank=rank, shuffle=True)
-# real_val_sampler = DistributedSampler(real_val_ds, num_replicas=world_size, rank=rank, shuffle=False)
+real_train_sampler = DistributedSampler(real_train_ds, num_replicas=world_size, rank=rank, shuffle=True)
+real_val_sampler = DistributedSampler(real_val_ds, num_replicas=world_size, rank=rank, shuffle=False)
 
-# real_train_dl = DataLoader(real_train_ds, batch_size=BATCH_SIZE, sampler=real_train_sampler, num_workers=NUM_WORKERS)
-# real_val_dl = DataLoader(real_val_ds, batch_size=BATCH_SIZE, sampler=real_val_sampler, num_workers=NUM_WORKERS)
+real_train_dl = DataLoader(real_train_ds, batch_size=BATCH_SIZE, sampler=real_train_sampler, num_workers=NUM_WORKERS)
+real_val_dl = DataLoader(real_val_ds, batch_size=BATCH_SIZE, sampler=real_val_sampler, num_workers=NUM_WORKERS)
 
 # TRAINING
 best_val_loss = float("inf")
@@ -351,4 +353,3 @@ if rank == 0:
     wandb.finish()
 
 ddp_cleanup()
-"""

@@ -1,14 +1,14 @@
 project: "sph_test_run"
-name: "rpm20_classification_5class_big_reg_embedding"
+name: "finetune_realworld_real_sep"
 version: v0
 
 regression:
   train_settings:
     batch_size : 2
-    num_epochs : 30
+    num_epochs : 20
     num_workers : 0
     seed : 1205
-    dataset : "VideoDatasetClassTrans"
+    dataset : "VideoDatasetClassTransREAL"
 
   preprocess:
     scaler : "interscaler"    # log scaled, inter scaling works best 
@@ -18,7 +18,7 @@ regression:
     test_size : 0.2
     random_state : 37
     rpm_class : 50
-    aug_bool : True # TURN OFF FOR REAL DATA
+    aug_bool : False # TURN OFF FOR REAL DATA
 
   model:
     encoder:
@@ -51,20 +51,22 @@ regression:
     optim_class: AdamW
     scheduler_class: CosineAnnealingLR
     lr: 1e-4   # 1e-2 ~ 1e-5 정도 대역으로
-    eta_min : 1e-10 
+    eta_min : 1e-9
     weight_decay: 1e-2 # 1e-2 정도로
     patience : 10
   
   directories:
     checkpoint :
       ckpt_root : "src/weights/"
-      inf_checkpoint : "src/weights/classification_10_trans_with_aug_0723_v0.pth"
+      # inf_checkpoint : "src/weights/rpm20_classification_10class_big_reg_embedding_0729_v0.pth"
+      inf_checkpoint : "src/weights/finetune_realworld_real_sep_0729_v0.pth"
 
     data :
-      data_root : "dataset/CFDArchive/sph_20rpm_increment"
+      # data_root : "dataset/CFDArchive/sph_20rpm_increment"
+      data_root : "dataset/realfluid/RealArchive/real_20rpmincrement"
       test_root : "dataset/CFDArchive/test"
       # real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"
-      real_root : "dataset/realfluid/RealArchive/impeller_new"
+      real_root : "dataset/realfluid/RealArchive/separated_data"
       video_subdir : "videos"
       para_subdir : "parameters"
       norm_subdir : "parametersNorm"

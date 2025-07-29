@@ -9,13 +9,12 @@ from transformers import VivitImageProcessor
 import albumentations as A
 from collections import deque
 
-class VideoDatasetClassTrans(Dataset):
+class VideoDatasetClassTransREAL(Dataset):
     def __init__(self, video_paths, para_paths, frame_num, time, aug_bool=False):
         '''Initialize dataset'''
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = int(frame_num * time)
-        self.cluster_map = {i: i // 5 for i in range(50)} # 10 clusters
         self.processor = VivitImageProcessor.from_pretrained("google/vivit-b-16x2-kinetics400")
         # self.processor = VideoMAEImageProcessor.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
 
@@ -82,9 +81,7 @@ class VideoDatasetClassTrans(Dataset):
                 density = data["density"]
                 # dynVisc = float(data["dynamic_viscosity"])
                 # hotvector = self._loadhotvector(data["visc_index"])
-                hotvector = self._get_cluster(int(data["visc_index"]))
-                print(hotvector)
-                # hotvector = data["visc_index"]
+                hotvector = int(data["visc_index"])
                 surfT = (data["surface_tension"])
                 kinVisc = float(data["kinematic_viscosity"])
                 rpm_index = int(data["rpm_idx"])
