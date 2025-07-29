@@ -21,10 +21,11 @@ class TransformerEmbed(nn.Module):
         self.flow_bool = flow_bool
 
         self.classifier = nn.Sequential(
-            nn.Linear(self.hidden_size,384),
+            nn.Linear(self.hidden_size, 192),
             nn.SiLU(),
             nn.Dropout(p=dropout),
-            nn.Linear(384, 5)
+            nn.Linear(192,10)
+
         )
 
     def forward(self, video: torch.Tensor, rpm: torch.Tensor):

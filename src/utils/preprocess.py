@@ -60,9 +60,11 @@ for path in para_paths:
         # for training
         kinVisc.append(float(1.0))
         density.append(data["density"])
-        rpm.append(data["rpm"])
-        dynVisc.append(data["xsph"])
-        surfT.append(data["surfaceTension"])
+        # rpm.append(data["rpm"])
+        rpm.append(data["RPM"])
+        # dynVisc.append(data["xsph"])
+        dynVisc.append(data["dynamic_viscosity"])
+        surfT.append(data["surface_tension"])
 
 # sanity check
 parameters = [dynVisc, kinVisc, surfT, density, rpm]
