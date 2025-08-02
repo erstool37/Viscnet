@@ -9,7 +9,7 @@ from transformers import VivitImageProcessor
 import albumentations as A
 from collections import deque
 
-class VideoDatasetClassTrans(Dataset):
+class VideoDatasetClassMAE(Dataset):
     def __init__(self, video_paths, para_paths, frame_num, time, aug_bool=False):
         '''Initialize dataset'''
         self.video_paths = video_paths
@@ -62,8 +62,8 @@ class VideoDatasetClassTrans(Dataset):
         else:
             frames_aug = [self.center_resize(image=f)["image"] for f in frames] # mostly for real images
 
-        frames_aug = [(f / 127.5 - 1.0).astype(np.float32) for f in frames_aug]
-        frames_tensor = torch.tensor(np.stack(frames_aug)).permute(0, 3, 1, 2)
+        frames_aug = [(f / 127.5 - 1.0).astype(np.float32) for f in frames_aug] # (T)
+        frames_tensor = torch.tensor(np.stack(frames_aug)).permute(3, 0, 1, 2)
         
         return frames_tensor
 
