@@ -114,7 +114,6 @@ optim_class = getattr(optim, OPTIM_CLASS)
 scheduler_class = getattr(optim.lr_scheduler, SCHEDULER_CLASS)
 device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
-"""
 # encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
 encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
 encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
@@ -164,7 +163,7 @@ for epoch in range(NUM_EPOCHS):
             avg_train_loss = train_loss / world_size
             train_losses.append(avg_train_loss.item())
 
-        if (len(train_losses)) % 50 == 0:
+        if (len(train_losses)) % 20 == 0:
             mean_train_loss = mean(train_losses)
             if rank == 0: wandb.log({"train_loss": mean_train_loss})
     train_losses.clear()
@@ -353,3 +352,4 @@ if rank == 0:
     wandb.finish()
 
 ddp_cleanup()
+"""

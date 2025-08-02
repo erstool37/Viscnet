@@ -1,14 +1,14 @@
 project: "sph_test_run"
-name: "finetune_realworld_real_sep"
+name: "class10_rpmNoFC_largeVideoMAE_rpm20increment_weightProduction"
 version: v0
 
 regression:
   train_settings:
-    batch_size : 2
+    batch_size : 1
     num_epochs : 20
     num_workers : 0
     seed : 1205
-    dataset : "VideoDatasetClassTransREAL"
+    dataset : "VideoDatasetClassMAE"
 
   preprocess:
     scaler : "interscaler"    # log scaled, inter scaling works best 
@@ -62,8 +62,8 @@ regression:
       inf_checkpoint : "src/weights/finetune_realworld_real_sep_0729_v0.pth"
 
     data :
-      # data_root : "dataset/CFDArchive/sph_20rpm_increment"
-      data_root : "dataset/realfluid/RealArchive/real_20rpmincrement"
+      data_root : "dataset/CFDArchive/sph_20rpm_increment_real"
+      # data_root : "dataset/realfluid/RealArchive/real_20rpmincrement_real"
       test_root : "dataset/CFDArchive/test"
       # real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"
       real_root : "dataset/realfluid/RealArchive/separated_data"

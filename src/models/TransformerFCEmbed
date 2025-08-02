@@ -1,27 +1,13 @@
 import torch
 import torch.nn as nn
 from transformers import VivitModel, VivitConfig
-from transformers import AutoModel, AutoConfig
 
-class TransformerEmbed(nn.Module):
+class TransformerFCEmbed(nn.Module):
     def __init__(self, dropout, output_size, flow_bool):
-        super(TransformerEmbed, self).__init__()
-        # self.config = VivitConfig.from_pretrained("google/vivit-l-16x2-kinetics400")
-        # self.featureextractor = VivitModel.from_pretrained("google/vivit-l-16x2-kinetics400", config=self.config)
-        # self.hidden_size = self.config.hidden_size
-
-        # Load config with correct frame count
-        config = AutoConfig.from_pretrained(
-            "OpenGVLab/VideoMAEv2-Large", trust_remote_code=True, from_tf=True
-        )
-        config.model_config["num_frames"] = 32  # critical
-        config.model_config["use_mean_pooling"] = True  # for global latent vector
-
-        # Load model
-        self.featureextractor = AutoModel.from_pretrained("OpenGVLab/VideoMAEv2-Large", config=config, trust_remote_code=True)
-        self.hidden_size = 1024
-        # print(f"TransformerEmbed: Hidden size is {self.hidden_size}")
-    
+        super(TransformerFCEmbed, self).__init__()
+        self.config = VivitConfig.from_pretrained("google/vivit-b-16x2-kinetics400")
+        self.featureextractor = VivitModel.from_pretrained("google/vivit-b-16x2-kinetics400", config=self.config)
+        self.hidden_size = self.config.hidden_size
 
         # RPM EMBEDDING
         # self.rpm_embedding = nn.Sequential(
@@ -43,9 +29,7 @@ class TransformerEmbed(nn.Module):
 
     def forward(self, video: torch.Tensor, rpm: torch.Tensor):
         outputs = self.featureextractor(video)
-        # video_features = outputs.pooler_output
-        video_features = outputs
-        # print(f"TransformerEmbed: Video features shape {video_features.shape}")
+        video_features = outputs.pooler_output
         rpm_vec = self.rpm_embedding(torch.round(rpm).squeeze(-1).long())
 
         concat = video_features + rpm_vec
