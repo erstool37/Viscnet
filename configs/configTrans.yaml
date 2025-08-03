@@ -1,10 +1,10 @@
 project: "sph_test_run"
-name: "class10_rpmNoFC_largeVideoMAE_rpm20increment_weightProduction"
+name: "class10_rpmNoFC_largeMAE_sph_test_noaug"
 version: v0
 
 regression:
   train_settings:
-    batch_size : 1
+    batch_size : 4
     num_epochs : 20
     num_workers : 0
     seed : 1205
@@ -22,7 +22,7 @@ regression:
 
   model:
     encoder:
-      encoder: TransformerEmbed
+      encoder: TransformerMAE
       cnn : "resnet34"
       cnn_train : True
       lstm_size : 256
@@ -50,10 +50,10 @@ regression:
   optimizer:
     optim_class: AdamW
     scheduler_class: CosineAnnealingLR
-    lr: 1e-4   # 1e-2 ~ 1e-5 정도 대역으로
-    eta_min : 1e-9
+    lr: 1e-4  # 1e-2 ~ 1e-5 정도 대역으로
+    eta_min : 1e-10
     weight_decay: 1e-2 # 1e-2 정도로
-    patience : 10
+    patience : 5
   
   directories:
     checkpoint :
@@ -62,7 +62,7 @@ regression:
       inf_checkpoint : "src/weights/finetune_realworld_real_sep_0729_v0.pth"
 
     data :
-      data_root : "dataset/CFDArchive/sph_20rpm_increment_real"
+      data_root : "dataset/CFDArchive/sph_test"
       # data_root : "dataset/realfluid/RealArchive/real_20rpmincrement_real"
       test_root : "dataset/CFDArchive/test"
       # real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"
@@ -70,9 +70,3 @@ regression:
       video_subdir : "videos"
       para_subdir : "parameters"
       norm_subdir : "parametersNorm"
-
-      # selected 1 : high rpm, all visc, all render 200
-      # selected 2 : low rpm, all visc, all render 200
-      # selected 3 : high rpm, all visc, no render 50
-      # selected 4 : high rpm, one render, 2500
-      # selected 5: 

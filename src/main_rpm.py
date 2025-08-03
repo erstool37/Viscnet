@@ -120,7 +120,6 @@ encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_u
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
 criterion = criterion_class(DESCALER, DATA_ROOT)
 
-
 if FLOW_BOOL:
     optimizer = optim_class(list(encoder.parameters()) + list(flow.parameters()), lr=LR, weight_decay=W_DECAY)
 else:
@@ -129,7 +128,7 @@ scheduler = scheduler_class(optimizer, T_max=NUM_EPOCHS, eta_min=ETA_MIN)
 
 if rank == 0:
     wandb.init(project=PROJECT, name=run_name, reinit=True, resume="never", config= config)
-    wandb.watch(encoder, log="all", log_freq=10)
+    # wandb.watch(encoder, log="all", log_freq=10)
 
 # TRAIN MODEL
 best_val_loss = float("inf")
@@ -139,21 +138,17 @@ for epoch in range(NUM_EPOCHS):
     train_losses = []
     if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Training")
     encoder.train()
-    # for frames, parameters, names, rpm_class in tqdm(train_dl):
-    #     frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
     for frames, parameters, hotvector, names, rpm_class in tqdm(train_dl):
         frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
-        # print(hotvector, names)
         outputs = encoder(frames, rpm_class)
 
         if FLOW_BOOL:
             z, log_det_jacobian = flow(parameters, outputs)
             train_loss = criterion(z, log_det_jacobian)
             visc = flow.inverse(z, outputs)
-            if rank == 0: MAPEflowcalculator(vissc.detach(), parameters.detach(), DESCALER, "train", DATA_ROOT)
+            if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "train", DATA_ROOT)
         else:
             train_loss = criterion(outputs, parameters, hotvector)
-            # train_loss = criterion(outputs, parameters)
             # if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT)
         optimizer.zero_grad()
         train_loss.backward()
@@ -163,8 +158,9 @@ for epoch in range(NUM_EPOCHS):
             avg_train_loss = train_loss / world_size
             train_losses.append(avg_train_loss.item())
 
-        if (len(train_losses)) % 20 == 0:
+        if (len(train_losses)) % 2 == 0:
             mean_train_loss = mean(train_losses)
+            train_losses.clear()
             if rank == 0: wandb.log({"train_loss": mean_train_loss})
     train_losses.clear()
 
@@ -173,8 +169,6 @@ for epoch in range(NUM_EPOCHS):
     val_losses = []
     with torch.no_grad():
         if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
-        # for frames, parameters, _, rpm_class in tqdm(val_dl):
-        #     frames, parameters, rpm_class = frames.to(device), parameters.to(device), rpm_class.to(device)
         for frames, parameters, hotvector, _, rpm_class in tqdm(val_dl):
             frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
             outputs = encoder(frames, rpm_class)
@@ -186,8 +180,7 @@ for epoch in range(NUM_EPOCHS):
                 if rank == 0: MAPEflowcalculator(visc.detach(), parameters.detach(), DESCALER, "val", DATA_ROOT)
             else:
                 val_loss = criterion(outputs, parameters, hotvector)
-                # val_loss = criterion(outputs, parameters)
-                if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
+                # if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT)
             torch.distributed.all_reduce(val_loss, op=torch.distributed.ReduceOp.SUM)
             avg_val_loss = val_loss / world_size
             val_losses.append(avg_val_loss.item())
@@ -196,29 +189,31 @@ for epoch in range(NUM_EPOCHS):
     val_losses.clear()
     if rank == 0: wandb.log({"val_loss": mean_val_loss})
 
-    # PATIENCE
-    if mean_val_loss < best_val_loss:
-        best_val_loss = mean_val_loss
-        counter = 0
-    else:
-        counter += 1
-        if counter >= PATIENCE:
-            print(f"Early stopping at epoch {epoch+1}")
-            break
     scheduler.step()
     current_lr = scheduler.get_last_lr()[0]
     if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.7f}")
     val_losses.clear()
 
-if rank == 0:
-    torch.save(encoder.module.state_dict(), checkpoint)
-    print(f"Model saved to {checkpoint}")
-    wandb.finish()
+    # PATIENCE
+    if mean_val_loss < best_val_loss:
+        best_val_loss = mean_val_loss
+        counter = 0
+        if rank == 0: 
+            torch.save(encoder.module.state_dict(), checkpoint)
+            print(f"Model saved to {checkpoint}")
+    else:
+        counter += 1
+        if counter >= PATIENCE:
+            print(f"Early stopping at epoch {epoch+1}")
+            break
 
+if rank == 0:
+    wandb.finish()
 ddp_cleanup()
 
-"""
 
+
+"""
 # REAL WORLD calibration
 encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
 criterion = criterion_class(DESCALER, DATA_ROOT)
