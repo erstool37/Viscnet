@@ -1,14 +1,14 @@
 project: "sph_test_run"
-name: "class10_rpmNoFC_largeMAE_sph_test_noaug"
+name: "class10_rpm50_vivit_b_basetraining_test_run_nopool"
 version: v0
 
 regression:
   train_settings:
-    batch_size : 4
+    batch_size : 2
     num_epochs : 20
     num_workers : 0
     seed : 1205
-    dataset : "VideoDatasetClassMAE"
+    dataset : "VideoDatasetClassTrans"
 
   preprocess:
     scaler : "interscaler"    # log scaled, inter scaling works best 
@@ -22,7 +22,7 @@ regression:
 
   model:
     encoder:
-      encoder: TransformerMAE
+      encoder: TransformerEmbed
       cnn : "resnet34"
       cnn_train : True
       lstm_size : 256
@@ -50,10 +50,10 @@ regression:
   optimizer:
     optim_class: AdamW
     scheduler_class: CosineAnnealingLR
-    lr: 1e-4  # 1e-2 ~ 1e-5 정도 대역으로
-    eta_min : 1e-10
-    weight_decay: 1e-2 # 1e-2 정도로
-    patience : 5
+    lr: 1e-2  # 1e-2 ~ 1e-5 정도 대역으로
+    eta_min : 1e-9
+    weight_decay: 1e-4 # 1e-2 정도로
+    patience : 10
   
   directories:
     checkpoint :
@@ -62,7 +62,7 @@ regression:
       inf_checkpoint : "src/weights/finetune_realworld_real_sep_0729_v0.pth"
 
     data :
-      data_root : "dataset/CFDArchive/sph_test"
+      data_root : "dataset/CFDArchive/sph_improved"
       # data_root : "dataset/realfluid/RealArchive/real_20rpmincrement_real"
       test_root : "dataset/CFDArchive/test"
       # real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"

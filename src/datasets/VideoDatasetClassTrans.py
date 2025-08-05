@@ -35,7 +35,7 @@ class VideoDatasetClassTrans(Dataset):
         names = self._loadname(self.para_paths[index])
         frames = self._loadvideo(self.video_paths[index])
         parameters, hotvector = self._loadparameters(self.para_paths[index])
-        
+        print(f"video_path: {self.video_paths[index]}, para_path: {self.para_paths[index]}")
         # rpm_idx = parameters[-1] 
         rpm = parameters[-1]
         return frames, parameters, hotvector, names, rpm
@@ -97,5 +97,6 @@ class VideoDatasetClassTrans(Dataset):
         return name[0]
 
     def __len__(self):
-        print(len(self.video_paths))
+        print(f"videopath_length: {len(self.video_paths)}")
+        print(f"parapath_length: {len(self.para_paths)}")
         return len(self.video_paths)

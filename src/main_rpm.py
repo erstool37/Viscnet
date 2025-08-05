@@ -11,7 +11,7 @@ import importlib
 import yaml
 from torch.utils.data import DataLoader, DistributedSampler
 from sklearn.model_selection import train_test_split
-from utils.utils import MAPEcalculator, MAPEflowcalculator
+from utils.utils import MAPEcalculator, MAPEflowcalculator, sanity_check_alignment
 from utils import set_seed, ddp_setup, ddp_cleanup
 from torch.nn.parallel import DistributedDataParallel as DDP
 import warnings
@@ -92,11 +92,14 @@ run_name = osp.basename(checkpoint).split(".")[0]
 video_paths = sorted(glob.glob(osp.join(DATA_ROOT, VIDEO_SUBDIR, "*.mp4")))
 para_paths = sorted(glob.glob(osp.join(DATA_ROOT, NORM_SUBDIR, "*.json")))
 
+sanity_check_alignment(video_paths, para_paths)
+
 train_video_paths, val_video_paths = train_test_split(video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 train_para_paths, val_para_paths = train_test_split(para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
 train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME, AUG_BOOL)
 val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME, aug_bool=False)
+
 # train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME)
 # val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME)
 
@@ -128,7 +131,7 @@ scheduler = scheduler_class(optimizer, T_max=NUM_EPOCHS, eta_min=ETA_MIN)
 
 if rank == 0:
     wandb.init(project=PROJECT, name=run_name, reinit=True, resume="never", config= config)
-    # wandb.watch(encoder, log="all", log_freq=10)
+    wandb.watch(encoder, log="all", log_freq=10)
 
 # TRAIN MODEL
 best_val_loss = float("inf")
@@ -141,6 +144,7 @@ for epoch in range(NUM_EPOCHS):
     for frames, parameters, hotvector, names, rpm_class in tqdm(train_dl):
         frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
         outputs = encoder(frames, rpm_class)
+        # print(rpm_class, hotvector)
 
         if FLOW_BOOL:
             z, log_det_jacobian = flow(parameters, outputs)

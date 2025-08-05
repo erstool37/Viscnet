@@ -10,7 +10,8 @@ from .utils import (
     MAPEcalculator,
     MAPEflowcalculator,
     noscaler,
-    nodescaler
+    nodescaler,
+    sanity_check_alignment
 )
 
 from .analysis import (
