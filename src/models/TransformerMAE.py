@@ -41,4 +41,5 @@ class TransformerMAE(nn.Module):
         rpm_vec = self.rpm_embedding(rpm_idx)  # shape: (B, hidden_size)
         # rpm_vec = self.rpm_embedding(torch.round(rpm).squeeze(-1).long())
         concat = video_features + rpm_vec
+        
         return concat if self.flow_bool else self.classifier(concat)

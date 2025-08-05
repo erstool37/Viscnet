@@ -184,3 +184,25 @@ def MAPEflowcalculator(pred, target, descaler, method, path):
         "z_std_visc": z_std[1].item(),
         "z_std_surf": z_std[2].item()
         })
+
+
+def sanity_check_alignment(video_paths, para_paths):
+    if len(video_paths) != len(para_paths):
+        raise ValueError(f"Length mismatch: {len(video_paths)} videos vs {len(para_paths)} params")
+
+    mismatches = []
+
+    for v_path, p_path in zip(video_paths, para_paths):
+        v_name = osp.splitext(osp.basename(v_path))[0]
+        p_name = osp.splitext(osp.basename(p_path))[0]
+
+        if v_name != p_name:
+            mismatches.append((v_name, p_name))
+
+    if mismatches:
+        print(f"❌ Found {len(mismatches)} mismatches:")
+        for v, p in mismatches[:10]:
+            print(f"  Video: {v}  ≠  Param: {p}")
+        raise AssertionError("Video and parameter file names are not aligned.")
+    else:
+        print("Sanity check passed: all file names match exactly.")

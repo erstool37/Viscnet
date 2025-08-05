@@ -1,16 +1,19 @@
 import torch
 import torch.nn as nn
-from transformers import VivitModel, VivitConfig
-
+from transformers import VivitModel, VivitConfig, VivitForVideoClassification
 
 class TransformerEmbed(nn.Module):
     def __init__(self, dropout, output_size, flow_bool):
         super(TransformerEmbed, self).__init__()
-        self.config = VivitConfig.from_pretrained("google/vivit-l-16x2-kinetics400")
-        self.featureextractor = VivitModel.from_pretrained("google/vivit-l-16x2-kinetics400", config=self.config)
+        # self.config = VivitConfig.from_pretrained("google/vivit-l-16x2-kinetics400")
+        # self.featureextractor = VivitModel.from_pretrained("google/vivit-l-16x2-kinetics400", config=self.config)
+
+        self.config = VivitConfig()
+        self.config.use_mean_pooling = False
+        self.featureextractor = VivitModel(self.config)
         self.hidden_size = self.config.hidden_size
 
-        self.rpm_embedding = nn.Embedding(10, self.hidden_size)
+        self.rpm_embedding = nn.Embedding(50, self.hidden_size)
 
         # FC HEAD
         self.flow_bool = flow_bool
@@ -19,14 +22,12 @@ class TransformerEmbed(nn.Module):
             nn.Linear(self.hidden_size, 192),
             nn.SiLU(),
             nn.Dropout(p=dropout),
-            nn.Linear(192,10)
+            nn.Linear(192, 10)
         )
 
     def forward(self, video: torch.Tensor, rpm: torch.Tensor):
         outputs = self.featureextractor(video)
-        # video_features = outputs.pooler_output
-        video_features = outputs
-        # print(f"TransformerEmbed: Video features shape {video_features.shape}")
+        video_features = outputs.last_hidden_state[:, 0].contiguous()
         rpm_vec = self.rpm_embedding(torch.round(rpm).squeeze(-1).long())
 
         concat = video_features + rpm_vec
