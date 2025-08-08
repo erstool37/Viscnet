@@ -119,6 +119,10 @@ device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
 # encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
 encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
+state_dict = torch.load("src/weights/class10_rpm50_vivit_b_basetrainagain_meanpool_improveddataset_withrpm_augFALSE_0807_v1.pth")
+encoder.load_state_dict(state_dict, strict=False)
+for param in encoder.parameters():
+    param.requires_grad = True
 encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS).to(device) # this is also the flow model, but not utilized yet, not DDP wrapped
 criterion = criterion_class(DESCALER, DATA_ROOT)
@@ -131,7 +135,7 @@ scheduler = scheduler_class(optimizer, T_max=NUM_EPOCHS, eta_min=ETA_MIN)
 
 if rank == 0:
     wandb.init(project=PROJECT, name=run_name, reinit=True, resume="never", config= config)
-    wandb.watch(encoder, log="all", log_freq=10)
+    # wandb.watch(encoder, log="all", log_freq=10)
 
 # TRAIN MODEL
 best_val_loss = float("inf")
@@ -143,8 +147,8 @@ for epoch in range(NUM_EPOCHS):
     encoder.train()
     for frames, parameters, hotvector, names, rpm_class in tqdm(train_dl):
         frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
+        print(rpm_class, hotvector)
         outputs = encoder(frames, rpm_class)
-        # print(rpm_class, hotvector)
 
         if FLOW_BOOL:
             z, log_det_jacobian = flow(parameters, outputs)
