@@ -1,6 +1,6 @@
 project: "sph_test_run"
-name: "class10_rpm50_vivit_b_basetrainagain_meanpool_improveddataset_withrpm_augFALSE"
-version: v2
+name: "class10_rpm10_vivit_large_basetrain_meanpool_render20ddataset_REALREALNOorpmembed_augFalse_true"
+version: v0
 
 regression:
   train_settings:
@@ -18,7 +18,7 @@ regression:
     test_size : 0.2
     random_state : 37
     rpm_class : 50
-    aug_bool : FALSE # TURN OFF FOR REAL DATA
+    aug_bool : True # TURN OFF FOR REAL DATA
 
   model:
     encoder:
@@ -50,9 +50,9 @@ regression:
   optimizer:
     optim_class: AdamW
     scheduler_class: CosineAnnealingLR
-    lr: 1e-6  # 1e-2 ~ 1e-5 정도 대역으로
+    lr: 1e-5  # 1e-2 ~ 1e-5 정도 대역으로
     eta_min : 1e-10
-    weight_decay: 1e-4 # 1e-2 정도로
+    weight_decay: 0 # 1e-2 정도로
     patience : 10
   
   directories:
@@ -62,7 +62,7 @@ regression:
       inf_checkpoint : "src/weights/finetune_realworld_real_sep_0729_v0.pth"
 
     data :
-      data_root : "dataset/CFDArchive/sph_improved"
+      data_root : "dataset/CFDArchive/sph_20rpm_increment"
       # data_root : "dataset/realfluid/RealArchive/real_20rpmincrement_real"
       test_root : "dataset/CFDArchive/test"
       # real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"

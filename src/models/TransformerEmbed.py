@@ -24,7 +24,7 @@ class TransformerEmbed(nn.Module):
 
         self.featureextractor = VivitModel(self.config)
         self.hidden_size = self.config.hidden_size
-        self.rpm_embedding = nn.Embedding(50, self.hidden_size)
+        # self.rpm_embedding = nn.Embedding(50, self.hidden_size)
 
         # FC HEAD
         self.flow_bool = flow_bool
@@ -38,10 +38,10 @@ class TransformerEmbed(nn.Module):
     def forward(self, video: torch.Tensor, rpm: torch.Tensor):
         outputs = self.featureextractor(video)
         video_features = outputs.last_hidden_state.mean(dim=1).contiguous()
-        rpm_vec = self.rpm_embedding(torch.round(rpm).squeeze(-1).long())
+        # rpm_vec = self.rpm_embedding(torch.round(rpm).squeeze(-1).long())
 
-        concat = video_features + rpm_vec
-        # concat = video_features
+        # concat = video_features + rpm_vec
+        concat = video_features
 
         if self.flow_bool:
             viscosity = concat

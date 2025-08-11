@@ -119,8 +119,8 @@ device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
 # encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
 encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
-state_dict = torch.load("src/weights/class10_rpm50_vivit_b_basetrainagain_meanpool_improveddataset_withrpm_augFALSE_0807_v1.pth")
-encoder.load_state_dict(state_dict, strict=False)
+# state_dict = torch.load("src/weights/class10_rpm10_vivit_large_basetrain_meanpool_render20ddataset_norpmembed_augFALSE_0809_v0.pth")
+# encoder.load_state_dict(state_dict, strict=False)
 for param in encoder.parameters():
     param.requires_grad = True
 encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
@@ -147,7 +147,7 @@ for epoch in range(NUM_EPOCHS):
     encoder.train()
     for frames, parameters, hotvector, names, rpm_class in tqdm(train_dl):
         frames, parameters, hotvector, rpm_class = frames.to(device), parameters.to(device), hotvector.to(device), rpm_class.to(device)
-        print(rpm_class, hotvector)
+        # print(rpm_class, hotvector)
         outputs = encoder(frames, rpm_class)
 
         if FLOW_BOOL:
