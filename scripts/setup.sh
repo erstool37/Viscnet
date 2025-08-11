@@ -6,4 +6,4 @@ apt install -y tmux
 # tmux new-session -d -s slave1
 # tmux attach -t slave1
 # vessl storage copy-file volume://vessl-storage/sph-final .
-# huggingface-cli login
+# huggingface-cli loginz
