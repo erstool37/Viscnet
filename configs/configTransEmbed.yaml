@@ -1,0 +1,72 @@
+project: "sph_test_run"
+name: "class5_rpm10_vivit_large_base_currtrain_meanpool_render20ddataset_REALrpmembed_augFalse"
+version: v1
+
+regression:
+  train_settings:
+    batch_size : 1
+    num_epochs : 20
+    num_workers : 0
+    seed : 1205
+    dataset : "VideoDatasetClassTrans" 
+
+  preprocess:
+    scaler : "interscaler"    # log scaled, inter scaling works best 
+    descaler : "interdescaler"
+    frame_num : 10
+    time : 3.2
+    test_size : 0.2
+    random_state : 37
+    rpm_class : 10
+    aug_bool : False # TURN OFF FOR REAL DATA
+
+  model:
+    encoder:
+      encoder: VivitEmbed
+      cnn : "resnet34"
+      cnn_train : True
+      lstm_size : 256
+      lstm_layers : 5
+      output_size : 3
+      drop_rate : 0.0
+      embedding_size : 512
+      embed_weight : 0.0
+
+    flow: 
+      flow : "RealNVP"
+      flow_bool : False
+      dim: 4 # dimension of total model output, currently 4
+      con_dim: 256 # same as lstm hidden_size
+      hidden_dim: 64 # innate dimension of flow
+      num_layers : 10 # number of s, t layers stacked
+
+  real_model:
+    real_epochs : 50
+    lr : 1e-5
+    weight_decay : 5e-4
+
+  loss : "CE"
+
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    lr: 1e-5  # 1e-2 ~ 1e-5 정도 대역으로
+    eta_min : 1e-10
+    weight_decay: 1e-2 # 1e-2 정도로
+    patience : 10
+  
+  directories:
+    checkpoint :
+      ckpt_root : "src/weights/"
+      # inf_checkpoint : "src/weights/rpm20_classification_10class_big_reg_embedding_0729_v0.pth"
+      inf_checkpoint : "src/weights/class10_rpm10_vivit_large_basetrain_meanpool_render20ddataset_REALrpmembed_augFalse_0813_v0.pth"
+
+    data :
+      data_root : "dataset/CFDArchive/sph_20rpm_increment"
+      # data_root : "dataset/realfluid/RealArchive/real_20rpmincrement_real"
+      test_root : "dataset/CFDArchive/test"
+      # real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"
+      real_root : "dataset/realfluid/RealArchive/real_20rpmincrement"
+      video_subdir : "videos"
+      para_subdir : "parameters"
+      norm_subdir : "parametersNorm"

@@ -21,7 +21,7 @@ from utils import MAPEcalculator, MAPEflowcalculator, MAPEtestcalculator, set_se
 from torch.nn import functional as F
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config", type=str, required=True, default="configs/config0.yaml")
+parser.add_argument("-c", "--config", type=str, required=True)
 parser.add_argument("-m", "--method", type=str, required=True)
 args = parser.parse_args()
 
@@ -95,7 +95,6 @@ if METHOD == "real":
 
     # _, video_paths = train_test_split(real_video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
     # _, para_paths = train_test_split(real_para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
-
 elif METHOD == "test":
     video_paths = sorted(glob.glob(osp.join(TEST_ROOT, VIDEO_SUBDIR, "*.mp4")))
     para_paths = sorted(glob.glob(osp.join(TEST_ROOT, NORM_SUBDIR, "*.json")))
@@ -115,11 +114,9 @@ logits = []
 hotvectors = []
 # for frames, parameters, names, rpm in tqdm(dl):
 #     frames, parameters, rpm = frames.to(device), parameters.to(device), rpm.to(device)
-for frames, parameters, hotvector, names, rpm in tqdm(dl):
-    frames, parameters, hotvector, rpm = frames.to(device), parameters.to(device), hotvector.to(device), rpm.to(device)
-    print(hotvector)
-    outputs = encoder(frames, rpm)
-    # print(outputs)
+for frames, parameters, hotvector, names, rpm_idx in tqdm(dl):
+    frames, parameters, hotvector, rpm_idx = frames.to(device), parameters.to(device), hotvector.to(device), rpm_idx.to(device).long().squeeze(-1)
+    outputs = encoder(frames, rpm_idx)
     
     if FLOW_BOOL:
         z, log_det_jacobian = flow(parameters, outputs)

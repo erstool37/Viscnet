@@ -15,16 +15,16 @@ class VideoDatasetClassTrans(Dataset):
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = int(frame_num * time)
-        self.cluster_map = {i: i // 5 for i in range(50)} # 10 clusters
+        self.cluster_map = {i: i // 10 for i in range(50)} # 10 clusters
         # self.processor = VivitImageProcessor.from_pretrained("google/vivit-b-16x2-kinetics400")
         # self.processor = VideoMAEImageProcessor.from_pretrained("OpenGVLab/VideoMAEv2-Base", trust_remote_code=True)
 
         self.aug_bool = aug_bool
 
         self.augmentation = A.Compose([
-            A.Perspective(scale=(0.02, 0.03), keep_size=True, p=0.6),
-            A.MotionBlur(blur_limit=(3, 9), p=0.6),
-            A.RandomBrightnessContrast(0.2, 0.2, p=0.5),
+            A.Perspective(scale=(0.01, 0.02), keep_size=True, p=0.6),
+            A.MotionBlur(blur_limit=(2, 3), p=0.6),
+            A.RandomBrightnessContrast(0.05, 0.1, p=0.5),
         ])
 
         self.center_resize = A.Compose([
