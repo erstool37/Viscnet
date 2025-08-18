@@ -29,6 +29,7 @@ cfg = config["regression"]
 NAME            = config["name"]
 PROJECT         = config["project"]
 VER             = config["version"]
+WATCH_BOOL      = config["watch_bool"]
 SCALER          = cfg["preprocess"]["scaler"]
 DESCALER        = cfg["preprocess"]["descaler"]
 TEST_SIZE       = float(cfg["preprocess"]["test_size"])
@@ -47,6 +48,8 @@ ETA_MIN         = float(cfg["optimizer"]["eta_min"])
 W_DECAY         = float(cfg["optimizer"]["weight_decay"])
 CKPT_ROOT       = cfg["directories"]["checkpoint"]["ckpt_root"]
 ENCODER         = cfg["model"]["encoder"]["encoder"]
+CURR_BOOL       = cfg["model"]["encoder"]["curr_bool"]
+CURR_CKPT       = cfg["model"]["encoder"]["curr_ckpt"]
 CNN             = cfg["model"]["encoder"]["cnn"]
 CNN_TRAIN       = cfg["model"]["encoder"]["cnn_train"]
 LSTM_SIZE       = int(cfg["model"]["encoder"]["lstm_size"])
@@ -119,8 +122,11 @@ device = f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu'
 
 # encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT).to(device)
 encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL).to(device)
-# state_dict = torch.load("src/weights/class10_rpm10_vivit_large_basetrain_meanpool_render20ddataset_REALrpmembed_augFalse_0813_v0.pth")
-# encoder.load_state_dict(state_dict, strict=False)
+if CURR_BOOL : 
+    state_dict = torch.load(CURR_CKPT)
+    state_dict = {k: v for k, v in state_dict.items() if not k.startswith("classifier.2")}
+    encoder.load_state_dict(state_dict, strict=False)
+
 for param in encoder.parameters():
     param.requires_grad = True
 encoder = DDP(encoder, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
@@ -133,9 +139,10 @@ else:
     optimizer = optim_class(encoder.parameters(), lr=LR, weight_decay=W_DECAY)
 scheduler = scheduler_class(optimizer, T_max=NUM_EPOCHS, eta_min=ETA_MIN)
 
-if rank == 0:
+if rank == 0: 
     wandb.init(project=PROJECT, name=run_name, reinit=True, resume="never", config= config)
-    # wandb.watch(encoder, log="all", log_freq=10)
+    if WATCH_BOOL: 
+        wandb.watch(encoder, log="all", log_freq=20)
 
 # TRAIN MODEL
 best_val_loss = float("inf")

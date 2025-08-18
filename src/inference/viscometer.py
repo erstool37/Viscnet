@@ -29,6 +29,7 @@ with open(args.config, "r") as file:
     config = yaml.safe_load(file)
 cfg = config["regression"]
 
+NAME            = config["name"]
 METHOD          = args.method
 SCALER          = cfg["preprocess"]["scaler"]
 DESCALER        = cfg["preprocess"]["descaler"]
@@ -80,7 +81,6 @@ flow_class = getattr(flow_module, FLOW)
 # encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, FLOW_BOOL, RPM_CLASS, EMBED_SIZE, WEIGHT)
 encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, FLOW_BOOL)
 flow = flow_class(DIM, CON_DIM, HIDDEN_DIM, NUM_LAYERS)
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 encoder.cuda()
 encoder.eval()
@@ -114,67 +114,68 @@ logits = []
 hotvectors = []
 # for frames, parameters, names, rpm in tqdm(dl):
 #     frames, parameters, rpm = frames.to(device), parameters.to(device), rpm.to(device)
-for frames, parameters, hotvector, names, rpm_idx in tqdm(dl):
-    frames, parameters, hotvector, rpm_idx = frames.to(device), parameters.to(device), hotvector.to(device), rpm_idx.to(device).long().squeeze(-1)
-    outputs = encoder(frames, rpm_idx)
-    
-    if FLOW_BOOL:
-        z, log_det_jacobian = flow(parameters, outputs)
-        visc = flow.inverse(z, outputs)
-        error = MAPEtestcalculator(visc.detach(), parameters.detach(), DESCALER, METHOD, repo[f"{METHOD}_root"])
-    else:
-        # wandb.log({"xsph estimation": outputs.detach().cpu()}) 
-        probs = F.softmax(outputs, dim=1)
-        logits.append(probs.detach().cpu())
-        hotvectors.append(hotvector.detach().cpu())
+with torch.no_grad():
+    for frames, parameters, hotvector, names, rpm_idx in tqdm(dl):
+        frames, parameters, hotvector, rpm_idx = frames.to(device), parameters.to(device), hotvector.to(device), rpm_idx.to(device).long().squeeze(-1)
+        outputs = encoder(frames, rpm_idx)
+        
+        if FLOW_BOOL:
+            z, log_det_jacobian = flow(parameters, outputs)
+            visc = flow.inverse(z, outputs)
+            error = MAPEtestcalculator(visc.detach(), parameters.detach(), DESCALER, METHOD, repo[f"{METHOD}_root"])
+        else:
+            # wandb.log({"xsph estimation": outputs.detach().cpu()}) 
+            probs = F.softmax(outputs, dim=1)
+            logits.append(probs.detach().cpu())
+            hotvectors.append(hotvector.detach().cpu())
 
-logits = torch.cat(logits, dim=0).numpy()
-hotvectors = torch.cat(hotvectors, dim=0).numpy()
+    logits = torch.cat(logits, dim=0).numpy()
+    hotvectors = torch.cat(hotvectors, dim=0).numpy()
 
-# visualize_logits(logits)
-confusion_matrix(logits, hotvectors)
+    # visualize_logits(logits)
+    confusion_matrix(NAME, logits, hotvectors)
 
 
-# errors_tensor = torch.cat(errors, dim=0)
-# meanerror = errors_tensor.mean(dim=0)  # shape: [3]
+    # errors_tensor = torch.cat(errors, dim=0)
+    # meanerror = errors_tensor.mean(dim=0)  # shape: [3]
 
-# distribution(data=errors_tensor[:,0], ref = 0, save_path='src/inference/error/dist_den.png')
-# distribution(data=errors_tensor[:,1], ref = 0, save_path='src/inference/error/dist_visco.png')
-# distribution(data=errors_tensor[:,2], ref = 0, save_path='src/inference/error/dist_surf.png')
+    # distribution(data=errors_tensor[:,0], ref = 0, save_path='src/inference/error/dist_den.png')
+    # distribution(data=errors_tensor[:,1], ref = 0, save_path='src/inference/error/dist_visco.png')
+    # distribution(data=errors_tensor[:,2], ref = 0, save_path='src/inference/error/dist_surf.png')
 
-# print(f"density MAPE: {float(meanerror[0]):.2f}%")
-# print(f"dynamic viscosity MAPE: {float(meanerror[1]):.2f}%")
-# print(f"surface tension MAPE: {float(meanerror[2]):.2f}%")
+    # print(f"density MAPE: {float(meanerror[0]):.2f}%")
+    # print(f"dynamic viscosity MAPE: {float(meanerror[1]):.2f}%")
+    # print(f"surface tension MAPE: {float(meanerror[2]):.2f}%")
 
-# Regression Validation test
-"""
-unnorm_outputs_list = []
-unnorm_para_list = []
+    # Regression Validation test
+    """
+    unnorm_outputs_list = []
+    unnorm_para_list = []
 
-for frames, parameters in test_dl:
-    frames, parameters = frames.to(device), parameters.to(device)
-    outputs = visc_model(frames)
-    
-    unnorm_outputs = torch.stack([zdescaler(outputs[:, 0], 'density'), zdescaler(outputs[:, 1], 'dynamic_viscosity'), zdescaler(outputs[:, 2], 'surface_tension')], dim=1)  
-    unnorm_para = torch.stack([parameters[:, 0], parameters[:, 1], parameters[:, 2]], dim=1)
-    
-    unnorm_outputs_list.append(unnorm_outputs.detach().cpu()) 
-    unnorm_para_list.append(unnorm_para.detach().cpu())
+    for frames, parameters in test_dl:
+        frames, parameters = frames.to(device), parameters.to(device)
+        outputs = visc_model(frames)
+        
+        unnorm_outputs = torch.stack([zdescaler(outputs[:, 0], 'density'), zdescaler(outputs[:, 1], 'dynamic_viscosity'), zdescaler(outputs[:, 2], 'surface_tension')], dim=1)  
+        unnorm_para = torch.stack([parameters[:, 0], parameters[:, 1], parameters[:, 2]], dim=1)
+        
+        unnorm_outputs_list.append(unnorm_outputs.detach().cpu()) 
+        unnorm_para_list.append(unnorm_para.detach().cpu())
 
-unnorm_outputs_list = torch.cat(unnorm_outputs_list, dim=0)
-unnorm_para_list = torch.cat(unnorm_para_list, dim=0)
+    unnorm_outputs_list = torch.cat(unnorm_outputs_list, dim=0)
+    unnorm_para_list = torch.cat(unnorm_para_list, dim=0)
 
-groups = defaultdict(list)
-for idx, item in enumerate(unnorm_para_list):
-    key = item[0].item()
-    groups[key].append(idx)
-grouped_indices = list(groups.values())
+    groups = defaultdict(list)
+    for idx, item in enumerate(unnorm_para_list):
+        key = item[0].item()
+        groups[key].append(idx)
+    grouped_indices = list(groups.values())
 
-grouped_outputs_list = [unnorm_outputs_list[idx] for idx in grouped_indices]
-grouped_para_list = [unnorm_para_list[idx] for idx in grouped_indices]
+    grouped_outputs_list = [unnorm_outputs_list[idx] for idx in grouped_indices]
+    grouped_para_list = [unnorm_para_list[idx] for idx in grouped_indices]
 
-for idx in range(len(grouped_outputs_list)):
-    distribution(grouped_outputs_list[idx][:,0], ref = grouped_para_list[idx][0,0].cpu(), save_path=f'test/precision/dist{(idx+1):02d}_den.png')
-    distribution(grouped_outputs_list[idx][:,1], ref = grouped_para_list[idx][0,1].cpu(), save_path=f'test/precision/dist{(idx+1):02d}_visco.png')
-    distribution(grouped_outputs_list[idx][:,2], ref = grouped_para_list[idx][0,2].cpu(), save_path=f'test/precision/dist{(idx+1):02d}_surf.png')
-"""
+    for idx in range(len(grouped_outputs_list)):
+        distribution(grouped_outputs_list[idx][:,0], ref = grouped_para_list[idx][0,0].cpu(), save_path=f'test/precision/dist{(idx+1):02d}_den.png')
+        distribution(grouped_outputs_list[idx][:,1], ref = grouped_para_list[idx][0,1].cpu(), save_path=f'test/precision/dist{(idx+1):02d}_visco.png')
+        distribution(grouped_outputs_list[idx][:,2], ref = grouped_para_list[idx][0,2].cpu(), save_path=f'test/precision/dist{(idx+1):02d}_surf.png')
+    """

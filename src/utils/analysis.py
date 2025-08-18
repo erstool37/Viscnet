@@ -70,7 +70,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix as sk_cm, ConfusionMatrixDisplay
 
-def confusion_matrix(logits_batch, true_labels, normalize=True):
+def confusion_matrix(name, logits_batch, true_labels, normalize=True):
     y_pred = np.argmax(logits_batch, axis=1)      # shape (N,)
     y_true = true_labels.astype(int).flatten()     # already integer labels
 
@@ -79,5 +79,5 @@ def confusion_matrix(logits_batch, true_labels, normalize=True):
     disp.plot(cmap="Blues", xticks_rotation=45)
     plt.title("Confusion Matrix")
     plt.tight_layout()
-    plt.savefig("confusion_matrix.png", dpi=300)
+    plt.savefig(f"src/inference/confusion_matrix/{name}.png", dpi=300)
     plt.close()

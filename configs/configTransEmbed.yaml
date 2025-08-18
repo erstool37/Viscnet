@@ -1,6 +1,7 @@
 project: "sph_test_run"
-name: "class5_rpm10_vivit_large_base_currtrain_meanpool_render20ddataset_REALrpmembed_augFalse"
-version: v1
+name: "class5_rpm10_vivit_large_currtrain_realvisc32dataset_REALrpmembed_augTrue"
+version: v0
+watch_bool : False
 
 regression:
   train_settings:
@@ -8,22 +9,24 @@ regression:
     num_epochs : 20
     num_workers : 0
     seed : 1205
-    dataset : "VideoDatasetClassTrans" 
+    dataset : VideoDatasetClassTrans5
 
   preprocess:
-    scaler : "interscaler"    # log scaled, inter scaling works best 
-    descaler : "interdescaler"
+    scaler : interscaler    # log scaled, inter scaling works best 
+    descaler : interdescaler
     frame_num : 10
     time : 3.2
     test_size : 0.2
     random_state : 37
     rpm_class : 10
-    aug_bool : False # TURN OFF FOR REAL DATA
+    aug_bool : True # TURN OFF FOR REAL DATA
 
   model:
     encoder:
-      encoder: VivitEmbed
-      cnn : "resnet34"
+      encoder: VivitEmbedClass5
+      curr_bool : True
+      curr_ckpt : src/weights/class5_rpm10_vivit_large_base_currtrain_meanpool_realviscdataset_REALrpmembed_augFalse_0817_v0.pth
+      cnn : resnet34
       cnn_train : True
       lstm_size : 256
       lstm_layers : 5
@@ -33,7 +36,7 @@ regression:
       embed_weight : 0.0
 
     flow: 
-      flow : "RealNVP"
+      flow : RealNVP
       flow_bool : False
       dim: 4 # dimension of total model output, currently 4
       con_dim: 256 # same as lstm hidden_size
@@ -45,27 +48,24 @@ regression:
     lr : 1e-5
     weight_decay : 5e-4
 
-  loss : "CE"
+  loss : CE
 
   optimizer:
     optim_class: AdamW
     scheduler_class: CosineAnnealingLR
     lr: 1e-5  # 1e-2 ~ 1e-5 정도 대역으로
-    eta_min : 1e-10
+    eta_min : 1e-9
     weight_decay: 1e-2 # 1e-2 정도로
     patience : 10
   
   directories:
     checkpoint :
       ckpt_root : "src/weights/"
-      # inf_checkpoint : "src/weights/rpm20_classification_10class_big_reg_embedding_0729_v0.pth"
-      inf_checkpoint : "src/weights/class10_rpm10_vivit_large_basetrain_meanpool_render20ddataset_REALrpmembed_augFalse_0813_v0.pth"
+      inf_checkpoint : "src/weights/class10_rpm10_vivit_large_base_currtrain_meanpool_render20ddataset_REALrpmembed_augTrue_0816_v0.pth"
 
     data :
-      data_root : "dataset/CFDArchive/sph_20rpm_increment"
-      # data_root : "dataset/realfluid/RealArchive/real_20rpmincrement_real"
+      data_root : "dataset/CFDArchive/sph_realvisc_10rpm_32frame"
       test_root : "dataset/CFDArchive/test"
-      # real_root : "dataset/realfluid/RealArchive/decay_5s_10fps_impeller"
       real_root : "dataset/realfluid/RealArchive/real_20rpmincrement"
       video_subdir : "videos"
       para_subdir : "parameters"
