@@ -3,9 +3,9 @@ import torch.nn as nn
 from models.vivit.modeling_vivit import VivitModel
 from models.vivit.configuration_vivit import VivitConfig
 
-class VivitEmbed(nn.Module):
+class VivitEmbedClass10(nn.Module):
     def __init__(self, dropout, output_size, flow_bool):
-        super(VivitEmbed, self).__init__()
+        super(VivitEmbedClass10, self).__init__()
         # self.config = VivitConfig.from_pretrained("google/vivit-b-16x2-kinetics400")
         # self.featureextractor = VivitModel.from_pretrained("google/vivit-b-16x2-kinetics400", config=self.config)
 
@@ -45,7 +45,7 @@ class VivitEmbed(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(self.hidden_size, 192),
             nn.SiLU(),
-            nn.Linear(192, 5)
+            nn.Linear(192, 10)
         )
 
     def forward(self, video: torch.Tensor, rpm_idx):

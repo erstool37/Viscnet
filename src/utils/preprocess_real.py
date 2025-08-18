@@ -57,19 +57,19 @@ for path in para_paths:
     with open(path, 'r') as file:
         data = json.load(file)
 
-        # for training
-        kinVisc.append(float(1.0))
-        density.append(data["density"])
-        rpm.append(data["rpm"])
-        dynVisc.append(data["xsph"])
-        surfT.append(data["surfaceTension"])
+        if METHOD == "val": # for validation mode
+            kinVisc.append(float(1.0))
+            density.append(data["density"])
+            rpm.append(data["rpm"])
+            dynVisc.append(data["xsph"])
+            surfT.append(data["surfaceTension"])
 
-        # # for real world inference
-        # dynVisc.append(data["dynamic_viscosity"])
-        # surfT.append(data["surface_tension"])
-        # kinVisc.append(data["kinematic_viscosity"])
-        # density.append(data["density"])
-        # rpm.append(data["RPM"])
+        elif METHOD == "real": # for real mode
+            dynVisc.append(data["dynamic_viscosity"])
+            surfT.append(data["surface_tension"])
+            kinVisc.append(data["kinematic_viscosity"])
+            density.append(data["density"])
+            rpm.append(data["RPM"])
 
 # sanity check
 parameters = [dynVisc, kinVisc, surfT, density, rpm]
