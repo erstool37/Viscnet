@@ -3,6 +3,7 @@ from .VideoDatasetEmbed import VideoDatasetEmbed
 from .VideoDatasetTrans import VideoDatasetTrans
 from .VideoDatasetClassTrans5 import VideoDatasetClassTrans5
 from .VideoDatasetClassTrans10 import VideoDatasetClassTrans10
+from .VideoDatasetClassReal import VideoDatasetClassReal
 from .VideoDatasetClass import VideoDatasetClass
 from .VideoDatasetClassMAE import VideoDatasetClassMAE
 from .VideoDatasetClassSWIN import VideoDatasetClassSWIN
