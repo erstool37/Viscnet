@@ -64,7 +64,7 @@ for path in para_paths:
             dynVisc.append(data["xsph"])
             surfT.append(data["surfaceTension"])
 
-        elif METHOD == "real": # for real mode
+        elif METHOD == "real" or METHOD == "train": # for real mode
             dynVisc.append(data["dynamic_viscosity"])
             surfT.append(data["surface_tension"])
             kinVisc.append(data["kinematic_viscosity"])
