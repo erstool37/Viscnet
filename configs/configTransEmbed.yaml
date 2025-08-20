@@ -1,5 +1,5 @@
 project: "dummy_test_run"
-name: "class10_rpm10_vivit_large_finetune_realImpellerdataset_REALrpmembed_test50_augTrue_WDchange" # will use aug in the future..!
+name: "class10_rpm10_vivit_large_finetrain_realImpellerdatase800train_REALrpmembed_augFalse_retrain" # will use aug in the future..!
 version: v0
 watch_bool : False
 
@@ -16,16 +16,16 @@ regression:
     descaler : interdescaler
     frame_num : 10
     time : 3.2
-    test_size : 0.5
+    test_size : 1e-6 # next up 0.75
     random_state : 37
     rpm_class : 10
-    aug_bool : True # TURN OFF FOR REAL DATA
+    aug_bool : False # TURN OFF FOR REAL DATA
 
   model:
     encoder:
       encoder: VivitEmbedClass10
       curr_bool : True
-      curr_ckpt : src/weights/class10_rpm10_vivit_large_finetune_realImpellerdataset_REALrpmembed_test50_augFalse_0819_v0.pth
+      curr_ckpt : src/weights/class10_rpm10_vivit_large_currtrain_realvisc32dataset_REALrpmembed_augTrue_0818_v0.pth # do not touch
       cnn : resnet34
       cnn_train : True
       lstm_size : 256
@@ -53,15 +53,15 @@ regression:
   optimizer:
     optim_class: AdamW
     scheduler_class: CosineAnnealingLR
-    lr: 1e-6  # 1e-2 ~ 1e-5 정도 대역으로
-    eta_min : 1e-10
+    lr: 1e-4  # 1e-2 ~ 1e-5 정도 대역으로
+    eta_min : 1e-11
     weight_decay: 1e-5 # 1e-2 정도로
-    patience : 10
+    patience : 15
   
   directories:
     checkpoint :
       ckpt_root : "src/weights/"
-      inf_checkpoint : src/weights/class10_rpm10_vivit_large_finetune_realImpellerdataset_REALrpmembed_test50_augTrue_WDchange_0819_v0.pth
+      inf_checkpoint : src/weights/class10_rpm10_vivit_large_finetrain_realImpellerdatase800train_REALrpmembed_augFalse_retrain_0820_v0.pth
 
     data :
       # data_root : "dataset/CFDArchive/sph_realvisc_10rpm_32frame"
