@@ -23,6 +23,7 @@ dataset/**/statistics.json
 *.npy
 
 src/inference/**/*.png
+src/inference/**/*.jpg
 src/weights/*.pth
 src/weights/FVD/*.pt
 

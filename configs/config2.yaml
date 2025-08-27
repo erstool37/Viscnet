@@ -1,5 +1,5 @@
 project: "serversetuprun"
-name: "test_run_classification" # will use aug in the future..!
+name: "test_run_regression" # will use aug in the future..!
 version: v0
 
 ## All dataset information are altered to be written in SI units, please upload the updated dataset accordingly
@@ -7,7 +7,7 @@ version: v0
 train_settings:
   num_workers : 4 # CPU workers
   seed : 1205
-  classification : True # True : classification, False : regression, !!! CHANGE LOSS FUNCTION !!!
+  classification : False # True : classification, False : regression, !!! CHANGE LOSS FUNCTION !!!
   watch_bool : False # True : wandb gradient logging, False : no logging
   test_bool : True # True : test after training, False : no test
 
@@ -58,7 +58,7 @@ training:
   curr_bool : False # True : load specified weight, False : start from rock bottom
   curr_ckpt : class10_rpm10_vivit_large_currtrain_realvisc32dataset_REALrpmembed_augTrue_0818_v0.pth # Deletes fc weights
   num_epochs : 25
-  loss : CE
+  loss : MAPE
   optimizer:
     optim_class: AdamW
     scheduler_class: CosineAnnealingLR

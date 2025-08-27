@@ -18,7 +18,8 @@ from .analysis import (
     distribution,
     MAPEtestcalculator,
     visualize_logits,
-    confusion_matrix
+    confusion_matrix,
+    plot_error_distribution
 )
 
 from .setseed import (
@@ -32,5 +33,6 @@ from .videotransforms import (
 )
 from .ddp import (
     ddp_setup,
-    ddp_cleanup
+    ddp_cleanup,
+    gather_lists
 )

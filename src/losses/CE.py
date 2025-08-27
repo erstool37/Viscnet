@@ -6,6 +6,6 @@ class CE(nn.Module):
         super().__init__()
         self.criterion = nn.CrossEntropyLoss()
 
-    def forward(self, logits: torch.Tensor, targets: torch.Tensor, hotvector):
-        loss = self.criterion(logits, hotvector)
+    def forward(self, outputs, hotvector):
+        loss = self.criterion(outputs, hotvector)
         return loss

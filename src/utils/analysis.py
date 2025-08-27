@@ -70,14 +70,82 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix as sk_cm, ConfusionMatrixDisplay
 
-def confusion_matrix(name, logits_batch, true_labels, normalize=True):
-    y_pred = np.argmax(logits_batch, axis=1)      # shape (N,)
-    y_true = true_labels.astype(int).flatten()     # already integer labels
+def confusion_matrix(name, y_pred_or_logits, y_true, normalize=True, class_names=None, save_dir="src/inference/confusion_matrix"):
+    y_true = np.asarray(y_true, dtype=int).ravel()
+    X = np.asarray(y_pred_or_logits)
 
-    cm = sk_cm(y_true, y_pred, normalize='true' if normalize else None)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-    disp.plot(cmap="Blues", xticks_rotation=45)
+    # logits -> labels, labels -> as-is
+    if X.ndim == 2:
+        y_pred = X.argmax(axis=1).astype(int).ravel()
+        labels = np.arange(X.shape[1])  # show all classes 0..C-1
+    else:
+        y_pred = X.astype(int).ravel()
+        # show only observed classes unless class_names is provided
+        labels = np.unique(np.concatenate([y_true, y_pred])) if class_names is None else np.arange(len(class_names))
+
+    cm = sk_cm(y_true, y_pred, labels=labels, normalize=('true' if normalize else None))
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=(class_names if class_names is not None else labels))
+
+    os.makedirs(save_dir, exist_ok=True)
+    disp.plot(cmap="Blues", xticks_rotation=45, colorbar=True)
     plt.title("Confusion Matrix")
     plt.tight_layout()
-    plt.savefig(f"src/inference/confusion_matrix/{name}.png", dpi=300)
+    plt.savefig(os.path.join(save_dir, f"{name}.png"), dpi=300)
     plt.close()
+
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+
+import os, importlib, numpy as np, matplotlib.pyplot as plt
+import torch
+
+def plot_error_distribution(name, preds_all, tgts_all, descaler, path, save_dir="src/inference/error_plots"):
+    """
+    Draw error distribution for dynamic viscosity only.
+    x-axis: true dynamic viscosity (unnormalized)
+    y-axis: % error = 100 * (pred - true) / true
+    """
+    os.makedirs(save_dir, exist_ok=True)
+
+    # flatten gathered lists -> (N, D) arrays
+    P = np.vstack([np.atleast_2d(p) for p in preds_all]).astype(np.float32)
+    T = np.vstack([np.atleast_2d(t) for t in tgts_all]).astype(np.float32)
+
+    # convert to torch
+    P_t = torch.from_numpy(P)
+    T_t = torch.from_numpy(T)
+
+    # load descaler from utils
+    utils = importlib.import_module("utils")
+    f = getattr(utils, descaler)
+
+    # unnormalize dynamic viscosity only (column 1)
+    P_dyn = f(P_t[:, 1], "dynamic_viscosity", path).unsqueeze(-1)
+    T_dyn = f(T_t[:, 1], "dynamic_viscosity", path).unsqueeze(-1)
+
+    # percentage error
+    eps = 1e-12
+    err_dyn = 100.0 * (P_dyn - T_dyn) / (T_dyn + eps)
+
+    # convert to numpy
+    true_vals = T_dyn.detach().cpu().numpy().ravel()
+    err_vals  = err_dyn.detach().cpu().numpy().ravel()
+
+    # filter out errors with absolute value > 100
+    mask = np.abs(err_vals) <= 100
+    true_vals = true_vals[mask]
+    err_vals  = err_vals[mask]
+
+    # scatter plot
+    plt.figure(figsize=(6, 5))
+    plt.scatter(true_vals, err_vals, s=10, alpha=0.6, color="tab:blue")
+    plt.axhline(0.0, lw=1, color="k")
+    plt.xlabel("True Dynamic Viscosity")
+    plt.ylabel("Error (%)")
+    plt.title("Error Distribution: Dynamic Viscosity")
+    plt.tight_layout()
+    out_path = os.path.join(save_dir, f"{name}.png")
+    plt.savefig(out_path, dpi=300)
+    plt.close()
+    print(f"Saved {out_path}")
