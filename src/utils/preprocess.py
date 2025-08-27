@@ -2,46 +2,42 @@ import json
 import os.path as osp
 import os
 import glob
-import math
 import numpy as np
-import torch
 import argparse
 import yaml
 import importlib
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, required=True)
-parser.add_argument("-m", "--method", type=str, required=True)
+parser.add_argument("-m", "--TARGET", type=str, required=True)
 args = parser.parse_args()
 
 with open(args.config, "r") as file:
     config = yaml.safe_load(file)
-cfg = config["regression"]
 
-METHOD          = args.method
-DATA_ROOT       = cfg["directories"]["data"]["data_root"]
-TEST_ROOT       = cfg["directories"]["data"]["test_root"]
-REAL_ROOT       = cfg["directories"]["data"]["real_root"]
-PARA_SUBDIR     = cfg["directories"]["data"]["para_subdir"]
-NORM_SUBDIR     = cfg["directories"]["data"]["norm_subdir"]
-NORMALIZE       = cfg["preprocess"]["scaler"]
-UNNORMALIZE     = cfg["preprocess"]["descaler"]
+TARGET          = args.TARGET
 
-if METHOD == "test":
-    para_paths = sorted(glob.glob(osp.join(TEST_ROOT, PARA_SUBDIR, "*.json")))
-    norm_path = osp.join(TEST_ROOT, NORM_SUBDIR)
+DATA_ROOT_TRAIN = config["dataset"]["train"]["train_root"]
+DATA_ROOT_TEST  = config["dataset"]["test"]["test_root"]
+
+CKPT_ROOT       = config["misc_dir"]["ckpt_root"]
+VIDEO_SUBDIR    = config["misc_dir"]["video_subdir"]
+PARA_SUBDIR     = config["misc_dir"]["para_subdir"]
+NORM_SUBDIR     = config["misc_dir"]["norm_subdir"]
+
+NORMALIZE          = config["dataset"]["preprocess"]["scaler"]
+UNNORMALIZE        = config["dataset"]["preprocess"]["descaler"]
+
+if TARGET == "synthetic":
+    para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TRAIN, PARA_SUBDIR, "*.json")))
+    norm_path = osp.join(DATA_ROOT_TRAIN, NORM_SUBDIR)
     os.makedirs(norm_path, exist_ok=True)
-    print("Test mode: Normalizing test data")
-elif METHOD == "real":
-    para_paths = sorted(glob.glob(osp.join(REAL_ROOT, PARA_SUBDIR, "*.json")))
-    norm_path = osp.join(REAL_ROOT, NORM_SUBDIR)
+    print("Normalizing synthetic data")
+elif TARGET == "real":
+    para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, PARA_SUBDIR, "*.json")))
+    norm_path = osp.join(DATA_ROOT_TEST, NORM_SUBDIR)
     os.makedirs(norm_path, exist_ok=True)
-    print("Real mode: Normalizing real data")
-else:
-    para_paths = sorted(glob.glob(osp.join(DATA_ROOT, PARA_SUBDIR, "*.json")))
-    norm_path = osp.join(DATA_ROOT, NORM_SUBDIR)
-    os.makedirs(norm_path, exist_ok=True)
-    print("Train mode: Normalizing training data")
+    print("Normalizing real data")
 
 utils = importlib.import_module("utils")
 scaler = getattr(utils, NORMALIZE)
@@ -56,17 +52,20 @@ rpm = []
 for path in para_paths:
     with open(path, 'r') as file:
         data = json.load(file)
+        if TARGET == "synthetic":
+            density.append(data["density"])
+            rpm.append(data["RPM"])
+            kinVisc.append(data["viscosity"])
+            dynVisc.append(data["viscosity"] * data["density"])
+            surfT.append(data["surface_tension"])
+        else: # TARGET == "real"
+            dynVisc.append(data["dynamic_viscosity"])
+            surfT.append(data["surface_tension"])
+            kinVisc.append(data["kinematic_viscosity"])
+            density.append(data["density"])
+            rpm.append(data["RPM"])
 
-        # for training
-        kinVisc.append(float(1.0))
-        density.append(data["density"])
-        # rpm.append(data["rpm"])
-        rpm.append(data["RPM"])
-        # dynVisc.append(data["xsph"])
-        dynVisc.append(data["viscosity"])
-        surfT.append(data["surface_tension"])
-
-# sanity check
+# Sanity check
 parameters = [dynVisc, kinVisc, surfT, density, rpm]
 for idx, lst in enumerate(parameters):
     if max(lst) == min(lst):
@@ -75,7 +74,7 @@ for idx, lst in enumerate(parameters):
         for j in range(len(lst)):
             lst[j] += noise[j]
 
-# normalize/store stats
+# Normalize/store stats
 dynViscnorm, con1dynVisc, con2dynVisc = scaler(dynVisc)
 kinViscnorm, con1kinVisc, con2kinVisc = scaler(kinVisc)
 surfTnorm, con1surfT, con2surfT = scaler(surfT)
@@ -119,4 +118,3 @@ with open(f'{norm_path}/../statistics.json', 'w') as file:
     json.dump(stats, file, indent=4)
 
 print(f"Normalization complete")
-# print(f"Total unique visc classes: {len(visc_to_idx)}") 

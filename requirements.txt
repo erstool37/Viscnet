@@ -25,6 +25,7 @@ pytorch-lightning
 vessl==0.1.191
 transformers==4.39.0
 easydict==1.10
+seaborn
 
 # not sure
 aiohappyeyeballs==2.4.4
