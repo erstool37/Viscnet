@@ -13,7 +13,6 @@ class VideoDatasetReal(Dataset):
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = int(frame_num * time)
-        self.class_num = int(50 // visc_class)
         self.aug_bool = aug_bool
 
         self.augmentation = A.Compose([
@@ -69,6 +68,7 @@ class VideoDatasetReal(Dataset):
             rpm_index = int(data["rpm_idx"])
             hotvector = int(data["visc_index"])
             
+            
         return torch.tensor([density, surfT, kinVisc, rpm_index], dtype=torch.float32), torch.tensor(hotvector) # kept this state for CE loss shape compatibility
     
     def _loadname(self, video_path):
@@ -76,5 +76,4 @@ class VideoDatasetReal(Dataset):
         return name[0]
 
     def __len__(self):
-        return 10
-        # return len(self.video_paths)
+        return len(self.video_paths)
