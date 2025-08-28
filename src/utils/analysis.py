@@ -71,6 +71,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix as sk_cm, ConfusionMatrixDisplay
 
 def confusion_matrix(name, y_pred_or_logits, y_true, normalize=True, class_names=None, save_dir="src/inference/confusion_matrix"):
+    print("Start drawing confusion matrix")
     y_true = np.asarray(y_true, dtype=int).ravel()
     X = np.asarray(y_pred_or_logits)
 

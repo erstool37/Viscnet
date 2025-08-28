@@ -56,7 +56,7 @@ AUG_BOOL_TEST     = bool(config["dataset"]["test"]["dataloader"]["aug_bool"])
 BATCH_SIZE_TEST   = int(config["dataset"]["test"]["dataloader"]["batch_size"])
 TEST_SIZE_TEST    = float(config["dataset"]["test"]["dataloader"]["test_size"])
 RAND_STATE_TEST   = int(config["dataset"]["test"]["dataloader"]["random_state"])
-DATASET_TEST      = config["dataset"]["train"]["dataloader"]["dataloader"]
+DATASET_TEST      = config["dataset"]["test"]["dataloader"]["dataloader"]
 # Model Settings
 TRANS_BOOL      = config["model"]["transformer_bool"]
 ENCODER         = config["model"]["transformer"]["encoder"]
@@ -214,20 +214,19 @@ for epoch in range(NUM_EPOCHS):
             print(f"Early stopping at epoch {epoch+1}")
             break
 print("Training complete.")
+
 # TEST
-if TEST_BOOL:
+if TEST_BOOL and rank == 0:
     # Definition
     test_dataset_module = importlib.import_module(f"datasets.{DATASET_TEST}")
-    test_dataset_class = getattr(test_dataset_module, DATASET_TEST, )
-    encoder.cuda()
+    test_dataset_class = getattr(test_dataset_module, DATASET_TEST)
     encoder.eval()
     encoder.module.load_state_dict(torch.load(checkpoint))
     # DATASET LOAD
-    video_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, VIDEO_SUBDIR, "*.mp4")))
-    para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, NORM_SUBDIR, "*.json")))
-    test_ds = test_dataset_class(video_paths, para_paths, FRAME_NUM, TIME, aug_bool=False, visc_class=10)
-    test_sampler = DistributedSampler(test_ds, num_replicas=world_size, rank=rank, shuffle=False, drop_last=False)
-    test_dl = DataLoader(test_ds, batch_size=BATCH_SIZE_TEST, sampler=test_sampler, num_workers=NUM_WORKERS, pin_memory=True)
+    test_video_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, VIDEO_SUBDIR, "*.mp4")))
+    test_para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, NORM_SUBDIR, "*.json")))
+    test_ds = test_dataset_class(test_video_paths, test_para_paths, FRAME_NUM, TIME, aug_bool=False, visc_class=10)
+    test_dl = DataLoader(test_ds, batch_size=BATCH_SIZE_TEST, num_workers=NUM_WORKERS, pin_memory=True)
     # TEST LOOP
     errors = []
     preds_local, tgts_local = [], []
@@ -235,20 +234,16 @@ if TEST_BOOL:
         for frames, parameters, hotvector, names, rpm_idx in tqdm(test_dl):
             frames, parameters, hotvector, rpm_idx = frames.to(device), parameters.to(device), hotvector.to(device), rpm_idx.to(device).long().squeeze(-1)
             outputs = encoder(frames, rpm_idx)
-            if CLASS_BOOL: # Classification
-                preds_local.extend(outputs.argmax(1).cpu().tolist())
-                tgts_local.extend(hotvector.cpu().tolist())
-            else : # Regression
-                preds_local.append(outputs.detach().cpu().numpy())
-                tgts_local.append(parameters.detach().cpu().numpy())
-        y_pred_all = gather_lists(preds_local)
-        y_true_all = gather_lists(tgts_local)
-
-        if rank == 0:
-            if CLASS_BOOL:    
-                confusion_matrix(run_name, y_pred_all, y_true_all)
-            else:
-                plot_error_distribution(run_name, y_pred_all, y_true_all, DESCALER, DATA_ROOT_TEST)
+            if CLASS_BOOL:  # Classification
+                preds_local.extend(outputs.argmax(1).cpu().numpy().tolist())
+                tgts_local.extend(hotvector.cpu().numpy().tolist())
+            else:           # Regression
+                preds_local.extend(outputs.detach().cpu().numpy().tolist())
+                tgts_local.extend(parameters.detach().cpu().numpy().tolist())
+        if CLASS_BOOL:
+            confusion_matrix(run_name, preds_local, tgts_local)
+        else:
+            plot_error_distribution(run_name, preds_local, tgts_local, DESCALER, DATA_ROOT_TEST)
 
 if rank == 0: wandb.finish()
 ddp_cleanup()

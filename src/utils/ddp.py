@@ -13,10 +13,11 @@ def ddp_setup():
 def ddp_cleanup():
     dist.destroy_process_group()
 
-def gather_lists(obj):
-    if not dist.is_initialized(): return obj
-    bucket = [None for _ in range(dist.get_world_size())]
-    dist.all_gather_object(bucket, obj)
-    out = []
-    for x in bucket: out.extend(x)
-    return out
+def gather_lists(arr_list):
+    bucket = [None] * dist.get_world_size()
+    dist.all_gather_object(bucket, arr_list) 
+    print("33")
+    merged = []
+    for part in bucket:
+        merged.extend(part)
+    return np.concatenate(merged, axis=0)

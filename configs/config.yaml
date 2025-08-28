@@ -1,5 +1,5 @@
-project: "dump"
-name: "test_run_classification" # will use aug in the future..!
+project: "sph_test_run"
+name: "10visc_10rpm_classification_5to5split_init" # will use aug in the future..!
 version: v0
 
 ## All dataset information are altered to be written in SI units, please upload the updated dataset accordingly
@@ -13,18 +13,18 @@ train_settings:
 
 dataset:
   train :
-    train_root : dataset/CFDArchive/sph_realvisc_10rpm_32frame
+    train_root : dataset/RealArchive/real_20rpm_increment_5to5_train #CFDArchive/sph_realvisc_10rpm_32frame
     frame_num : 10
     time : 3.2
     rpm_class : 10
     dataloader :
-      dataloader : VideoDataset # in classification mode, check number of classes
+      dataloader : VideoDatasetReal # in classification mode, check number of classes
       batch_size : 1
       aug_bool : False
-      test_size : 0.2
+      test_size : 0.01
       random_state : 37
   test : 
-    test_root : dataset/RealArchive/real_20rpm_increment
+    test_root : dataset/RealArchive/real_20rpm_increment_5to5_test #RealArchive/real_20rpm_increment
     frame_num : 10
     time : 3.2
     rpm_class : 10
@@ -55,14 +55,14 @@ model:
     embed_weight : 0.0
 
 training:
-  curr_bool : False # True : load specified weight, False : start from rock bottom
-  curr_ckpt : class10_rpm10_vivit_large_currtrain_realvisc32dataset_REALrpmembed_augTrue_0818_v0.pth # Deletes fc weights
+  curr_bool : True # True : load specified weight, False : start from rock bottom
+  curr_ckpt : test_run_classification_0828_v0.pth
   num_epochs : 25
   loss : CE
   optimizer:
     optim_class: AdamW
     scheduler_class: CosineAnnealingLR
-    lr: 1e-5  # 1e-2 ~ 1e-5 
+    lr: 1e-7  # 1e-2 ~ 1e-5 
     eta_min : 1e-10
     weight_decay: 1e-2 # 1e-2 정도로
     patience : 10
