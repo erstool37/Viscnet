@@ -1,4 +1,4 @@
-project: "serversetuprun"
+project: "dump"
 name: "test_run_classification" # will use aug in the future..!
 version: v0
 
@@ -21,7 +21,7 @@ dataset:
       dataloader : VideoDataset # in classification mode, check number of classes
       batch_size : 1
       aug_bool : False
-      test_size : 0.8
+      test_size : 0.2
       random_state : 37
   test : 
     test_root : dataset/RealArchive/real_20rpm_increment
