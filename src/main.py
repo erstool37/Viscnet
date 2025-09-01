@@ -113,8 +113,8 @@ if TRANS_BOOL:
 else: 
     encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, RPM_CLASS, EMBED_SIZE, WEIGHT, VISC_CLASS).to(device)
 if CURR_BOOL: 
-    state_dict = torch.load(osp.join(CKPT_ROOT, CURR_CKPT))
-    state_dict = {k: v for k, v in state_dict.items() if not k.startswith("classifier")}
+    state_dict = torch.load(osp.join(CKPT_ROOT, CURR_CKPT), weights_only=True)
+    state_dict = {k: v for k, v in state_dict.items() if not k.startswith("fc")}
     encoder.load_state_dict(state_dict, strict=False)
 
 for param in encoder.parameters():
@@ -234,11 +234,12 @@ if TEST_BOOL and rank == 0:
         for frames, parameters, hotvector, names, rpm_idx in tqdm(test_dl):
             frames, parameters, hotvector, rpm_idx = frames.to(device), parameters.to(device), hotvector.to(device), rpm_idx.to(device).long().squeeze(-1)
             outputs = encoder(frames, rpm_idx)
-            if CLASS_BOOL:  # Classification
+            if CLASS_BOOL: # Classification
                 preds_local.extend(outputs.argmax(1).cpu().numpy().tolist())
                 tgts_local.extend(hotvector.cpu().numpy().tolist())
-            else:           # Regression
+            else: # Regression
                 preds_local.extend(outputs.detach().cpu().numpy().tolist())
+                print(parameters)
                 tgts_local.extend(parameters.detach().cpu().numpy().tolist())
         if CLASS_BOOL:
             confusion_matrix(run_name, preds_local, tgts_local)

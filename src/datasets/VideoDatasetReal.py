@@ -68,7 +68,6 @@ class VideoDatasetReal(Dataset):
             rpm_index = int(data["rpm_idx"])
             hotvector = int(data["visc_index"])
             
-            
         return torch.tensor([density, surfT, kinVisc, rpm_index], dtype=torch.float32), torch.tensor(hotvector) # kept this state for CE loss shape compatibility
     
     def _loadname(self, video_path):

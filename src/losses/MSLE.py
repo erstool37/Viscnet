@@ -14,16 +14,9 @@ class MSLE(nn.Module):
     def forward(self, pred, target):        
         loss = (torch.log1p(pred[:,:3]) - torch.log1p(target[:,:3])) ** 2 
         
-        loss_den = loss[:, 0].mean()
-        loss_dynvisc = loss[:, 1].mean()
-        loss_surfT = loss[:, 2].mean()
+        loss_kinvisc = loss[:, 1].mean()
 
-        # loss_total = loss_den + loss_dynvisc + loss_surfT
-        loss_total = loss_dynvisc
-
-        # wandb.log({"loss_den": loss_den})
-        # wandb.log({"loss_visc": loss_dynvisc})
-        # wandb.log({"loss_surf": loss_surfT})        
+        loss_total = loss_kinvisc
 
         return loss_total
 
