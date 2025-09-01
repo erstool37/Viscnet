@@ -19,10 +19,12 @@ class MAPE(nn.Module):
         utils = importlib.import_module("utils")
         descaler = getattr(utils, self.unnormalizer)
 
-        pred_dynvisc = descaler(pred[:,1], "dynamic_viscosity", self.path).unsqueeze(-1).to(pred.device)        
-        target_dynvisc = descaler(target[:,1], "dynamic_viscosity", self.path).unsqueeze(-1).to(pred.device)
-        loss_dynvisc = F.mse_loss(pred_dynvisc, target_dynvisc).unsqueeze(-1)
-        total_loss = loss_dynvisc
+        pred_kinvisc = descaler(pred[:,2], "kinematic_viscosity", self.path).unsqueeze(-1).to(pred.device)        
+        target_kinvisc = descaler(target[:, 2], "kinematic_viscosity", self.path).unsqueeze(-1).to(pred.device)
+        # loss_dynvisc = F.mse_loss(pred_dynvisc, target_dynvisc)/target_dynvisc.unsqueeze(-1)
+        loss_kinvisc = (torch.abs(pred_kinvisc - target_kinvisc) / target_kinvisc).unsqueeze(-1)
+
+        total_loss = loss_kinvisc
 
         return total_loss
     

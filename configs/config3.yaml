@@ -1,5 +1,5 @@
 project: sph_test_run
-name: 10visc_10rpm_regression_synthetic_regression_baseweight_mse
+name: 10visc_10rpm_regression_synthetic_regression_baseweight_MSLE
 version: v0
 
 ## All dataset information are altered to be written in SI units, please upload the updated dataset accordingly
@@ -58,7 +58,7 @@ training:
   curr_bool : True # True : load specified weight, False : start from rock bottom
   curr_ckpt : test_run_classification_0828_v0.pth
   num_epochs : 15
-  loss : MSE
+  loss : MSLE
   optimizer:
     optim_class: AdamW 
     scheduler_class: CosineAnnealingLR
