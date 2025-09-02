@@ -109,29 +109,31 @@ def plot_error_distribution(name, preds_all, tgts_all, descaler, path, save_dir=
     # flatten gathered lists -> (N, D) arrays
     P = np.vstack([np.atleast_2d(p) for p in preds_all]).astype(np.float32)
     T = np.vstack([np.atleast_2d(t) for t in tgts_all]).astype(np.float32)
-
+    print(P.shape, T.shape)
     # convert to torch
     P_t = torch.from_numpy(P)
     T_t = torch.from_numpy(T)
+    print(P_t.shape, T_t.shape)
 
     # load descaler from utils
     utils = importlib.import_module("utils")
     f = getattr(utils, descaler)
 
-    # unnormalize dynamic viscosity only (column 1)
-    P_dyn = f(P_t[:, 1], "kinematic_viscosity", path).unsqueeze(-1)
-    T_dyn = f(T_t[:, 1], "kinematic_viscosity", path).unsqueeze(-1)
+    # unnormalize kinematic viscosity only (column 1)
+    P_kin = f(P_t[:, 2], "kinematic_viscosity", path).unsqueeze(-1)
+    T_kin = f(T_t[:, 2], "kinematic_viscosity", path).unsqueeze(-1)
 
     # percentage error
-    eps = 1e-12
-    err_dyn = 100.0 * abs(P_dyn - T_dyn) / (T_dyn + eps)
+    err_kin = 100.0 * abs(P_kin - T_kin) / (T_kin)
 
     # convert to numpy
-    true_vals = T_dyn.detach().cpu().numpy().ravel()
-    err_vals  = err_dyn.detach().cpu().numpy().ravel()
+    true_vals = T_kin.detach().cpu().numpy().ravel()
+    err_vals  = err_kin.detach().cpu().numpy().ravel()
+
+    print(true_vals)
 
     # filter out errors with absolute value > 100
-    mask = np.abs(err_vals) <= 100
+    mask = np.abs(err_vals) <= 1000
     true_vals = true_vals[mask]
     err_vals  = err_vals[mask]
 
@@ -144,6 +146,88 @@ def plot_error_distribution(name, preds_all, tgts_all, descaler, path, save_dir=
     plt.title("Error Distribution: Kinematic Viscosity")
     plt.tight_layout()
     out_path = os.path.join(save_dir, f"{name}.png")
+    plt.savefig(out_path, dpi=300)
+    plt.close()
+    print(f"Saved {out_path}")
+
+def new_plot_error_distribution(name, preds_all, tgts_all, descaler, path, save_dir="src/inference/error_plots"):
+    os.makedirs(save_dir, exist_ok=True)
+
+    # flatten gathered lists -> (N, D) arrays
+    P = np.vstack([np.atleast_2d(p) for p in preds_all]).astype(np.float32)
+    T = np.vstack([np.atleast_2d(t) for t in tgts_all]).astype(np.float32)
+
+    # convert to torch
+    P_t = torch.from_numpy(P)
+    T_t = torch.from_numpy(T)
+
+    # load descaler from utils
+    utils = importlib.import_module("utils")
+    f = getattr(utils, descaler)
+
+    # unnormalize viscosities
+    P_kin = f(P_t[:, 2], "kinematic_viscosity", path).unsqueeze(-1)  # predictions
+    T_kin = f(T_t[:, 2], "kinematic_viscosity", path).unsqueeze(-1)  # true values
+
+    # convert to numpy
+    pred_vals = P_kin.detach().cpu().numpy().ravel()
+    true_vals = T_kin.detach().cpu().numpy().ravel()
+
+    # reference viscosity values
+    ref_viscs = [
+        8.955241763971034e-07,
+        1.3606565275983135e-05,
+        1.800701766707428e-05,
+        2.3848869381823438e-05,
+        3.160701316546058e-05,
+        4.191336494974671e-05,
+        5.560892086883875e-05,
+        7.381311130517014e-05,
+        9.80162226060615e-05,
+        0.000130202569702055,
+    ]
+
+    # black reference lines (test values)
+    black_refs = {
+        8.955241763971034e-07,
+        1.800701766707428e-05,
+        3.160701316546058e-05,
+        5.560892086883875e-05,
+        9.80162226060615e-05,
+    }
+
+    # plot predictions
+    x = np.arange(len(pred_vals))
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, pred_vals, "o", markersize=3, alpha=0.6, color="tab:blue", label="Predicted Viscosity")
+
+    # add horizontal + vertical lines whenever true value changes
+    last_val = true_vals[0]
+    for i in range(1, len(true_vals)):
+        if true_vals[i] != last_val:
+            plt.axvline(i, color="red", linestyle="--", alpha=0.7)   # vertical red line
+            last_val = true_vals[i]
+
+    # add reference viscosity lines with dummy handles for legend
+    for v in ref_viscs:
+        if v in black_refs:
+            plt.axhline(v, color="black", linestyle="-", alpha=0.7, label="Test Provided Values")
+        else:
+            plt.axhline(v, color="blue", linestyle="-", alpha=0.5, label="Train Provided Values")
+
+    # add legend handles for train/test references
+    plt.axhline(0.00015, color="black", linestyle="-", alpha=0.7, label="Test Provided Values")
+    plt.axhline(0.00015, color="blue", linestyle="-", alpha=0.5, label="Train Provided Values")
+
+    # labels
+    plt.ylabel("Kinematic Viscosity (SI units)")
+    plt.xlabel("Sample Index")
+    plt.title("Predicted Viscosity with Ground Truth and Reference Lines")
+    plt.legend()
+    plt.tight_layout()
+
+    # save
+    out_path = os.path.join(save_dir, f"{name}_visc.png")
     plt.savefig(out_path, dpi=300)
     plt.close()
     print(f"Saved {out_path}")

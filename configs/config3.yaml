@@ -57,7 +57,7 @@ model:
 training:
   curr_bool : True # True : load specified weight, False : start from rock bottom
   curr_ckpt : test_run_classification_0828_v0.pth
-  num_epochs : 15
+  num_epochs : 10
   loss : MSLE
   optimizer:
     optim_class: AdamW 

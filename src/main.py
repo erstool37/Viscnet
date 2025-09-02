@@ -11,7 +11,7 @@ import importlib
 import yaml
 from torch.utils.data import DataLoader, DistributedSampler
 from sklearn.model_selection import train_test_split
-from utils import MAPEcalculator, sanity_check_alignment, set_seed, ddp_setup, ddp_cleanup, gather_lists, confusion_matrix, plot_error_distribution
+from utils import MAPEcalculator, sanity_check_alignment, set_seed, ddp_setup, ddp_cleanup, gather_lists, confusion_matrix, plot_error_distribution, new_plot_error_distribution
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.nn.functional as F
 import warnings
@@ -173,7 +173,7 @@ for epoch in range(NUM_EPOCHS):
             avg_train_loss = train_loss / world_size
             train_losses.append(avg_train_loss.item())
 
-        if (len(train_losses)) % 1 == 0:
+        if (len(train_losses)) % 10 == 0:
             mean_train_loss = mean(train_losses)
             train_losses.clear()
             if rank == 0: wandb.log({"train_loss": mean_train_loss})
@@ -213,7 +213,8 @@ for epoch in range(NUM_EPOCHS):
         if counter >= PATIENCE:
             print(f"Early stopping at epoch {epoch+1}")
             break
-print("Training complete.")
+            
+if rank==0: print("Training complete.")
 
 # TEST
 if TEST_BOOL and rank == 0:
@@ -226,7 +227,7 @@ if TEST_BOOL and rank == 0:
     test_video_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, VIDEO_SUBDIR, "*.mp4")))
     test_para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, NORM_SUBDIR, "*.json")))
     test_ds = test_dataset_class(test_video_paths, test_para_paths, FRAME_NUM, TIME, aug_bool=False, visc_class=10)
-    test_dl = DataLoader(test_ds, batch_size=BATCH_SIZE_TEST, num_workers=NUM_WORKERS, pin_memory=True)
+    test_dl = DataLoader(test_ds, batch_size=1, num_workers=NUM_WORKERS, pin_memory=True)
     # TEST LOOP
     errors = []
     preds_local, tgts_local = [], []
@@ -244,7 +245,7 @@ if TEST_BOOL and rank == 0:
         if CLASS_BOOL:
             confusion_matrix(run_name, preds_local, tgts_local)
         else:
-            plot_error_distribution(run_name, preds_local, tgts_local, DESCALER, DATA_ROOT_TEST)
+            new_plot_error_distribution(run_name, preds_local, tgts_local, DESCALER, DATA_ROOT_TEST)
 
 if rank == 0: wandb.finish()
 ddp_cleanup()

@@ -19,7 +19,8 @@ from .analysis import (
     MAPEtestcalculator,
     visualize_logits,
     confusion_matrix,
-    plot_error_distribution
+    plot_error_distribution,
+    new_plot_error_distribution
 )
 
 from .setseed import (
