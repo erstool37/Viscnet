@@ -32,7 +32,7 @@ if TARGET == "synthetic":
     para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TRAIN, PARA_SUBDIR, "*.json")))
     norm_path = osp.join(DATA_ROOT_TRAIN, NORM_SUBDIR)
     os.makedirs(norm_path, exist_ok=True)
-    print("Normalizing synthetic data")
+    print(f"Normalizing {len(para_paths)} of synthetic data")
 elif TARGET == "real":
     para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, PARA_SUBDIR, "*.json")))
     norm_path = osp.join(DATA_ROOT_TEST, NORM_SUBDIR)
