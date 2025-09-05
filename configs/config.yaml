@@ -1,5 +1,5 @@
 project: sph_test_run
-name: 10visc_10rpm_regression_nosynthetic_inter
+name: background_change_classification_basetrain_continued
 version: v0
 
 ## All dataset information are altered to be written in SI units, please upload the updated dataset accordingly
@@ -7,24 +7,24 @@ version: v0
 train_settings:
   num_workers : 4 # CPU workers
   seed : 1205
-  classification : False # True : classification, False : regression, !!! CHANGE LOSS FUNCTION !!!
+  classification : True # True : classification, False : regression, !!! CHANGE LOSS FUNCTION !!!
   watch_bool : False # True : wandb gradient logging, False : no logging
   test_bool : True # True : test after training, False : no test
 
 dataset:
   train :
-    train_root : dataset/RealArchive/real_20rpm_increment_inter_train # CFDArchive/sph_realvisc_10rpm_32frame
+    train_root : dataset/CFDArchive/sph_realvisc_10rpm_diffback
     frame_num : 10
     time : 3.2
     rpm_class : 10
     dataloader :
-      dataloader : VideoDatasetReal # in classification mode, check number of classes
+      dataloader : VideoDataset # in classification mode, check number of classes
       batch_size : 1
       aug_bool : False
-      test_size : 0.01
+      test_size : 0.2
       random_state : 37
   test : 
-    test_root : dataset/RealArchive/real_20rpm_increment_inter_test
+    test_root : dataset/RealArchive/real_20rpm_increment_5to5_test
     frame_num : 10
     time : 3.2
     rpm_class : 10
@@ -56,14 +56,14 @@ model:
 
 training:
   curr_bool : False # True : load specified weight, False : start from rock bottom
-  curr_ckpt : test_run_classification_0828_v0.pth
-  num_epochs : 30
-  loss : MAPE
+  curr_ckpt : background_change_totaldata_classification_base_0905_v0.pth
+  num_epochs : 20
+  loss : CE
   optimizer:
     optim_class: AdamW 
     scheduler_class: CosineAnnealingLR
-    lr: 1e-4  # 1e-2 ~ 1e-5 
-    eta_min : 1e-10
+    lr: 1e-6  # 1e-2 ~ 1e-5 
+    eta_min : 1e-11
     weight_decay: 1e-2 # 1e-2 정도로
     patience : 10
 

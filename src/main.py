@@ -143,6 +143,14 @@ val_sampler = DistributedSampler(val_ds, num_replicas=world_size, rank=rank, shu
 train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, sampler=train_sampler, num_workers=NUM_WORKERS)
 val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, sampler=val_sampler, num_workers=NUM_WORKERS)
 
+test_dataset_module = importlib.import_module(f"datasets.{DATASET_TEST}")
+test_dataset_class = getattr(test_dataset_module, DATASET_TEST)
+test_video_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, VIDEO_SUBDIR, "*.mp4")))
+test_para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, NORM_SUBDIR, "*.json")))
+test_ds = test_dataset_class(test_video_paths, test_para_paths, FRAME_NUM, TIME, aug_bool=False, visc_class=10)
+test_sampler = DistributedSampler(test_ds, num_replicas=world_size, rank=rank, shuffle=False)
+test_dl = DataLoader(test_ds, batch_size=BATCH_SIZE, sampler=test_sampler, num_workers=NUM_WORKERS)
+
 # WANDB INITIATE
 if rank == 0: 
     wandb.init(project=PROJECT, name=run_name, reinit=True, resume="never", config= config)
@@ -240,7 +248,6 @@ if TEST_BOOL and rank == 0:
                 tgts_local.extend(hotvector.cpu().numpy().tolist())
             else: # Regression
                 preds_local.extend(outputs.detach().cpu().numpy().tolist())
-                print(parameters)
                 tgts_local.extend(parameters.detach().cpu().numpy().tolist())
         if CLASS_BOOL:
             confusion_matrix(run_name, preds_local, tgts_local)

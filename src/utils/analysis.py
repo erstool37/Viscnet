@@ -82,16 +82,20 @@ def confusion_matrix(name, y_pred_or_logits, y_true, normalize=True, class_names
         y_pred = X.astype(int).ravel()
         labels = np.unique(np.concatenate([y_true, y_pred])) if class_names is None else np.arange(len(class_names))
 
+    # 🔹 Compute accuracy
+    accuracy = (y_pred == y_true).mean()
+    print(f"Accuracy: {accuracy:.4f}")
+
     cm = sk_cm(y_true, y_pred, labels=labels, normalize=('true' if normalize else None))
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=(class_names if class_names is not None else labels))
 
     os.makedirs(save_dir, exist_ok=True)
     disp.plot(cmap="Blues", xticks_rotation=45, colorbar=True)
 
-    # Fix colormap range
-    disp.im_.set_clim(0, vmax)  # for normalized: 0–1, for counts: set max count
+    disp.im_.set_clim(0, vmax)
 
-    plt.title("Confusion Matrix")
+    # 🔹 Show accuracy in title
+    plt.title(f"Confusion Matrix (Acc={accuracy:.4f})")
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, f"{name}.png"), dpi=300)
     plt.close()
