@@ -1,5 +1,5 @@
 project: sph_test_run
-name: background_change_classification_basetrain_continued
+name: background_change_classification_finetune_class10_mixedpattternreal
 version: v0
 
 ## All dataset information are altered to be written in SI units, please upload the updated dataset accordingly
@@ -13,18 +13,18 @@ train_settings:
 
 dataset:
   train :
-    train_root : dataset/CFDArchive/sph_realvisc_10rpm_diffback
+    train_root : dataset/RealArchive/real_20rpm_increment_5to5_train_mixed
     frame_num : 10
     time : 3.2
     rpm_class : 10
     dataloader :
-      dataloader : VideoDataset # in classification mode, check number of classes
+      dataloader : VideoDatasetReal # in classification mode, check number of classes
       batch_size : 1
       aug_bool : False
-      test_size : 0.2
+      test_size : 0.01
       random_state : 37
   test : 
-    test_root : dataset/RealArchive/real_20rpm_increment_5to5_test
+    test_root : dataset/RealArchive/real_20rpm_increment_5to5_test_mixed
     frame_num : 10
     time : 3.2
     rpm_class : 10
@@ -56,14 +56,14 @@ model:
 
 training:
   curr_bool : False # True : load specified weight, False : start from rock bottom
-  curr_ckpt : background_change_totaldata_classification_base_0905_v0.pth
-  num_epochs : 20
+  curr_ckpt : background_change_classification_finetune_class10_mixedpattternreal_0906_v0.pth
+  num_epochs : 10
   loss : CE
   optimizer:
     optim_class: AdamW 
     scheduler_class: CosineAnnealingLR
-    lr: 1e-6  # 1e-2 ~ 1e-5 
-    eta_min : 1e-11
+    lr: 1e-5  # 1e-2 ~ 1e-5 
+    eta_min : 1e-8
     weight_decay: 1e-2 # 1e-2 정도로
     patience : 10
 

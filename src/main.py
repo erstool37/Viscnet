@@ -151,6 +151,7 @@ test_ds = test_dataset_class(test_video_paths, test_para_paths, FRAME_NUM, TIME,
 test_sampler = DistributedSampler(test_ds, num_replicas=world_size, rank=rank, shuffle=False)
 test_dl = DataLoader(test_ds, batch_size=BATCH_SIZE, sampler=test_sampler, num_workers=NUM_WORKERS)
 
+"""
 # WANDB INITIATE
 if rank == 0: 
     wandb.init(project=PROJECT, name=run_name, reinit=True, resume="never", config= config)
@@ -192,7 +193,7 @@ for epoch in range(NUM_EPOCHS):
     val_losses = []
     with torch.no_grad():
         if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
-        for frames, parameters, hotvector, _, rpm_idx in tqdm(val_dl):
+        for frames, parameters, hotvector, _, rpm_idx in tqdm(test_dl):
             frames, parameters, hotvector, rpm_idx = frames.to(device), parameters.to(device), hotvector.to(device), rpm_idx.to(device, dtype=torch.int).squeeze(-1)
             outputs = encoder(frames, rpm_idx)
             if CLASS_BOOL: # Classification
@@ -223,7 +224,7 @@ for epoch in range(NUM_EPOCHS):
             break
             
 if rank==0: print("Training complete.")
-
+"""
 # TEST
 if TEST_BOOL and rank == 0:
     # Definition

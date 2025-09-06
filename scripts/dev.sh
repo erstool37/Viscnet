@@ -3,7 +3,7 @@ wandb login e4fc630ae5f28ea9dc5453b32b848681d664e9a1
 
 ### Normalizing dataset
 # python3 src/utils/preprocess.py -c configs/config.yaml -m synthetic
-# python3 src/utils/preprocess.py -c configs/config.yaml -m real # Considers the "test_root" dataset to be real data
+python3 src/utils/preprocess.py -c configs/config.yaml -m real # Considers the "test_root" dataset to be real data
 # python3 src/utils/preprocess_ODDEVEN.py -c configs/config.yaml
 
 ### Training
