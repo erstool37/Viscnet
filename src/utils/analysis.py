@@ -95,7 +95,7 @@ def confusion_matrix(name, y_pred_or_logits, y_true, normalize=True, class_names
     disp.im_.set_clim(0, vmax)
 
     # 🔹 Show accuracy in title
-    plt.title(f"Confusion Matrix (Acc={accuracy:.4f})")
+    plt.title(f"Confusion Matrix")
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, f"{name}.png"), dpi=300)
     plt.close()
