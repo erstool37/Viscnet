@@ -54,17 +54,17 @@ model:
 
 training:
   val_test_bool : True # True : test_ds used in validation, False : val_ds used in validation
-  curr_bool : True # True : load specified weight, False : start from rock bottom
-  curr_ckpt : diffback_basetrain_256-8-1024_augTrue_0917_v0.pth
-  num_epochs : 30
+  curr_bool : False # True : load specified weight, False : start from rock bottom
+  curr_ckpt : 09XX_before2500/syntheticbasetrain/diffback_basetrain_256-8-1024_augTrue_0917_v0.pth
+  num_epochs : 20
   loss : CE
   optimizer:
     optim_class: AdamW 
     scheduler_class: CosineAnnealingLR
     lr: 1e-5  # 1e-2 ~ 1e-5 
     eta_min : 1e-10
-    weight_decay: 1e-2 # 1e-2 정도로
-    patience : 5
+    weight_decay: 1e-3 # 1e-2 정도로
+    patience : 10
 
 misc_dir:
   ckpt_root : "src/weights/"

@@ -172,7 +172,7 @@ for epoch in range(NUM_EPOCHS):
         outputs = encoder(frames, rpm_idx)
         if CLASS_BOOL: # Classification
             train_loss = criterion(outputs, hotvector)
-            print("hotvector:", hotvector)
+            # print("hotvector:", hotvector)
         else: # Regression
             train_loss = criterion(outputs, parameters)
             if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT_TRAIN)
@@ -200,7 +200,7 @@ for epoch in range(NUM_EPOCHS):
             outputs = encoder(frames, rpm_idx)
             if CLASS_BOOL: # Classification
                 val_loss = criterion(outputs, hotvector)
-                print("hotvector:", hotvector)
+                # print("hotvector:", hotvector)
             else: # Regression
                 val_loss = criterion(outputs, parameters)
                 if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT_TRAIN)

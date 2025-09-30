@@ -1,0 +1,1 @@
+python3 src/scatter.py -c configs/config.yaml --ckpt src/weights/0928-29_after2500/5thpatVal_finetuning_0929_v0.pth --split test --outdir inference
