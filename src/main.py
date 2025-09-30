@@ -70,6 +70,7 @@ DROP_RATE       = float(config["model"]["cnn"]["drop_rate"])
 EMBED_SIZE      = int(config["model"]["cnn"]["embedding_size"])
 WEIGHT          = float(config["model"]["cnn"]["embed_weight"])
 # Train Settings
+VAL_TEST_BOOL   = bool(config["training"]["val_test_bool"])
 CURR_BOOL       = int(config["training"]["curr_bool"])
 CURR_CKPT       = config["training"]["curr_ckpt"]
 NUM_EPOCHS      = int(config["training"]["num_epochs"])
@@ -85,6 +86,7 @@ CKPT_ROOT       = config["misc_dir"]["ckpt_root"]
 VIDEO_SUBDIR    = config["misc_dir"]["video_subdir"]
 PARA_SUBDIR     = config["misc_dir"]["para_subdir"]
 NORM_SUBDIR     = config["misc_dir"]["norm_subdir"]
+
 
 # DDP SETUP
 rank, world_size, local_rank = ddp_setup()
@@ -147,11 +149,10 @@ test_dataset_module = importlib.import_module(f"datasets.{DATASET_TEST}")
 test_dataset_class = getattr(test_dataset_module, DATASET_TEST)
 test_video_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, VIDEO_SUBDIR, "*.mp4")))
 test_para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, NORM_SUBDIR, "*.json")))
-test_ds = test_dataset_class(test_video_paths, test_para_paths, FRAME_NUM, TIME, aug_bool=False, visc_class=10)
+test_ds = test_dataset_class(test_video_paths, test_para_paths, FRAME_NUM, TIME, aug_bool=False, visc_class=VISC_CLASS)
 test_sampler = DistributedSampler(test_ds, num_replicas=world_size, rank=rank, shuffle=False)
 test_dl = DataLoader(test_ds, batch_size=BATCH_SIZE, sampler=test_sampler, num_workers=NUM_WORKERS)
 
-"""
 # WANDB INITIATE
 if rank == 0: 
     wandb.init(project=PROJECT, name=run_name, reinit=True, resume="never", config= config)
@@ -171,6 +172,7 @@ for epoch in range(NUM_EPOCHS):
         outputs = encoder(frames, rpm_idx)
         if CLASS_BOOL: # Classification
             train_loss = criterion(outputs, hotvector)
+            print("hotvector:", hotvector)
         else: # Regression
             train_loss = criterion(outputs, parameters)
             if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "train", DATA_ROOT_TRAIN)
@@ -193,11 +195,12 @@ for epoch in range(NUM_EPOCHS):
     val_losses = []
     with torch.no_grad():
         if rank == 0: print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Validation")
-        for frames, parameters, hotvector, _, rpm_idx in tqdm(test_dl):
+        for frames, parameters, hotvector, name, rpm_idx in tqdm(test_dl if VAL_TEST_BOOL else val_dl):
             frames, parameters, hotvector, rpm_idx = frames.to(device), parameters.to(device), hotvector.to(device), rpm_idx.to(device, dtype=torch.int).squeeze(-1)
             outputs = encoder(frames, rpm_idx)
             if CLASS_BOOL: # Classification
                 val_loss = criterion(outputs, hotvector)
+                print("hotvector:", hotvector)
             else: # Regression
                 val_loss = criterion(outputs, parameters)
                 if rank == 0: MAPEcalculator(outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT_TRAIN)
@@ -224,7 +227,7 @@ for epoch in range(NUM_EPOCHS):
             break
             
 if rank==0: print("Training complete.")
-"""
+
 # TEST
 if TEST_BOOL and rank == 0:
     # Definition
@@ -235,7 +238,7 @@ if TEST_BOOL and rank == 0:
     # DATASET LOAD
     test_video_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, VIDEO_SUBDIR, "*.mp4")))
     test_para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, NORM_SUBDIR, "*.json")))
-    test_ds = test_dataset_class(test_video_paths, test_para_paths, FRAME_NUM, TIME, aug_bool=False, visc_class=10)
+    test_ds = test_dataset_class(test_video_paths, test_para_paths, FRAME_NUM, TIME, aug_bool=False, visc_class=VISC_CLASS)
     test_dl = DataLoader(test_ds, batch_size=1, num_workers=NUM_WORKERS, pin_memory=True)
     # TEST LOOP
     errors = []

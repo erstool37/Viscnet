@@ -12,10 +12,10 @@ class VivitEmbed(nn.Module):
         # self.featureextractor = VivitModel.from_pretrained("google/vivit-b-16x2-kinetics400", config=self.config)
 
         self.config = VivitConfig(
-            hidden_size=1024,              # ViViT-L
+            hidden_size=256,              # ViViT-L
             num_hidden_layers=20,
-            num_attention_heads=16,
-            intermediate_size=4096,
+            num_attention_heads=8,
+            intermediate_size=1024,
             tubelet_size=(2, 16, 16),
             image_size=224,
             num_frames=32,

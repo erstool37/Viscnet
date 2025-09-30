@@ -7,11 +7,11 @@ src_dir = "parameters"
 src_vid_dir = "videos"
 
 # destination folders
-test_dst_dir = f"../real_20rpm_increment_5to5_test_mixed/{src_dir}"
-test_dst_vid_dir = f"../real_20rpm_increment_5to5_test_mixed/{src_vid_dir}"
+test_dst_dir = f"../real_20rpm_increment_5to5_test/{src_dir}"
+test_dst_vid_dir = f"../real_20rpm_increment_5to5_test/{src_vid_dir}"
 
-train_dst_dir = f"../real_20rpm_increment_5to5_train_mixed/{src_dir}"
-train_dst_vid_dir = f"../real_20rpm_increment_5to5_train_mixed/{src_vid_dir}"
+train_dst_dir = f"../real_20rpm_increment_5to5_train/{src_dir}"
+train_dst_vid_dir = f"../real_20rpm_increment_5to5_train/{src_vid_dir}"
 
 # make all dirs
 os.makedirs(test_dst_dir, exist_ok=True)

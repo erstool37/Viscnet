@@ -21,6 +21,7 @@ dataset/**/parametersNorm/
 dataset/**/statistics.json
 *.mov
 *.npy
+*.pth
 
 src/inference/**/*.png
 src/inference/**/*.jpg

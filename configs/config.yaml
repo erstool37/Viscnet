@@ -1,8 +1,6 @@
 project: sph_test_run
-name: background_change_classification_finetune_class10_mixedpattternreal
+name: 5thpatVal_finetuning
 version: v0
-
-## All dataset information are altered to be written in SI units, please upload the updated dataset accordingly
 
 train_settings:
   num_workers : 4 # CPU workers
@@ -13,18 +11,18 @@ train_settings:
 
 dataset:
   train :
-    train_root : dataset/RealArchive/real_20rpm_increment_5to5_train_mixed
+    train_root : dataset/RealArchive/real_20rpm_increment_4back
     frame_num : 10
     time : 3.2
     rpm_class : 10
     dataloader :
       dataloader : VideoDatasetReal # in classification mode, check number of classes
       batch_size : 1
-      aug_bool : False
-      test_size : 0.01
-      random_state : 37
+      aug_bool : True
+      test_size : 0.05
+      random_state : 37 
   test : 
-    test_root : dataset/RealArchive/real_20rpm_increment_5to5_test_mixed
+    test_root : dataset/RealArchive/real_20rpm_increment_1back
     frame_num : 10
     time : 3.2
     rpm_class : 10
@@ -55,17 +53,18 @@ model:
     embed_weight : 0.0
 
 training:
-  curr_bool : False # True : load specified weight, False : start from rock bottom
-  curr_ckpt : background_change_classification_finetune_class10_mixedpattternreal_0906_v0.pth
-  num_epochs : 10
+  val_test_bool : True # True : test_ds used in validation, False : val_ds used in validation
+  curr_bool : True # True : load specified weight, False : start from rock bottom
+  curr_ckpt : diffback_basetrain_256-8-1024_augTrue_0917_v0.pth
+  num_epochs : 30
   loss : CE
   optimizer:
     optim_class: AdamW 
     scheduler_class: CosineAnnealingLR
     lr: 1e-5  # 1e-2 ~ 1e-5 
-    eta_min : 1e-8
+    eta_min : 1e-10
     weight_decay: 1e-2 # 1e-2 정도로
-    patience : 10
+    patience : 5
 
 misc_dir:
   ckpt_root : "src/weights/"

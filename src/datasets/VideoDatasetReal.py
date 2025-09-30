@@ -13,6 +13,8 @@ class VideoDatasetReal(Dataset):
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = int(frame_num * time)
+        self.class_num = 10 // visc_class
+        self.cluster_map = {i: i // self.class_num for i in range(10)} # 10 clusters
         self.aug_bool = aug_bool
 
         self.augmentation = A.Compose([
@@ -43,7 +45,7 @@ class VideoDatasetReal(Dataset):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frames.append(frame)
         cap.release()
-        frames = frames[-self.frame_limit:]
+        frames = frames[:self.frame_limit]
 
         if self.aug_bool:
             data = {f"image{i}": frames[i] for i in range(self.frame_limit)}
@@ -57,6 +59,9 @@ class VideoDatasetReal(Dataset):
         frames_tensor = torch.tensor(np.stack(frames_aug)).permute(0, 3, 1, 2)
         
         return frames_tensor
+    
+    def _get_cluster(self, vis_idx: int) -> int:
+        return self.cluster_map[vis_idx]
 
     def _loadparameters(self, para_path):
         with open(para_path, 'r') as file:
@@ -66,7 +71,7 @@ class VideoDatasetReal(Dataset):
             surfT = data["surface_tension"]
             kinVisc = float(data["kinematic_viscosity"])
             rpm_index = int(data["rpm_idx"])
-            hotvector = int(data["visc_index"])
+            hotvector = self._get_cluster(int(data["visc_index"]))
             
         return torch.tensor([density, surfT, kinVisc, rpm_index], dtype=torch.float32), torch.tensor(hotvector) # kept this state for CE loss shape compatibility
     

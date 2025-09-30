@@ -92,7 +92,7 @@ class VivitConfig(PretrainedConfig):
         num_frames=32,
         tubelet_size=[2, 16, 16],
         num_channels=3,
-        hidden_size=768,
+        hidden_size=1024,
         num_hidden_layers=12,
         num_attention_heads=12,
         intermediate_size=3072,

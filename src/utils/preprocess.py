@@ -84,7 +84,8 @@ rpmnorm, con1rpm, con2rpm = scaler(rpm)
 rpm_unique = sorted(set(rpm))
 rpm_to_idx = {r: i for i, r in enumerate(rpm_unique)}
 
-visc_unique = sorted(set(dynVisc))
+rounded_kinVisc = [round(v, 7) for v in kinVisc]
+visc_unique = sorted(set(rounded_kinVisc))
 visc_to_idx = {v: i for i, v in enumerate(visc_unique)}
 
 if "z" in NORMALIZE:
@@ -107,7 +108,7 @@ else:
 # store normalized data
 for idx in range(len(dynViscnorm)):
     data = {"dynamic_viscosity": float(dynViscnorm[idx]), "kinematic_viscosity": float(kinViscnorm[idx]), 
-    "surface_tension": float(surfTnorm[idx]),  "density": float(densitynorm[idx]), "visc_index": visc_to_idx[dynVisc[idx]], 
+    "surface_tension": float(surfTnorm[idx]),  "density": float(densitynorm[idx]), "visc_index": visc_to_idx[round(kinVisc[idx], 7)], 
     "rpm": float(rpmnorm[idx]), "rpm_idx": int(rpm_to_idx[rpm[idx]])}
     original_name = osp.splitext(osp.basename(para_paths[idx]))[0]
     with open(osp.join(norm_path, f"{original_name}.json"), 'w') as file:

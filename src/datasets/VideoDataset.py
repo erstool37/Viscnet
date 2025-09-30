@@ -13,7 +13,7 @@ class VideoDataset(Dataset):
         self.video_paths = video_paths
         self.para_paths = para_paths
         self.frame_limit = int(frame_num * time)
-        self.class_num = int(50 // visc_class)
+        self.class_num = 50 // visc_class
         self.cluster_map = {i: i // self.class_num for i in range(50)} # 10 clusters
         self.aug_bool = aug_bool
 
