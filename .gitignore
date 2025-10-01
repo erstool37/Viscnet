@@ -36,3 +36,4 @@ touch dataset/CFDArchive.gitkeep
 *.csv
 *.xlsx
 *.m
+*.sif
