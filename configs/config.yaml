@@ -1,0 +1,88 @@
+project: postViscnet
+name : norpmexperiment_withpattern_infeaturespace
+version: v0
+
+train_settings:
+  num_workers : 4 # CPU workers
+  seed : 1205
+  classification : True # True : classification, False : regression, !!! CHANGE LOSS FUNCTION !!!
+  gmm_bool : False # True : GMM output, False : single regression !!! CHANGE LOSS FUNCTION !!!
+  watch_bool : False # True : wandb gradient logging
+  train_bool : True # True : train the model
+  test_bool : True # True : test after training
+  attn_bool : False # True : use attention graph
+  val_test_bool : True # True : test_ds used in validation, False : val_ds used in validation
+  sanity_check_bool : False # True : run sanity check (1 batch train, 1 batch val)
+
+dataset:
+  train :
+    train_root : dataset/RealArchive/train_993_wo_pat2
+    # dataset/RealArchive/real_20rpm_increment_train134
+    # dataset/CFDArchive/sph_35000
+    frame_num : 10
+    time : 5
+    rpm_class : 10
+    dataloader :
+      dataloader : VideoDatasetReal
+      batch_size : 1
+      aug_bool : False
+      test_size : 1e-6 # validation set size
+      random_state : 37 
+  test : 
+    test_root : dataset/RealArchive/test_1000_wo_pat2
+    # dataset/RealArchive/real_20rpm_increment_test5
+    frame_num : 10
+    time : 5
+    rpm_class : 10
+    dataloader :
+      dataloader : VideoDatasetReal
+      batch_size : 1
+      aug_bool : False
+      test_size : 1e-6
+      random_state : 37
+  preprocess:
+    scaler : logzscaler
+    descaler : logzdescaler
+
+model:
+  transformer_bool : True # True : use transformer, False : use CNN-LSTM
+  transformer :
+    encoder: VivitEmbed
+    class : 10
+  embeddings:
+    rpm_bool : False
+    pat_bool : False
+  cnn : 
+    encoder : Resnet34LSTMEMBED
+    cnn_train : True
+    cnn : resnet34
+    lstm_size : 256
+    lstm_layers : 5
+    output_size : 3
+    drop_rate : 0.0
+    embedding_size : 512
+    embed_weight : 0.0
+  gmm:
+    gmm_num : 3
+
+training:
+  curr_bool : False # True : load specified weight, False : start from rock bottom
+  curr_ckpt : norpmexperiment_withpattern_synthetic_1220_v0.pth
+  # norpmexperiment_syntheticdataset_1217_v1.pth
+  # norpmexperiment_finetune_retry_1218_v0.pth
+  num_epochs : 30
+  loss : CE
+  label_smoothing : 0.0 # used in classification label_smothing, use value 0 for no smoothing
+  optimizer:
+    optim_class: AdamW 
+    scheduler_class: CosineAnnealingLR
+    lr: 1e-4  # 1e-2 ~ 1e-5 
+    eta_min : 1e-10
+    weight_decay: 0.1 # 1e-2 정도로
+    patience : 10
+
+misc_dir:
+  ckpt_root : "src/weights/"
+  video_subdir : "videos"
+  para_subdir : "parameters"
+  norm_subdir : "parametersNorm"

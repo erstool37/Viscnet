@@ -1,0 +1,27 @@
+.DS_Store
+**/wandb/*
+**/__pycache__/
+
+dataset/CFDArchive/
+dataset/RealArchive/
+
+src/inference/attention_maps/
+src/inference/attentiongraph
+
+*.zip
+*.mov
+*.npy
+*.pth
+*.csv
+*.xlsx
+*.m
+*.sif
+
+src/inference/*/*
+
+# but keep .gitkeep files
+!src/inference/*/.gitkeep
+src/weights/*
+
+touch dataset/CFDArchive.gitkeep
+!dataset/CFDArchive.gitkeep
