@@ -25,3 +25,7 @@ src/weights/*
 
 touch dataset/CFDArchive.gitkeep
 !dataset/CFDArchive.gitkeep
+
+.env
+.env.*
+!.env.example

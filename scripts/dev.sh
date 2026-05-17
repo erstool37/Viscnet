@@ -1,6 +1,22 @@
-export CUBLAS_WORKSPACE_CONFIG=:4096:8
-wandb login e4fc630ae5f28ea9dc5453b32b848681d664e9a1
-# 270cceb2081f0f17845e654a8e70d0f052c924d8
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+export CUBLAS_WORKSPACE_CONFIG="${CUBLAS_WORKSPACE_CONFIG:-:4096:8}"
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}"
+
+if [ -f .env ]; then
+  set -a
+  . ./.env
+  set +a
+fi
+
+if [ -n "${WANDB_API_KEY:-}" ]; then
+  wandb login "${WANDB_API_KEY}"
+else
+  echo "WANDB_API_KEY is not set; skipping wandb login." >&2
+fi
 
 ### Normalizing dataset
 # python3 src/utils/preprocess.py -c configs/config.yaml -m synthetic
@@ -8,7 +24,6 @@ wandb login e4fc630ae5f28ea9dc5453b32b848681d664e9a1
 # python3 src/utils/preprocess_ODDEVEN.py bash -c configs/config.yaml
 
 ### Training
-export OMP_NUM_THREADS=1
 torchrun --nproc_per_node=4 --nnodes=1 --master_port=29513 --node_rank=0 src/main.py -c configs/config.yaml
 # torchrun --nproc_per_node=4 --nnodes=1 --master_port=29513 --node_rank=0 src/main.py -c configs/config2.yaml
 # torchrun --nproc_per_node=4 --nnodes=1 --master_port=29513 --node_rank=0 src/main.py -c configs/config3.yaml
