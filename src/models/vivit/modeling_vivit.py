@@ -12,26 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" PyTorch ViViT model."""
-
+"""PyTorch ViViT model."""
 
 import math
 from typing import Optional, Set, Tuple, Union
 
+import timm
 import torch
 import torch.utils.checkpoint
 from torch import nn
 from torch.nn import CrossEntropyLoss, MSELoss
-
 from transformers.activations import ACT2FN
 from transformers.modeling_outputs import BaseModelOutput, BaseModelOutputWithPooling, ImageClassifierOutput
 from transformers.modeling_utils import PreTrainedModel
 from transformers.pytorch_utils import find_pruneable_heads_and_indices, prune_linear_layer
-from transformers.utils import add_start_docstrings, add_start_docstrings_to_model_forward, logging, replace_return_docstrings
-from models.vivit.configuration_vivit import VivitConfig
+from transformers.utils import (
+    add_start_docstrings,
+    add_start_docstrings_to_model_forward,
+    replace_return_docstrings,
+)
 
-import timm
-import torch.nn as nn
+from models.vivit.configuration_vivit import VivitConfig
 
 _CHECKPOINT_FOR_DOC = "google/vivit-b-16x2-kinetics400"
 _CONFIG_FOR_DOC = "VivitConfig"
@@ -99,7 +100,7 @@ class VivitEmbeddings(nn.Module):
         self.patch_embeddings = VivitTubeletEmbeddings(config)
         self.pat_bool = config.pat_bool
         self.rpm_bool = config.rpm_bool
-    
+
         self.position_embeddings = nn.Parameter(
             torch.zeros(1, self.patch_embeddings.num_patches + 1, config.hidden_size)
         )
@@ -107,18 +108,16 @@ class VivitEmbeddings(nn.Module):
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.config = config
 
-        self.pat_backbone = timm.create_model("resnet18", pretrained=True, num_classes=0)  # outputs (B,512)
-        self.pat_proj = nn.Linear(512, 256)
+        if self.pat_bool:
+            self.pat_backbone = timm.create_model("resnet18", pretrained=True, num_classes=0)
+            self.pat_proj = nn.Linear(512, 256)
 
-        for p in self.pat_backbone.parameters():
-            p.requires_grad = False
-        self.pat_backbone.eval()  # (keep BN fixed)
-
-        self.pat_embed = nn.Sequential(
-            nn.Conv2d(3, 256, kernel_size=16, stride=16),  # (B,256,Hp,Wp)
-            nn.Flatten(2),                                                 # (B,256,N)
-        )
-
+            for p in self.pat_backbone.parameters():
+                p.requires_grad = False
+            self.pat_backbone.eval()
+        else:
+            self.pat_backbone = None
+            self.pat_proj = None
 
     def forward(self, pixel_values, rpm_idx, pattern):
         batch_size = pixel_values.shape[0]
@@ -129,28 +128,26 @@ class VivitEmbeddings(nn.Module):
 
         # generate RPM tokens
         rpm_idx = rpm_idx.view(batch_size)
-        rpm_tok = self.rpm_embed(rpm_idx).unsqueeze(1)           # (B,1,H)
-        rpm_tok = rpm_tok.expand(-1, embeddings.size(1), -1)     # (B,seq,H)
+        rpm_tok = self.rpm_embed(rpm_idx).unsqueeze(1)  # (B,1,H)
+        rpm_tok = rpm_tok.expand(-1, embeddings.size(1), -1)  # (B,seq,H)
 
-        # generate pattern tokens
-        pattern = pattern.permute(0, 3, 1, 2).contiguous()
-        pattern = pattern[:, :, 16:240, 16:240]   # 224x224, same as before
-
-        with torch.no_grad():
-            feat = self.pat_backbone(pattern)   # (B,512)
-
-        feat = self.pat_proj(feat)              # (B,256)
-        pat_tok = feat.unsqueeze(1)             # (B,1,256)
-        pat_tok = pat_tok.expand(-1, 4900, -1)  # (B,4900,256)  (no extra memory)
-
-        # p = self.pat_embed(pattern).flatten(2).transpose(1, 2)  # (B,196,256)
-        # pat_tok = p.repeat(1, 25, 1)                            # (B,4900,256)
-
-        if self.rpm_bool: 
-            embeddings = embeddings + rpm_tok # conditioned on rpm
+        if self.rpm_bool:
+            embeddings = embeddings + rpm_tok  # conditioned on rpm
         if self.pat_bool:
-            embeddings[:, 1:] = embeddings[:, 1:] + pat_tok # per tubelet embedding
-        
+            pattern = pattern.permute(0, 3, 1, 2).contiguous()
+            _, _, height, width = pattern.shape
+            top = (height - 224) // 2
+            left = (width - 224) // 2
+            pattern = pattern[:, :, top : top + 224, left : left + 224]
+
+            with torch.no_grad():
+                feat = self.pat_backbone(pattern)  # (B,512)
+
+            feat = self.pat_proj(feat)  # (B,256)
+            pat_tok = feat.unsqueeze(1)  # (B,1,256)
+            pat_tok = pat_tok.expand(-1, 4900, -1)  # (B,4900,256)  (no extra memory)
+            embeddings[:, 1:] = embeddings[:, 1:] + pat_tok  # per tubelet embedding
+
         embeddings = embeddings + self.position_embeddings
         embeddings = self.dropout(embeddings)
 
@@ -163,7 +160,7 @@ class VivitSelfAttention(nn.Module):
         super().__init__()
         if config.hidden_size % config.num_attention_heads != 0 and not hasattr(config, "embedding_size"):
             raise ValueError(
-                f"The hidden size {config.hidden_size,} is not a multiple of the number of attention "
+                f"The hidden size {(config.hidden_size,)} is not a multiple of the number of attention "
                 f"heads {config.num_attention_heads}."
             )
 
@@ -522,7 +519,7 @@ class VivitModel(VivitPreTrainedModel):
         head_mask: Optional[torch.FloatTensor] = None,
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
-        return_dict: Optional[bool] = None
+        return_dict: Optional[bool] = None,
     ) -> Union[Tuple[torch.FloatTensor], BaseModelOutputWithPooling]:
         r"""
         Returns:

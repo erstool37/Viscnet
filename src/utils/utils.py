@@ -1,10 +1,12 @@
-import torch
-import os.path as osp
-import json
-from statistics import mean, stdev
-import wandb
 import importlib
+import json
+import os.path as osp
+
 import cv2
+import torch
+
+import wandb
+
 
 # log10 > 0 to 1
 def loginterscaler(lst):
@@ -14,50 +16,56 @@ def loginterscaler(lst):
     scaled = (log_lst - min_val) / (max_val - min_val)
     return scaled, max_val.item(), min_val.item()
 
+
 def loginterdescaler(scaled_lst, property, path):
     root = osp.dirname(osp.abspath(__file__))
     stat_path = osp.join(root, "../..", path, "statistics.json")
-    with open(stat_path, 'r') as file:
+    with open(stat_path, "r") as file:
         data = json.load(file)
         max_val = torch.tensor(data[property]["max"], dtype=scaled_lst.dtype, device=scaled_lst.device)
         min_val = torch.tensor(data[property]["min"], dtype=scaled_lst.dtype, device=scaled_lst.device)
     log_val = scaled_lst * (max_val - min_val) + min_val
     return torch.pow(10, log_val)
 
+
 # 0 to 1
-def interscaler(lst): 
+def interscaler(lst):
     lst = torch.tensor(lst, dtype=torch.float32)
     min_val = lst.min()
     max_val = lst.max()
     scaled = (lst - min_val) / (max_val - min_val)
     return scaled, max_val, min_val
 
+
 def interdescaler(scaled_lst, property, path):
     root = osp.dirname(osp.abspath(__file__))
     stat_path = osp.join(root, "../..", path, "statistics.json")
-    with open(stat_path, 'r') as file:
+    with open(stat_path, "r") as file:
         data = json.load(file)
         max_val = torch.tensor(data[property]["max"], dtype=scaled_lst.dtype, device=scaled_lst.device)
-        min_val = torch.tensor( data[property]["min"], dtype=scaled_lst.dtype, device=scaled_lst.device)
+        min_val = torch.tensor(data[property]["min"], dtype=scaled_lst.dtype, device=scaled_lst.device)
     return scaled_lst * (max_val - min_val) + min_val
-    
+
+
 # zscore mean to 0.5
 def zscaler(lst):
     lst = torch.tensor(lst, dtype=torch.float32)
     mean_val = lst.mean()
     std_val = lst.std()
-    scaled = [(x - mean_val) / (2 * std_val) + 0.5 for x in lst] 
+    scaled = [(x - mean_val) / (2 * std_val) + 0.5 for x in lst]
     return scaled, mean_val, std_val
+
 
 def zdescaler(scaled_lst, property, path):
     root = osp.dirname(osp.abspath(__file__))
     stat_path = osp.join(root, "../..", path, "statistics.json")
-    with open(stat_path, 'r') as file:
+    with open(stat_path, "r") as file:
         data = json.load(file)
         mean_val = torch.tensor(data[property]["mean"], dtype=scaled_lst.dtype, device=scaled_lst.device)
         std_val = torch.tensor(data[property]["std"], dtype=scaled_lst.dtype, device=scaled_lst.device)
     descaled = (scaled_lst - 0.5) * (2 * std_val) + mean_val
     return descaled
+
 
 # log10 > zscore 0 to 1
 def logzscaler(lst):
@@ -67,45 +75,44 @@ def logzscaler(lst):
     scaled = (log_lst - mean_val) / (2 * std_val) + 0.5
     return scaled, mean_val, std_val
 
+
 def logzdescaler(scaled_lst, property, path):
     root = osp.dirname(osp.abspath(__file__))
     stat_path = osp.join(root, "../..", path, "statistics.json")
-    with open(stat_path, 'r') as file:
+    with open(stat_path, "r") as file:
         data = json.load(file)
         mean_val = torch.tensor(data[property]["mean"], dtype=scaled_lst.dtype, device=scaled_lst.device)
         std_val = torch.tensor(data[property]["std"], dtype=scaled_lst.dtype, device=scaled_lst.device)
     descaled = (scaled_lst - 0.5) * (2 * std_val) + mean_val
     return torch.pow(10, descaled)
 
+
 def noscaler(lst):
     lst = torch.tensor(lst, dtype=torch.float32)
     constant = torch.tensor(1.0, dtype=torch.float32)
-    return lst, constant, constant 
+    return lst, constant, constant
+
 
 def nodescaler(lst, property, path):
     return lst
+
 
 # MEAN ABSOLUTE PERCENTAGE ERROR
 def MAPEcalculator(pred, target, descaler, method, path):
     utils = importlib.import_module("utils")
     descaler = getattr(utils, descaler)
-    
-    pred_den = descaler(pred[:,0], "density", path).unsqueeze(-1)
-    pred_surfT = descaler(pred[:,1], "surface_tension", path).unsqueeze(-1)
-    pred_kinvisc = descaler(pred[:,2], "kinematic_viscosity", path).unsqueeze(-1)
 
-    target_den = descaler(target[:,0], "density", path).unsqueeze(-1)
-    target_surfT = descaler(target[:,1], "surface_tension", path).unsqueeze(-1)
-    target_kinvisc = descaler(target[:,2], "kinematic_viscosity", path).unsqueeze(-1)
+    pred_kinvisc = descaler(pred[:, 2], "kinematic_viscosity", path).unsqueeze(-1)
 
-    loss_mape_den = torch.mean((torch.abs(pred_den - target_den) / target_den)).unsqueeze(-1)
-    loss_mape_surfT = torch.mean((torch.abs(pred_surfT - target_surfT) / target_surfT)).unsqueeze(-1)
+    target_kinvisc = descaler(target[:, 2], "kinematic_viscosity", path).unsqueeze(-1)
+
     loss_mape_kinvisc = torch.mean((torch.abs(pred_kinvisc - target_kinvisc) / target_kinvisc)).unsqueeze(-1)
 
     # wandb.log({f"MAPE {method} den %" : loss_mape_den * 100})
-    wandb.log({f"MAPE {method} kinvisc %" : loss_mape_kinvisc * 100})
+    wandb.log({f"MAPE {method} kinvisc %": loss_mape_kinvisc * 100})
     # wandb.log({f"MAPE {method} surfT %" : loss_mape_surfT * 100})
-    
+
+
 def MAPEGMMcalculator(pred, target, descaler, method, path):
     """
     Computes MAPE (%) for kinematic viscosity only.
@@ -123,9 +130,7 @@ def MAPEGMMcalculator(pred, target, descaler, method, path):
     target_kinvisc = descaler(target.squeeze(-1), "kinematic_viscosity", path).unsqueeze(-1)
 
     # MAPE for kinematic viscosity
-    loss_mape_kinvisc = torch.mean(
-        torch.abs(pred_kinvisc - target_kinvisc) / (target_kinvisc + 1e-8)
-    ).unsqueeze(-1)
+    loss_mape_kinvisc = torch.mean(torch.abs(pred_kinvisc - target_kinvisc) / (target_kinvisc + 1e-8)).unsqueeze(-1)
 
     # log and return
     wandb.log({f"MAPE {method} kinvisc %": loss_mape_kinvisc * 100})
@@ -135,7 +140,7 @@ def MAPEGMMcalculator(pred, target, descaler, method, path):
 
 def sanity_check_alignment(video_paths, para_paths, expected_fps=10, expected_time=5):
     print("Initiating sanity check for video-parameter alignment...")
-    expected_frames=expected_fps * expected_time
+    expected_frames = expected_fps * expected_time
     if len(video_paths) != len(para_paths):
         raise ValueError(f"Length mismatch: {len(video_paths)} videos vs {len(para_paths)} params")
 
@@ -196,6 +201,7 @@ def sanity_check_alignment(video_paths, para_paths, expected_fps=10, expected_ti
     if not (name_mismatches or fps_mismatches or frame_mismatches):
         print(" Sanity check passed: all file names, FPS, and frame counts are aligned.")
 
+
 def load_weights(model, ckpt_path: str):
     """
     1) Always loads feature extractor weights (strict on shape).
@@ -224,19 +230,13 @@ def load_weights(model, ckpt_path: str):
     head_keys = [k for k in ckpt.keys() if k.startswith(("fc", "gmm"))]
 
     # 1) Feature extractor (strict: require matching key+shape)
-    feat_load = {
-        k: v for k, v in ckpt.items()
-        if k in feat_keys and k in msd and msd[k].shape == v.shape
-    }
-    missing_feats = [k for k in feat_keys if not (k in feat_load)]
+    feat_load = {k: v for k, v in ckpt.items() if k in feat_keys and k in msd and msd[k].shape == v.shape}
+    missing_feats = [k for k in feat_keys if k not in feat_load]
     if missing_feats:
         raise RuntimeError(f"Feature extractor mismatch/missing keys (first few): {missing_feats[:5]}")
 
     # 2) Head (best-effort: only load matching shapes)
-    head_load = {
-        k: v for k, v in ckpt.items()
-        if k in head_keys and k in msd and msd[k].shape == v.shape
-    }
+    head_load = {k: v for k, v in ckpt.items() if k in head_keys and k in msd and msd[k].shape == v.shape}
     skipped = [k for k in head_keys if k not in head_load]
     if skipped:
         print(f"[load] Skipped head layers (shape mismatch): {skipped[:5]}...")

@@ -1,15 +1,14 @@
+import importlib
+
 import torch
 import torch.nn as nn
-import wandb
-import os.path as osp
-import json
-import importlib
-from torch.nn import functional as F
+
 
 class MAPE(nn.Module):
     """
     unnormalized and MAPE calculation
     """
+
     def __init__(self, unnormalizer, path, smooth_label):
         super(MAPE, self).__init__()
         self.unnormalizer = unnormalizer
@@ -27,7 +26,6 @@ class MAPE(nn.Module):
         total_loss = loss_kinvisc
 
         return total_loss
-    
 
         # pred_den = descaler(pred[:,0], "density", self.path).unsqueeze(-1).to(pred.device)
         # pred_surfT = descaler(pred[:,2], "surface_tension", self.path).unsqueeze(-1).to(pred.device)

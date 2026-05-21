@@ -12,11 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" ViViT model configuration"""
+"""ViViT model configuration"""
 
 from transformers.configuration_utils import PretrainedConfig
 from transformers.utils import logging
-
 
 logger = logging.get_logger(__name__)
 
@@ -125,7 +124,7 @@ class VivitConfig(PretrainedConfig):
 
         self.rpm_bool = rpm_bool
         self.pat_bool = pat_bool
-        
+
         self.qkv_bias = qkv_bias
 
         super().__init__(**kwargs)

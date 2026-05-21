@@ -1,0 +1,3508 @@
+{
+  "source_root": "dataset/RealArchive/train_993_wo_pat2",
+  "size": 500,
+  "seed": 37,
+  "method": "round-robin stratified by visc_index then rpm_idx from train_993_wo_pat2",
+  "samples": [
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm270_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm270_renderB.json",
+      "visc_index": 0,
+      "rpm_idx": 0,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm270_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm270_renderC.json",
+      "visc_index": 0,
+      "rpm_idx": 0,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm270_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm270_renderP.json",
+      "visc_index": 0,
+      "rpm_idx": 0,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm270_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm270_renderT.json",
+      "visc_index": 0,
+      "rpm_idx": 0,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm270_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm270_renderU.json",
+      "visc_index": 0,
+      "rpm_idx": 0,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm290_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm290_renderL.json",
+      "visc_index": 0,
+      "rpm_idx": 1,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm290_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm290_renderM.json",
+      "visc_index": 0,
+      "rpm_idx": 1,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm290_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm290_renderT.json",
+      "visc_index": 0,
+      "rpm_idx": 1,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm290_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm290_renderU.json",
+      "visc_index": 0,
+      "rpm_idx": 1,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm290_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm290_renderV.json",
+      "visc_index": 0,
+      "rpm_idx": 1,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm310_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm310_renderK.json",
+      "visc_index": 0,
+      "rpm_idx": 2,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm310_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm310_renderL.json",
+      "visc_index": 0,
+      "rpm_idx": 2,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm310_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm310_renderQ.json",
+      "visc_index": 0,
+      "rpm_idx": 2,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm310_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm310_renderR.json",
+      "visc_index": 0,
+      "rpm_idx": 2,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm310_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm310_renderV.json",
+      "visc_index": 0,
+      "rpm_idx": 2,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm330_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm330_renderA.json",
+      "visc_index": 0,
+      "rpm_idx": 3,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm330_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm330_renderL.json",
+      "visc_index": 0,
+      "rpm_idx": 3,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm330_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm330_renderN.json",
+      "visc_index": 0,
+      "rpm_idx": 3,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm330_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm330_renderT.json",
+      "visc_index": 0,
+      "rpm_idx": 3,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm330_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm330_renderW.json",
+      "visc_index": 0,
+      "rpm_idx": 3,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm350_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm350_renderC.json",
+      "visc_index": 0,
+      "rpm_idx": 4,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm350_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm350_renderD.json",
+      "visc_index": 0,
+      "rpm_idx": 4,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm350_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm350_renderK.json",
+      "visc_index": 0,
+      "rpm_idx": 4,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm350_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm350_renderP.json",
+      "visc_index": 0,
+      "rpm_idx": 4,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm350_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm350_renderS.json",
+      "visc_index": 0,
+      "rpm_idx": 4,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm370_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm370_renderC.json",
+      "visc_index": 0,
+      "rpm_idx": 5,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm370_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm370_renderM.json",
+      "visc_index": 0,
+      "rpm_idx": 5,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm370_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm370_renderP.json",
+      "visc_index": 0,
+      "rpm_idx": 5,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm370_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm370_renderQ.json",
+      "visc_index": 0,
+      "rpm_idx": 5,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm370_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm370_renderT.json",
+      "visc_index": 0,
+      "rpm_idx": 5,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm390_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm390_renderC.json",
+      "visc_index": 0,
+      "rpm_idx": 6,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm390_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm390_renderE.json",
+      "visc_index": 0,
+      "rpm_idx": 6,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm390_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm390_renderK.json",
+      "visc_index": 0,
+      "rpm_idx": 6,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm390_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm390_renderM.json",
+      "visc_index": 0,
+      "rpm_idx": 6,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm390_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm390_renderN.json",
+      "visc_index": 0,
+      "rpm_idx": 6,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm410_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm410_renderA.json",
+      "visc_index": 0,
+      "rpm_idx": 7,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm410_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm410_renderE.json",
+      "visc_index": 0,
+      "rpm_idx": 7,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm410_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm410_renderN.json",
+      "visc_index": 0,
+      "rpm_idx": 7,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm410_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm410_renderS.json",
+      "visc_index": 0,
+      "rpm_idx": 7,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm410_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm410_renderV.json",
+      "visc_index": 0,
+      "rpm_idx": 7,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm430_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm430_renderD.json",
+      "visc_index": 0,
+      "rpm_idx": 8,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm430_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm430_renderM.json",
+      "visc_index": 0,
+      "rpm_idx": 8,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm430_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm430_renderO.json",
+      "visc_index": 0,
+      "rpm_idx": 8,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm430_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm430_renderV.json",
+      "visc_index": 0,
+      "rpm_idx": 8,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm430_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm430_renderX.json",
+      "visc_index": 0,
+      "rpm_idx": 8,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm450_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm450_renderC.json",
+      "visc_index": 0,
+      "rpm_idx": 9,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm450_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm450_renderD.json",
+      "visc_index": 0,
+      "rpm_idx": 9,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm450_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm450_renderS.json",
+      "visc_index": 0,
+      "rpm_idx": 9,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm450_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm450_renderW.json",
+      "visc_index": 0,
+      "rpm_idx": 9,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc000.89274_rpm450_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc000.89274_rpm450_renderX.json",
+      "visc_index": 0,
+      "rpm_idx": 9,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm270_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm270_renderB.json",
+      "visc_index": 1,
+      "rpm_idx": 0,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm270_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm270_renderE.json",
+      "visc_index": 1,
+      "rpm_idx": 0,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm270_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm270_renderK.json",
+      "visc_index": 1,
+      "rpm_idx": 0,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm270_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm270_renderL.json",
+      "visc_index": 1,
+      "rpm_idx": 0,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm270_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm270_renderR.json",
+      "visc_index": 1,
+      "rpm_idx": 0,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm290_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm290_renderA.json",
+      "visc_index": 1,
+      "rpm_idx": 1,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm290_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm290_renderC.json",
+      "visc_index": 1,
+      "rpm_idx": 1,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm290_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm290_renderK.json",
+      "visc_index": 1,
+      "rpm_idx": 1,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm290_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm290_renderQ.json",
+      "visc_index": 1,
+      "rpm_idx": 1,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm290_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm290_renderW.json",
+      "visc_index": 1,
+      "rpm_idx": 1,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm310_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm310_renderE.json",
+      "visc_index": 1,
+      "rpm_idx": 2,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm310_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm310_renderL.json",
+      "visc_index": 1,
+      "rpm_idx": 2,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm310_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm310_renderM.json",
+      "visc_index": 1,
+      "rpm_idx": 2,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm310_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm310_renderN.json",
+      "visc_index": 1,
+      "rpm_idx": 2,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm310_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm310_renderS.json",
+      "visc_index": 1,
+      "rpm_idx": 2,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm330_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm330_renderL.json",
+      "visc_index": 1,
+      "rpm_idx": 3,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm330_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm330_renderO.json",
+      "visc_index": 1,
+      "rpm_idx": 3,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm330_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm330_renderP.json",
+      "visc_index": 1,
+      "rpm_idx": 3,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm330_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm330_renderR.json",
+      "visc_index": 1,
+      "rpm_idx": 3,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm330_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm330_renderW.json",
+      "visc_index": 1,
+      "rpm_idx": 3,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm350_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm350_renderD.json",
+      "visc_index": 1,
+      "rpm_idx": 4,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm350_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm350_renderM.json",
+      "visc_index": 1,
+      "rpm_idx": 4,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm350_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm350_renderQ.json",
+      "visc_index": 1,
+      "rpm_idx": 4,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm350_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm350_renderV.json",
+      "visc_index": 1,
+      "rpm_idx": 4,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm350_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm350_renderX.json",
+      "visc_index": 1,
+      "rpm_idx": 4,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm370_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm370_renderD.json",
+      "visc_index": 1,
+      "rpm_idx": 5,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm370_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm370_renderL.json",
+      "visc_index": 1,
+      "rpm_idx": 5,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm370_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm370_renderR.json",
+      "visc_index": 1,
+      "rpm_idx": 5,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm370_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm370_renderU.json",
+      "visc_index": 1,
+      "rpm_idx": 5,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm370_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm370_renderV.json",
+      "visc_index": 1,
+      "rpm_idx": 5,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm390_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm390_renderK.json",
+      "visc_index": 1,
+      "rpm_idx": 6,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm390_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm390_renderR.json",
+      "visc_index": 1,
+      "rpm_idx": 6,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm390_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm390_renderT.json",
+      "visc_index": 1,
+      "rpm_idx": 6,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm390_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm390_renderV.json",
+      "visc_index": 1,
+      "rpm_idx": 6,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm390_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm390_renderY.json",
+      "visc_index": 1,
+      "rpm_idx": 6,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm410_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm410_renderC.json",
+      "visc_index": 1,
+      "rpm_idx": 7,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm410_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm410_renderO.json",
+      "visc_index": 1,
+      "rpm_idx": 7,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm410_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm410_renderP.json",
+      "visc_index": 1,
+      "rpm_idx": 7,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm410_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm410_renderQ.json",
+      "visc_index": 1,
+      "rpm_idx": 7,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm410_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm410_renderS.json",
+      "visc_index": 1,
+      "rpm_idx": 7,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm430_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm430_renderA.json",
+      "visc_index": 1,
+      "rpm_idx": 8,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm430_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm430_renderN.json",
+      "visc_index": 1,
+      "rpm_idx": 8,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm430_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm430_renderO.json",
+      "visc_index": 1,
+      "rpm_idx": 8,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm430_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm430_renderP.json",
+      "visc_index": 1,
+      "rpm_idx": 8,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm430_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm430_renderQ.json",
+      "visc_index": 1,
+      "rpm_idx": 8,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm450_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm450_renderD.json",
+      "visc_index": 1,
+      "rpm_idx": 9,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm450_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm450_renderM.json",
+      "visc_index": 1,
+      "rpm_idx": 9,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm450_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm450_renderN.json",
+      "visc_index": 1,
+      "rpm_idx": 9,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm450_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm450_renderR.json",
+      "visc_index": 1,
+      "rpm_idx": 9,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc015.97088_rpm450_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc015.97088_rpm450_renderS.json",
+      "visc_index": 1,
+      "rpm_idx": 9,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm270_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm270_renderC.json",
+      "visc_index": 2,
+      "rpm_idx": 0,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm270_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm270_renderN.json",
+      "visc_index": 2,
+      "rpm_idx": 0,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm270_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm270_renderQ.json",
+      "visc_index": 2,
+      "rpm_idx": 0,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm270_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm270_renderV.json",
+      "visc_index": 2,
+      "rpm_idx": 0,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm270_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm270_renderX.json",
+      "visc_index": 2,
+      "rpm_idx": 0,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm290_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm290_renderC.json",
+      "visc_index": 2,
+      "rpm_idx": 1,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm290_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm290_renderL.json",
+      "visc_index": 2,
+      "rpm_idx": 1,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm290_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm290_renderO.json",
+      "visc_index": 2,
+      "rpm_idx": 1,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm290_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm290_renderS.json",
+      "visc_index": 2,
+      "rpm_idx": 1,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm290_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm290_renderT.json",
+      "visc_index": 2,
+      "rpm_idx": 1,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm310_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm310_renderE.json",
+      "visc_index": 2,
+      "rpm_idx": 2,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm310_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm310_renderM.json",
+      "visc_index": 2,
+      "rpm_idx": 2,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm310_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm310_renderP.json",
+      "visc_index": 2,
+      "rpm_idx": 2,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm310_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm310_renderQ.json",
+      "visc_index": 2,
+      "rpm_idx": 2,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm310_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm310_renderS.json",
+      "visc_index": 2,
+      "rpm_idx": 2,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm330_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm330_renderL.json",
+      "visc_index": 2,
+      "rpm_idx": 3,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm330_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm330_renderN.json",
+      "visc_index": 2,
+      "rpm_idx": 3,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm330_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm330_renderO.json",
+      "visc_index": 2,
+      "rpm_idx": 3,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm330_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm330_renderV.json",
+      "visc_index": 2,
+      "rpm_idx": 3,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm330_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm330_renderX.json",
+      "visc_index": 2,
+      "rpm_idx": 3,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm350_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm350_renderD.json",
+      "visc_index": 2,
+      "rpm_idx": 4,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm350_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm350_renderL.json",
+      "visc_index": 2,
+      "rpm_idx": 4,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm350_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm350_renderN.json",
+      "visc_index": 2,
+      "rpm_idx": 4,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm350_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm350_renderR.json",
+      "visc_index": 2,
+      "rpm_idx": 4,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm350_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm350_renderU.json",
+      "visc_index": 2,
+      "rpm_idx": 4,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm370_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm370_renderE.json",
+      "visc_index": 2,
+      "rpm_idx": 5,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm370_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm370_renderO.json",
+      "visc_index": 2,
+      "rpm_idx": 5,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm370_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm370_renderW.json",
+      "visc_index": 2,
+      "rpm_idx": 5,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm370_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm370_renderX.json",
+      "visc_index": 2,
+      "rpm_idx": 5,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm370_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm370_renderY.json",
+      "visc_index": 2,
+      "rpm_idx": 5,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm390_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm390_renderB.json",
+      "visc_index": 2,
+      "rpm_idx": 6,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm390_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm390_renderE.json",
+      "visc_index": 2,
+      "rpm_idx": 6,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm390_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm390_renderL.json",
+      "visc_index": 2,
+      "rpm_idx": 6,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm390_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm390_renderN.json",
+      "visc_index": 2,
+      "rpm_idx": 6,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm390_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm390_renderS.json",
+      "visc_index": 2,
+      "rpm_idx": 6,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm410_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm410_renderK.json",
+      "visc_index": 2,
+      "rpm_idx": 7,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm410_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm410_renderL.json",
+      "visc_index": 2,
+      "rpm_idx": 7,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm410_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm410_renderO.json",
+      "visc_index": 2,
+      "rpm_idx": 7,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm410_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm410_renderU.json",
+      "visc_index": 2,
+      "rpm_idx": 7,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm410_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm410_renderX.json",
+      "visc_index": 2,
+      "rpm_idx": 7,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm430_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm430_renderA.json",
+      "visc_index": 2,
+      "rpm_idx": 8,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm430_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm430_renderO.json",
+      "visc_index": 2,
+      "rpm_idx": 8,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm430_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm430_renderP.json",
+      "visc_index": 2,
+      "rpm_idx": 8,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm430_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm430_renderR.json",
+      "visc_index": 2,
+      "rpm_idx": 8,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm430_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm430_renderU.json",
+      "visc_index": 2,
+      "rpm_idx": 8,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm450_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm450_renderK.json",
+      "visc_index": 2,
+      "rpm_idx": 9,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm450_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm450_renderP.json",
+      "visc_index": 2,
+      "rpm_idx": 9,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm450_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm450_renderV.json",
+      "visc_index": 2,
+      "rpm_idx": 9,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm450_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm450_renderX.json",
+      "visc_index": 2,
+      "rpm_idx": 9,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc021.31029_rpm450_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc021.31029_rpm450_renderY.json",
+      "visc_index": 2,
+      "rpm_idx": 9,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm270_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm270_renderC.json",
+      "visc_index": 3,
+      "rpm_idx": 0,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm270_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm270_renderE.json",
+      "visc_index": 3,
+      "rpm_idx": 0,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm270_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm270_renderQ.json",
+      "visc_index": 3,
+      "rpm_idx": 0,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm270_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm270_renderR.json",
+      "visc_index": 3,
+      "rpm_idx": 0,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm270_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm270_renderS.json",
+      "visc_index": 3,
+      "rpm_idx": 0,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm290_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm290_renderD.json",
+      "visc_index": 3,
+      "rpm_idx": 1,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm290_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm290_renderM.json",
+      "visc_index": 3,
+      "rpm_idx": 1,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm290_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm290_renderO.json",
+      "visc_index": 3,
+      "rpm_idx": 1,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm290_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm290_renderT.json",
+      "visc_index": 3,
+      "rpm_idx": 1,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm290_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm290_renderW.json",
+      "visc_index": 3,
+      "rpm_idx": 1,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm310_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm310_renderC.json",
+      "visc_index": 3,
+      "rpm_idx": 2,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm310_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm310_renderK.json",
+      "visc_index": 3,
+      "rpm_idx": 2,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm310_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm310_renderS.json",
+      "visc_index": 3,
+      "rpm_idx": 2,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm310_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm310_renderU.json",
+      "visc_index": 3,
+      "rpm_idx": 2,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm310_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm310_renderW.json",
+      "visc_index": 3,
+      "rpm_idx": 2,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm330_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm330_renderA.json",
+      "visc_index": 3,
+      "rpm_idx": 3,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm330_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm330_renderB.json",
+      "visc_index": 3,
+      "rpm_idx": 3,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm330_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm330_renderL.json",
+      "visc_index": 3,
+      "rpm_idx": 3,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm330_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm330_renderN.json",
+      "visc_index": 3,
+      "rpm_idx": 3,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm330_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm330_renderX.json",
+      "visc_index": 3,
+      "rpm_idx": 3,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm350_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm350_renderK.json",
+      "visc_index": 3,
+      "rpm_idx": 4,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm350_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm350_renderM.json",
+      "visc_index": 3,
+      "rpm_idx": 4,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm350_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm350_renderS.json",
+      "visc_index": 3,
+      "rpm_idx": 4,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm350_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm350_renderT.json",
+      "visc_index": 3,
+      "rpm_idx": 4,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm350_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm350_renderV.json",
+      "visc_index": 3,
+      "rpm_idx": 4,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm370_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm370_renderC.json",
+      "visc_index": 3,
+      "rpm_idx": 5,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm370_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm370_renderK.json",
+      "visc_index": 3,
+      "rpm_idx": 5,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm370_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm370_renderL.json",
+      "visc_index": 3,
+      "rpm_idx": 5,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm370_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm370_renderS.json",
+      "visc_index": 3,
+      "rpm_idx": 5,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm370_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm370_renderT.json",
+      "visc_index": 3,
+      "rpm_idx": 5,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm390_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm390_renderE.json",
+      "visc_index": 3,
+      "rpm_idx": 6,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm390_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm390_renderQ.json",
+      "visc_index": 3,
+      "rpm_idx": 6,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm390_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm390_renderR.json",
+      "visc_index": 3,
+      "rpm_idx": 6,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm390_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm390_renderS.json",
+      "visc_index": 3,
+      "rpm_idx": 6,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm390_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm390_renderV.json",
+      "visc_index": 3,
+      "rpm_idx": 6,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm410_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm410_renderR.json",
+      "visc_index": 3,
+      "rpm_idx": 7,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm410_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm410_renderS.json",
+      "visc_index": 3,
+      "rpm_idx": 7,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm410_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm410_renderU.json",
+      "visc_index": 3,
+      "rpm_idx": 7,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm410_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm410_renderV.json",
+      "visc_index": 3,
+      "rpm_idx": 7,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm410_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm410_renderX.json",
+      "visc_index": 3,
+      "rpm_idx": 7,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm430_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm430_renderD.json",
+      "visc_index": 3,
+      "rpm_idx": 8,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm430_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm430_renderE.json",
+      "visc_index": 3,
+      "rpm_idx": 8,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm430_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm430_renderO.json",
+      "visc_index": 3,
+      "rpm_idx": 8,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm430_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm430_renderT.json",
+      "visc_index": 3,
+      "rpm_idx": 8,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm430_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm430_renderU.json",
+      "visc_index": 3,
+      "rpm_idx": 8,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm450_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm450_renderC.json",
+      "visc_index": 3,
+      "rpm_idx": 9,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm450_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm450_renderD.json",
+      "visc_index": 3,
+      "rpm_idx": 9,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm450_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm450_renderM.json",
+      "visc_index": 3,
+      "rpm_idx": 9,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm450_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm450_renderT.json",
+      "visc_index": 3,
+      "rpm_idx": 9,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc028.43477_rpm450_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc028.43477_rpm450_renderU.json",
+      "visc_index": 3,
+      "rpm_idx": 9,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm270_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm270_renderE.json",
+      "visc_index": 4,
+      "rpm_idx": 0,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm270_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm270_renderO.json",
+      "visc_index": 4,
+      "rpm_idx": 0,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm270_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm270_renderP.json",
+      "visc_index": 4,
+      "rpm_idx": 0,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm270_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm270_renderQ.json",
+      "visc_index": 4,
+      "rpm_idx": 0,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm270_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm270_renderU.json",
+      "visc_index": 4,
+      "rpm_idx": 0,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm290_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm290_renderB.json",
+      "visc_index": 4,
+      "rpm_idx": 1,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm290_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm290_renderC.json",
+      "visc_index": 4,
+      "rpm_idx": 1,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm290_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm290_renderP.json",
+      "visc_index": 4,
+      "rpm_idx": 1,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm290_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm290_renderW.json",
+      "visc_index": 4,
+      "rpm_idx": 1,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm290_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm290_renderY.json",
+      "visc_index": 4,
+      "rpm_idx": 1,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm310_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm310_renderB.json",
+      "visc_index": 4,
+      "rpm_idx": 2,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm310_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm310_renderC.json",
+      "visc_index": 4,
+      "rpm_idx": 2,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm310_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm310_renderD.json",
+      "visc_index": 4,
+      "rpm_idx": 2,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm310_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm310_renderE.json",
+      "visc_index": 4,
+      "rpm_idx": 2,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm310_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm310_renderV.json",
+      "visc_index": 4,
+      "rpm_idx": 2,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm330_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm330_renderA.json",
+      "visc_index": 4,
+      "rpm_idx": 3,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm330_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm330_renderC.json",
+      "visc_index": 4,
+      "rpm_idx": 3,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm330_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm330_renderM.json",
+      "visc_index": 4,
+      "rpm_idx": 3,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm330_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm330_renderS.json",
+      "visc_index": 4,
+      "rpm_idx": 3,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm330_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm330_renderV.json",
+      "visc_index": 4,
+      "rpm_idx": 3,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm350_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm350_renderK.json",
+      "visc_index": 4,
+      "rpm_idx": 4,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm350_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm350_renderN.json",
+      "visc_index": 4,
+      "rpm_idx": 4,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm350_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm350_renderQ.json",
+      "visc_index": 4,
+      "rpm_idx": 4,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm350_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm350_renderS.json",
+      "visc_index": 4,
+      "rpm_idx": 4,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm350_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm350_renderX.json",
+      "visc_index": 4,
+      "rpm_idx": 4,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm370_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm370_renderA.json",
+      "visc_index": 4,
+      "rpm_idx": 5,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm370_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm370_renderB.json",
+      "visc_index": 4,
+      "rpm_idx": 5,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm370_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm370_renderE.json",
+      "visc_index": 4,
+      "rpm_idx": 5,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm370_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm370_renderN.json",
+      "visc_index": 4,
+      "rpm_idx": 5,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm370_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm370_renderU.json",
+      "visc_index": 4,
+      "rpm_idx": 5,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm390_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm390_renderL.json",
+      "visc_index": 4,
+      "rpm_idx": 6,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm390_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm390_renderN.json",
+      "visc_index": 4,
+      "rpm_idx": 6,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm390_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm390_renderP.json",
+      "visc_index": 4,
+      "rpm_idx": 6,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm390_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm390_renderS.json",
+      "visc_index": 4,
+      "rpm_idx": 6,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm390_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm390_renderX.json",
+      "visc_index": 4,
+      "rpm_idx": 6,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm410_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm410_renderK.json",
+      "visc_index": 4,
+      "rpm_idx": 7,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm410_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm410_renderN.json",
+      "visc_index": 4,
+      "rpm_idx": 7,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm410_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm410_renderQ.json",
+      "visc_index": 4,
+      "rpm_idx": 7,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm410_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm410_renderU.json",
+      "visc_index": 4,
+      "rpm_idx": 7,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm410_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm410_renderY.json",
+      "visc_index": 4,
+      "rpm_idx": 7,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm430_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm430_renderA.json",
+      "visc_index": 4,
+      "rpm_idx": 8,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm430_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm430_renderK.json",
+      "visc_index": 4,
+      "rpm_idx": 8,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm430_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm430_renderL.json",
+      "visc_index": 4,
+      "rpm_idx": 8,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm430_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm430_renderQ.json",
+      "visc_index": 4,
+      "rpm_idx": 8,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm430_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm430_renderV.json",
+      "visc_index": 4,
+      "rpm_idx": 8,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm450_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm450_renderB.json",
+      "visc_index": 4,
+      "rpm_idx": 9,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm450_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm450_renderE.json",
+      "visc_index": 4,
+      "rpm_idx": 9,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm450_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm450_renderN.json",
+      "visc_index": 4,
+      "rpm_idx": 9,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm450_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm450_renderS.json",
+      "visc_index": 4,
+      "rpm_idx": 9,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc037.94112_rpm450_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc037.94112_rpm450_renderW.json",
+      "visc_index": 4,
+      "rpm_idx": 9,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm270_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm270_renderM.json",
+      "visc_index": 5,
+      "rpm_idx": 0,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm270_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm270_renderP.json",
+      "visc_index": 5,
+      "rpm_idx": 0,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm270_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm270_renderQ.json",
+      "visc_index": 5,
+      "rpm_idx": 0,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm270_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm270_renderS.json",
+      "visc_index": 5,
+      "rpm_idx": 0,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm270_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm270_renderU.json",
+      "visc_index": 5,
+      "rpm_idx": 0,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm290_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm290_renderN.json",
+      "visc_index": 5,
+      "rpm_idx": 1,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm290_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm290_renderO.json",
+      "visc_index": 5,
+      "rpm_idx": 1,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm290_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm290_renderP.json",
+      "visc_index": 5,
+      "rpm_idx": 1,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm290_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm290_renderS.json",
+      "visc_index": 5,
+      "rpm_idx": 1,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm290_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm290_renderY.json",
+      "visc_index": 5,
+      "rpm_idx": 1,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm310_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm310_renderA.json",
+      "visc_index": 5,
+      "rpm_idx": 2,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm310_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm310_renderD.json",
+      "visc_index": 5,
+      "rpm_idx": 2,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm310_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm310_renderL.json",
+      "visc_index": 5,
+      "rpm_idx": 2,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm310_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm310_renderR.json",
+      "visc_index": 5,
+      "rpm_idx": 2,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm310_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm310_renderS.json",
+      "visc_index": 5,
+      "rpm_idx": 2,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm330_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm330_renderC.json",
+      "visc_index": 5,
+      "rpm_idx": 3,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm330_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm330_renderD.json",
+      "visc_index": 5,
+      "rpm_idx": 3,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm330_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm330_renderR.json",
+      "visc_index": 5,
+      "rpm_idx": 3,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm330_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm330_renderS.json",
+      "visc_index": 5,
+      "rpm_idx": 3,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm330_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm330_renderU.json",
+      "visc_index": 5,
+      "rpm_idx": 3,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm350_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm350_renderK.json",
+      "visc_index": 5,
+      "rpm_idx": 4,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm350_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm350_renderM.json",
+      "visc_index": 5,
+      "rpm_idx": 4,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm350_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm350_renderP.json",
+      "visc_index": 5,
+      "rpm_idx": 4,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm350_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm350_renderT.json",
+      "visc_index": 5,
+      "rpm_idx": 4,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm350_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm350_renderW.json",
+      "visc_index": 5,
+      "rpm_idx": 4,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm370_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm370_renderB.json",
+      "visc_index": 5,
+      "rpm_idx": 5,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm370_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm370_renderD.json",
+      "visc_index": 5,
+      "rpm_idx": 5,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm370_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm370_renderL.json",
+      "visc_index": 5,
+      "rpm_idx": 5,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm370_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm370_renderM.json",
+      "visc_index": 5,
+      "rpm_idx": 5,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm370_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm370_renderN.json",
+      "visc_index": 5,
+      "rpm_idx": 5,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm390_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm390_renderE.json",
+      "visc_index": 5,
+      "rpm_idx": 6,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm390_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm390_renderK.json",
+      "visc_index": 5,
+      "rpm_idx": 6,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm390_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm390_renderM.json",
+      "visc_index": 5,
+      "rpm_idx": 6,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm390_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm390_renderN.json",
+      "visc_index": 5,
+      "rpm_idx": 6,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm390_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm390_renderU.json",
+      "visc_index": 5,
+      "rpm_idx": 6,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm410_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm410_renderM.json",
+      "visc_index": 5,
+      "rpm_idx": 7,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm410_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm410_renderR.json",
+      "visc_index": 5,
+      "rpm_idx": 7,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm410_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm410_renderU.json",
+      "visc_index": 5,
+      "rpm_idx": 7,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm410_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm410_renderW.json",
+      "visc_index": 5,
+      "rpm_idx": 7,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm410_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm410_renderX.json",
+      "visc_index": 5,
+      "rpm_idx": 7,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm430_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm430_renderL.json",
+      "visc_index": 5,
+      "rpm_idx": 8,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm430_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm430_renderM.json",
+      "visc_index": 5,
+      "rpm_idx": 8,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm430_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm430_renderO.json",
+      "visc_index": 5,
+      "rpm_idx": 8,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm430_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm430_renderR.json",
+      "visc_index": 5,
+      "rpm_idx": 8,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm430_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm430_renderW.json",
+      "visc_index": 5,
+      "rpm_idx": 8,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm450_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm450_renderB.json",
+      "visc_index": 5,
+      "rpm_idx": 9,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm450_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm450_renderL.json",
+      "visc_index": 5,
+      "rpm_idx": 9,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm450_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm450_renderQ.json",
+      "visc_index": 5,
+      "rpm_idx": 9,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm450_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm450_renderU.json",
+      "visc_index": 5,
+      "rpm_idx": 9,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc050.62564_rpm450_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc050.62564_rpm450_renderX.json",
+      "visc_index": 5,
+      "rpm_idx": 9,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm270_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm270_renderB.json",
+      "visc_index": 6,
+      "rpm_idx": 0,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm270_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm270_renderD.json",
+      "visc_index": 6,
+      "rpm_idx": 0,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm270_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm270_renderK.json",
+      "visc_index": 6,
+      "rpm_idx": 0,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm270_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm270_renderM.json",
+      "visc_index": 6,
+      "rpm_idx": 0,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm270_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm270_renderR.json",
+      "visc_index": 6,
+      "rpm_idx": 0,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm290_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm290_renderE.json",
+      "visc_index": 6,
+      "rpm_idx": 1,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm290_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm290_renderK.json",
+      "visc_index": 6,
+      "rpm_idx": 1,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm290_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm290_renderN.json",
+      "visc_index": 6,
+      "rpm_idx": 1,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm290_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm290_renderT.json",
+      "visc_index": 6,
+      "rpm_idx": 1,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm290_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm290_renderY.json",
+      "visc_index": 6,
+      "rpm_idx": 1,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm310_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm310_renderA.json",
+      "visc_index": 6,
+      "rpm_idx": 2,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm310_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm310_renderN.json",
+      "visc_index": 6,
+      "rpm_idx": 2,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm310_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm310_renderO.json",
+      "visc_index": 6,
+      "rpm_idx": 2,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm310_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm310_renderV.json",
+      "visc_index": 6,
+      "rpm_idx": 2,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm310_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm310_renderX.json",
+      "visc_index": 6,
+      "rpm_idx": 2,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm330_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm330_renderA.json",
+      "visc_index": 6,
+      "rpm_idx": 3,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm330_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm330_renderD.json",
+      "visc_index": 6,
+      "rpm_idx": 3,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm330_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm330_renderM.json",
+      "visc_index": 6,
+      "rpm_idx": 3,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm330_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm330_renderQ.json",
+      "visc_index": 6,
+      "rpm_idx": 3,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm330_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm330_renderX.json",
+      "visc_index": 6,
+      "rpm_idx": 3,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm350_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm350_renderL.json",
+      "visc_index": 6,
+      "rpm_idx": 4,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm350_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm350_renderN.json",
+      "visc_index": 6,
+      "rpm_idx": 4,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm350_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm350_renderP.json",
+      "visc_index": 6,
+      "rpm_idx": 4,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm350_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm350_renderR.json",
+      "visc_index": 6,
+      "rpm_idx": 4,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm350_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm350_renderS.json",
+      "visc_index": 6,
+      "rpm_idx": 4,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm370_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm370_renderK.json",
+      "visc_index": 6,
+      "rpm_idx": 5,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm370_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm370_renderS.json",
+      "visc_index": 6,
+      "rpm_idx": 5,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm370_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm370_renderU.json",
+      "visc_index": 6,
+      "rpm_idx": 5,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm370_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm370_renderW.json",
+      "visc_index": 6,
+      "rpm_idx": 5,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm370_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm370_renderY.json",
+      "visc_index": 6,
+      "rpm_idx": 5,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm390_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm390_renderA.json",
+      "visc_index": 6,
+      "rpm_idx": 6,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm390_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm390_renderC.json",
+      "visc_index": 6,
+      "rpm_idx": 6,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm390_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm390_renderM.json",
+      "visc_index": 6,
+      "rpm_idx": 6,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm390_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm390_renderQ.json",
+      "visc_index": 6,
+      "rpm_idx": 6,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm390_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm390_renderX.json",
+      "visc_index": 6,
+      "rpm_idx": 6,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm410_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm410_renderL.json",
+      "visc_index": 6,
+      "rpm_idx": 7,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm410_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm410_renderP.json",
+      "visc_index": 6,
+      "rpm_idx": 7,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm410_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm410_renderQ.json",
+      "visc_index": 6,
+      "rpm_idx": 7,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm410_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm410_renderU.json",
+      "visc_index": 6,
+      "rpm_idx": 7,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm410_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm410_renderX.json",
+      "visc_index": 6,
+      "rpm_idx": 7,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm430_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm430_renderE.json",
+      "visc_index": 6,
+      "rpm_idx": 8,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm430_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm430_renderN.json",
+      "visc_index": 6,
+      "rpm_idx": 8,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm430_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm430_renderO.json",
+      "visc_index": 6,
+      "rpm_idx": 8,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm430_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm430_renderQ.json",
+      "visc_index": 6,
+      "rpm_idx": 8,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm430_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm430_renderY.json",
+      "visc_index": 6,
+      "rpm_idx": 8,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm450_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm450_renderC.json",
+      "visc_index": 6,
+      "rpm_idx": 9,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm450_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm450_renderK.json",
+      "visc_index": 6,
+      "rpm_idx": 9,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm450_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm450_renderO.json",
+      "visc_index": 6,
+      "rpm_idx": 9,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm450_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm450_renderQ.json",
+      "visc_index": 6,
+      "rpm_idx": 9,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc067.55088_rpm450_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc067.55088_rpm450_renderS.json",
+      "visc_index": 6,
+      "rpm_idx": 9,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm270_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm270_renderC.json",
+      "visc_index": 7,
+      "rpm_idx": 0,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm270_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm270_renderK.json",
+      "visc_index": 7,
+      "rpm_idx": 0,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm270_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm270_renderO.json",
+      "visc_index": 7,
+      "rpm_idx": 0,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm270_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm270_renderT.json",
+      "visc_index": 7,
+      "rpm_idx": 0,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm270_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm270_renderV.json",
+      "visc_index": 7,
+      "rpm_idx": 0,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm290_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm290_renderB.json",
+      "visc_index": 7,
+      "rpm_idx": 1,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm290_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm290_renderC.json",
+      "visc_index": 7,
+      "rpm_idx": 1,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm290_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm290_renderK.json",
+      "visc_index": 7,
+      "rpm_idx": 1,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm290_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm290_renderP.json",
+      "visc_index": 7,
+      "rpm_idx": 1,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm290_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm290_renderW.json",
+      "visc_index": 7,
+      "rpm_idx": 1,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm310_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm310_renderA.json",
+      "visc_index": 7,
+      "rpm_idx": 2,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm310_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm310_renderN.json",
+      "visc_index": 7,
+      "rpm_idx": 2,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm310_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm310_renderQ.json",
+      "visc_index": 7,
+      "rpm_idx": 2,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm310_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm310_renderR.json",
+      "visc_index": 7,
+      "rpm_idx": 2,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm310_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm310_renderY.json",
+      "visc_index": 7,
+      "rpm_idx": 2,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm330_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm330_renderC.json",
+      "visc_index": 7,
+      "rpm_idx": 3,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm330_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm330_renderE.json",
+      "visc_index": 7,
+      "rpm_idx": 3,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm330_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm330_renderR.json",
+      "visc_index": 7,
+      "rpm_idx": 3,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm330_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm330_renderS.json",
+      "visc_index": 7,
+      "rpm_idx": 3,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm330_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm330_renderY.json",
+      "visc_index": 7,
+      "rpm_idx": 3,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm350_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm350_renderD.json",
+      "visc_index": 7,
+      "rpm_idx": 4,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm350_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm350_renderK.json",
+      "visc_index": 7,
+      "rpm_idx": 4,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm350_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm350_renderO.json",
+      "visc_index": 7,
+      "rpm_idx": 4,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm350_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm350_renderQ.json",
+      "visc_index": 7,
+      "rpm_idx": 4,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm350_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm350_renderW.json",
+      "visc_index": 7,
+      "rpm_idx": 4,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm370_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm370_renderA.json",
+      "visc_index": 7,
+      "rpm_idx": 5,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm370_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm370_renderN.json",
+      "visc_index": 7,
+      "rpm_idx": 5,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm370_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm370_renderQ.json",
+      "visc_index": 7,
+      "rpm_idx": 5,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm370_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm370_renderR.json",
+      "visc_index": 7,
+      "rpm_idx": 5,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm370_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm370_renderY.json",
+      "visc_index": 7,
+      "rpm_idx": 5,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm390_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm390_renderB.json",
+      "visc_index": 7,
+      "rpm_idx": 6,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm390_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm390_renderD.json",
+      "visc_index": 7,
+      "rpm_idx": 6,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm390_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm390_renderS.json",
+      "visc_index": 7,
+      "rpm_idx": 6,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm390_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm390_renderU.json",
+      "visc_index": 7,
+      "rpm_idx": 6,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm390_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm390_renderV.json",
+      "visc_index": 7,
+      "rpm_idx": 6,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm410_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm410_renderD.json",
+      "visc_index": 7,
+      "rpm_idx": 7,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm410_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm410_renderK.json",
+      "visc_index": 7,
+      "rpm_idx": 7,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm410_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm410_renderQ.json",
+      "visc_index": 7,
+      "rpm_idx": 7,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm410_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm410_renderR.json",
+      "visc_index": 7,
+      "rpm_idx": 7,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm410_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm410_renderS.json",
+      "visc_index": 7,
+      "rpm_idx": 7,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm430_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm430_renderC.json",
+      "visc_index": 7,
+      "rpm_idx": 8,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm430_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm430_renderE.json",
+      "visc_index": 7,
+      "rpm_idx": 8,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm430_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm430_renderP.json",
+      "visc_index": 7,
+      "rpm_idx": 8,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm430_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm430_renderQ.json",
+      "visc_index": 7,
+      "rpm_idx": 8,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm430_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm430_renderT.json",
+      "visc_index": 7,
+      "rpm_idx": 8,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm450_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm450_renderC.json",
+      "visc_index": 7,
+      "rpm_idx": 9,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm450_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm450_renderM.json",
+      "visc_index": 7,
+      "rpm_idx": 9,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm450_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm450_renderN.json",
+      "visc_index": 7,
+      "rpm_idx": 9,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm450_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm450_renderQ.json",
+      "visc_index": 7,
+      "rpm_idx": 9,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc090.13457_rpm450_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc090.13457_rpm450_renderU.json",
+      "visc_index": 7,
+      "rpm_idx": 9,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm270_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm270_renderC.json",
+      "visc_index": 8,
+      "rpm_idx": 0,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm270_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm270_renderN.json",
+      "visc_index": 8,
+      "rpm_idx": 0,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm270_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm270_renderU.json",
+      "visc_index": 8,
+      "rpm_idx": 0,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm270_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm270_renderV.json",
+      "visc_index": 8,
+      "rpm_idx": 0,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm270_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm270_renderY.json",
+      "visc_index": 8,
+      "rpm_idx": 0,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm290_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm290_renderA.json",
+      "visc_index": 8,
+      "rpm_idx": 1,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm290_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm290_renderD.json",
+      "visc_index": 8,
+      "rpm_idx": 1,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm290_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm290_renderL.json",
+      "visc_index": 8,
+      "rpm_idx": 1,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm290_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm290_renderT.json",
+      "visc_index": 8,
+      "rpm_idx": 1,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm290_renderV.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm290_renderV.json",
+      "visc_index": 8,
+      "rpm_idx": 1,
+      "render_label": "V"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm310_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm310_renderB.json",
+      "visc_index": 8,
+      "rpm_idx": 2,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm310_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm310_renderE.json",
+      "visc_index": 8,
+      "rpm_idx": 2,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm310_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm310_renderN.json",
+      "visc_index": 8,
+      "rpm_idx": 2,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm310_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm310_renderR.json",
+      "visc_index": 8,
+      "rpm_idx": 2,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm310_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm310_renderS.json",
+      "visc_index": 8,
+      "rpm_idx": 2,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm330_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm330_renderE.json",
+      "visc_index": 8,
+      "rpm_idx": 3,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm330_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm330_renderO.json",
+      "visc_index": 8,
+      "rpm_idx": 3,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm330_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm330_renderP.json",
+      "visc_index": 8,
+      "rpm_idx": 3,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm330_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm330_renderU.json",
+      "visc_index": 8,
+      "rpm_idx": 3,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm330_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm330_renderY.json",
+      "visc_index": 8,
+      "rpm_idx": 3,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm350_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm350_renderB.json",
+      "visc_index": 8,
+      "rpm_idx": 4,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm350_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm350_renderC.json",
+      "visc_index": 8,
+      "rpm_idx": 4,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm350_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm350_renderD.json",
+      "visc_index": 8,
+      "rpm_idx": 4,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm350_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm350_renderM.json",
+      "visc_index": 8,
+      "rpm_idx": 4,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm350_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm350_renderN.json",
+      "visc_index": 8,
+      "rpm_idx": 4,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm370_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm370_renderA.json",
+      "visc_index": 8,
+      "rpm_idx": 5,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm370_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm370_renderD.json",
+      "visc_index": 8,
+      "rpm_idx": 5,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm370_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm370_renderK.json",
+      "visc_index": 8,
+      "rpm_idx": 5,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm370_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm370_renderQ.json",
+      "visc_index": 8,
+      "rpm_idx": 5,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm370_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm370_renderT.json",
+      "visc_index": 8,
+      "rpm_idx": 5,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm390_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm390_renderA.json",
+      "visc_index": 8,
+      "rpm_idx": 6,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm390_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm390_renderL.json",
+      "visc_index": 8,
+      "rpm_idx": 6,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm390_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm390_renderM.json",
+      "visc_index": 8,
+      "rpm_idx": 6,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm390_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm390_renderU.json",
+      "visc_index": 8,
+      "rpm_idx": 6,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm390_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm390_renderY.json",
+      "visc_index": 8,
+      "rpm_idx": 6,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm410_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm410_renderB.json",
+      "visc_index": 8,
+      "rpm_idx": 7,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm410_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm410_renderN.json",
+      "visc_index": 8,
+      "rpm_idx": 7,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm410_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm410_renderO.json",
+      "visc_index": 8,
+      "rpm_idx": 7,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm410_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm410_renderR.json",
+      "visc_index": 8,
+      "rpm_idx": 7,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm410_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm410_renderW.json",
+      "visc_index": 8,
+      "rpm_idx": 7,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm430_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm430_renderE.json",
+      "visc_index": 8,
+      "rpm_idx": 8,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm430_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm430_renderN.json",
+      "visc_index": 8,
+      "rpm_idx": 8,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm430_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm430_renderP.json",
+      "visc_index": 8,
+      "rpm_idx": 8,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm430_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm430_renderR.json",
+      "visc_index": 8,
+      "rpm_idx": 8,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm430_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm430_renderX.json",
+      "visc_index": 8,
+      "rpm_idx": 8,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm450_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm450_renderB.json",
+      "visc_index": 8,
+      "rpm_idx": 9,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm450_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm450_renderC.json",
+      "visc_index": 8,
+      "rpm_idx": 9,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm450_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm450_renderM.json",
+      "visc_index": 8,
+      "rpm_idx": 9,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm450_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm450_renderO.json",
+      "visc_index": 8,
+      "rpm_idx": 9,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc120.26848_rpm450_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc120.26848_rpm450_renderW.json",
+      "visc_index": 8,
+      "rpm_idx": 9,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm270_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm270_renderE.json",
+      "visc_index": 9,
+      "rpm_idx": 0,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm270_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm270_renderL.json",
+      "visc_index": 9,
+      "rpm_idx": 0,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm270_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm270_renderQ.json",
+      "visc_index": 9,
+      "rpm_idx": 0,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm270_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm270_renderW.json",
+      "visc_index": 9,
+      "rpm_idx": 0,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm270_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm270_renderY.json",
+      "visc_index": 9,
+      "rpm_idx": 0,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm290_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm290_renderE.json",
+      "visc_index": 9,
+      "rpm_idx": 1,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm290_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm290_renderK.json",
+      "visc_index": 9,
+      "rpm_idx": 1,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm290_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm290_renderN.json",
+      "visc_index": 9,
+      "rpm_idx": 1,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm290_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm290_renderR.json",
+      "visc_index": 9,
+      "rpm_idx": 1,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm290_renderU.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm290_renderU.json",
+      "visc_index": 9,
+      "rpm_idx": 1,
+      "render_label": "U"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm310_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm310_renderL.json",
+      "visc_index": 9,
+      "rpm_idx": 2,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm310_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm310_renderM.json",
+      "visc_index": 9,
+      "rpm_idx": 2,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm310_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm310_renderR.json",
+      "visc_index": 9,
+      "rpm_idx": 2,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm310_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm310_renderT.json",
+      "visc_index": 9,
+      "rpm_idx": 2,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm310_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm310_renderY.json",
+      "visc_index": 9,
+      "rpm_idx": 2,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm330_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm330_renderE.json",
+      "visc_index": 9,
+      "rpm_idx": 3,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm330_renderK.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm330_renderK.json",
+      "visc_index": 9,
+      "rpm_idx": 3,
+      "render_label": "K"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm330_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm330_renderM.json",
+      "visc_index": 9,
+      "rpm_idx": 3,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm330_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm330_renderN.json",
+      "visc_index": 9,
+      "rpm_idx": 3,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm330_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm330_renderY.json",
+      "visc_index": 9,
+      "rpm_idx": 3,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm350_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm350_renderP.json",
+      "visc_index": 9,
+      "rpm_idx": 4,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm350_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm350_renderR.json",
+      "visc_index": 9,
+      "rpm_idx": 4,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm350_renderS.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm350_renderS.json",
+      "visc_index": 9,
+      "rpm_idx": 4,
+      "render_label": "S"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm350_renderW.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm350_renderW.json",
+      "visc_index": 9,
+      "rpm_idx": 4,
+      "render_label": "W"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm350_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm350_renderX.json",
+      "visc_index": 9,
+      "rpm_idx": 4,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm370_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm370_renderM.json",
+      "visc_index": 9,
+      "rpm_idx": 5,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm370_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm370_renderQ.json",
+      "visc_index": 9,
+      "rpm_idx": 5,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm370_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm370_renderT.json",
+      "visc_index": 9,
+      "rpm_idx": 5,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm370_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm370_renderX.json",
+      "visc_index": 9,
+      "rpm_idx": 5,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm370_renderY.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm370_renderY.json",
+      "visc_index": 9,
+      "rpm_idx": 5,
+      "render_label": "Y"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm390_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm390_renderA.json",
+      "visc_index": 9,
+      "rpm_idx": 6,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm390_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm390_renderD.json",
+      "visc_index": 9,
+      "rpm_idx": 6,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm390_renderO.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm390_renderO.json",
+      "visc_index": 9,
+      "rpm_idx": 6,
+      "render_label": "O"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm390_renderQ.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm390_renderQ.json",
+      "visc_index": 9,
+      "rpm_idx": 6,
+      "render_label": "Q"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm390_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm390_renderR.json",
+      "visc_index": 9,
+      "rpm_idx": 6,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm410_renderE.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm410_renderE.json",
+      "visc_index": 9,
+      "rpm_idx": 7,
+      "render_label": "E"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm410_renderL.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm410_renderL.json",
+      "visc_index": 9,
+      "rpm_idx": 7,
+      "render_label": "L"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm410_renderP.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm410_renderP.json",
+      "visc_index": 9,
+      "rpm_idx": 7,
+      "render_label": "P"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm410_renderR.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm410_renderR.json",
+      "visc_index": 9,
+      "rpm_idx": 7,
+      "render_label": "R"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm410_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm410_renderX.json",
+      "visc_index": 9,
+      "rpm_idx": 7,
+      "render_label": "X"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm430_renderB.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm430_renderB.json",
+      "visc_index": 9,
+      "rpm_idx": 8,
+      "render_label": "B"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm430_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm430_renderC.json",
+      "visc_index": 9,
+      "rpm_idx": 8,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm430_renderD.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm430_renderD.json",
+      "visc_index": 9,
+      "rpm_idx": 8,
+      "render_label": "D"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm430_renderM.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm430_renderM.json",
+      "visc_index": 9,
+      "rpm_idx": 8,
+      "render_label": "M"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm430_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm430_renderN.json",
+      "visc_index": 9,
+      "rpm_idx": 8,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm450_renderA.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm450_renderA.json",
+      "visc_index": 9,
+      "rpm_idx": 9,
+      "render_label": "A"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm450_renderC.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm450_renderC.json",
+      "visc_index": 9,
+      "rpm_idx": 9,
+      "render_label": "C"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm450_renderN.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm450_renderN.json",
+      "visc_index": 9,
+      "rpm_idx": 9,
+      "render_label": "N"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm450_renderT.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm450_renderT.json",
+      "visc_index": 9,
+      "rpm_idx": 9,
+      "render_label": "T"
+    },
+    {
+      "video_path": "dataset/RealArchive/train_993_wo_pat2/videos/decay_10fps_visc160.47680_rpm450_renderX.mp4",
+      "parameters_norm_path": "dataset/RealArchive/train_993_wo_pat2/parametersNorm/decay_10fps_visc160.47680_rpm450_renderX.json",
+      "visc_index": 9,
+      "rpm_idx": 9,
+      "render_label": "X"
+    }
+  ]
+}

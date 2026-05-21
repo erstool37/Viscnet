@@ -1,14 +1,15 @@
-import os
 import csv
 import importlib
+import json
+import os
+import os.path as osp
+
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import matplotlib.pyplot as plt
-import os.path as osp
-import json
+
 
 def viz_gmm(checkpoint, preds_list, targets_list, descaler, path):
-    descaler = "zdescaler"
     """
     GMM inference visualization & data export (LOG space, after descaling)
     ---------------------------------------------------------------------
@@ -36,15 +37,15 @@ def viz_gmm(checkpoint, preds_list, targets_list, descaler, path):
     os.makedirs(out_dir, exist_ok=True)
 
     parity_plot_path = os.path.join(out_dir, "parity.png")
-    ause_plot_path   = os.path.join(out_dir, "ause_curve.png")
-    stats_csv_path   = os.path.join(out_dir, "stats.csv")
+    ause_plot_path = os.path.join(out_dir, "ause_curve.png")
+    stats_csv_path = os.path.join(out_dir, "stats.csv")
 
     # load descaler function
     utils_mod = importlib.import_module("utils")
-    descaler_fn = getattr(utils_mod, "zdescaler")
+    descaler_fn = getattr(utils_mod, descaler)
 
     # read normalization stats ONCE
-    root      = osp.dirname(osp.abspath(__file__))
+    root = osp.dirname(osp.abspath(__file__))
     stat_path = osp.join(root, "../..", path, "statistics.json")
     with open(stat_path, "r") as f:
         stats = json.load(f)
@@ -57,40 +58,34 @@ def viz_gmm(checkpoint, preds_list, targets_list, descaler, path):
             return x.detach().cpu().numpy()
         return np.asarray(x)
 
-    # detect number of GMM components
-    K = _np(preds_list[0]["pi"]).reshape(-1).shape[0]
-
     # STORAGE
     rows = []
     y_true_log_list = []
-    mean_log_list   = []
-    std_log_list    = []
+    mean_log_list = []
+    std_log_list = []
 
-    all_mu_log   = []
-    all_sig_log  = []
-    all_weights  = []
+    all_mu_log = []
+    all_sig_log = []
+    all_weights = []
 
-    err_abs_list = []   # |y - y_hat| in log space
+    err_abs_list = []  # |y - y_hat| in log space
     err_mse_list = []
 
     # MAIN LOO
     for i, (pred, tgt) in enumerate(zip(preds_list, targets_list), start=1):
-
         # ---- GMM params in normalized space ----
-        mu_n  = _np(pred["mu"]).reshape(-1)     # [K]
+        mu_n = _np(pred["mu"]).reshape(-1)  # [K]
         sig_n = _np(pred["sigma"]).reshape(-1)  # [K]
-        w     = _np(pred["pi"]).reshape(-1)     # [K]
-        w     = w / w.sum()
+        w = _np(pred["pi"]).reshape(-1)  # [K]
+        w = w / w.sum()
 
         # ---- TRUE target in descaled log space ----
         t_n = float(_np(tgt)[target_index])  # normalized log
-        t_log = float(descaler_fn(torch.tensor([t_n]),
-                                  "kinematic_viscosity", path))  # log10(ν)
+        t_log = float(descaler_fn(torch.tensor([t_n]), "kinematic_viscosity", path))  # log10(ν)
         y_true_log_list.append(t_log)
 
         # ---- Component means in descaled LOG space ----
-        mu_log = _np(descaler_fn(torch.tensor(mu_n),
-                                 "kinematic_viscosity", path))   # [K], log10(ν)
+        mu_log = _np(descaler_fn(torch.tensor(mu_n), "kinematic_viscosity", path))  # [K], log10(ν)
 
         # ---- Component stds in descaled LOG space ----
         # normalized std -> log std
@@ -116,26 +111,28 @@ def viz_gmm(checkpoint, preds_list, targets_list, descaler, path):
 
         # ---- Error metrics in LOG space ----
         err_abs = abs(mu_mix_log - t_log)
-        err_mse = (mu_mix_log - t_log)**2
+        err_mse = (mu_mix_log - t_log) ** 2
         err_abs_list.append(err_abs)
         err_mse_list.append(err_mse)
 
-        rows.append({
-            "idx": i,
-            "true_log": t_log,
-            "pred_log": mu_mix_log,
-            "std_log": std_mix_log,
-            "abs_err_log": err_abs,
-        })
+        rows.append(
+            {
+                "idx": i,
+                "true_log": t_log,
+                "pred_log": mu_mix_log,
+                "std_log": std_mix_log,
+                "abs_err_log": err_abs,
+            }
+        )
 
     # Convert to arrays
     y_true_log_arr = np.array(y_true_log_list)
-    mean_log_arr   = np.array(mean_log_list)
-    std_log_arr    = np.array(std_log_list)
-    err_abs_arr    = np.array(err_abs_list)
-    err_mse_arr    = np.array(err_mse_list) 
+    mean_log_arr = np.array(mean_log_list)
+    std_log_arr = np.array(std_log_list)
+    err_abs_arr = np.array(err_abs_list)
+    err_mse_arr = np.array(err_mse_list)
 
-    all_mu_log  = np.array(all_mu_log)   # (N, K)
+    all_mu_log = np.array(all_mu_log)  # (N, K)
     all_sig_log = np.array(all_sig_log)  # (N, K)
     all_weights = np.array(all_weights)  # (N, K)
 
@@ -144,13 +141,13 @@ def viz_gmm(checkpoint, preds_list, targets_list, descaler, path):
     # ============================================================
     # SAVE NUMPY ARRAYS (for calibration, analysis)
     # ============================================================
-    np.save(os.path.join(out_dir, "y_true_log.npy"),  y_true_log_arr)
-    np.save(os.path.join(out_dir, "mean_log.npy"),    mean_log_arr)
-    np.save(os.path.join(out_dir, "std_log.npy"),     std_log_arr)
+    np.save(os.path.join(out_dir, "y_true_log.npy"), y_true_log_arr)
+    np.save(os.path.join(out_dir, "mean_log.npy"), mean_log_arr)
+    np.save(os.path.join(out_dir, "std_log.npy"), std_log_arr)
 
-    np.save(os.path.join(out_dir, "gmm_mu_log.npy"),      all_mu_log)
-    np.save(os.path.join(out_dir, "gmm_sigma_log.npy"),   all_sig_log)
-    np.save(os.path.join(out_dir, "gmm_weights.npy"),     all_weights)
+    np.save(os.path.join(out_dir, "gmm_mu_log.npy"), all_mu_log)
+    np.save(os.path.join(out_dir, "gmm_sigma_log.npy"), all_sig_log)
+    np.save(os.path.join(out_dir, "gmm_weights.npy"), all_weights)
 
     print("\n=== Saved GMM log-space arrays ===")
     print(" y_true_log.npy   ", y_true_log_arr.shape)
@@ -172,7 +169,7 @@ def viz_gmm(checkpoint, preds_list, targets_list, descaler, path):
     # PARITY PLOT (LOG space)
     # ============================================================
     rmse_log = np.sqrt(np.mean((y_true_log_arr - mean_log_arr) ** 2))
-    mae_log  = np.mean(np.abs(y_true_log_arr - mean_log_arr))
+    mae_log = np.mean(np.abs(y_true_log_arr - mean_log_arr))
 
     plt.figure(figsize=(4, 4))
     plt.scatter(y_true_log_arr, mean_log_arr, s=10, alpha=0.5)
@@ -190,20 +187,20 @@ def viz_gmm(checkpoint, preds_list, targets_list, descaler, path):
     # ============================================================
     # AUSE Sparsification (LOG space)
     # ============================================================
-    errors = err_abs_arr.copy()          # |y - ŷ| in log space
-    mses   = err_mse_arr.copy()
-    rmse   = mses**0.5
-    rel_unc = std_log_arr.copy()         # σ in log space
+    errors = err_abs_arr.copy()  # |y - ŷ| in log space
+    mses = err_mse_arr.copy()
+    rmse = mses**0.5
+    rel_unc = std_log_arr.copy()  # σ in log space
 
-    mean_err  = errors.mean()
+    mean_err = errors.mean()
     mean_rmse = rmse.mean()
 
     # Normalize errors -> mean = 1 (common convention in AUSE)
-    errors /= (mean_err  + 1e-12)
-    rmse   /= (mean_rmse + 1e-12)
+    errors /= mean_err + 1e-12
+    rmse /= mean_rmse + 1e-12
 
-    idx_or   = np.argsort(errors)        # oracle (smallest true error first)
-    idx_unc  = np.argsort(rel_unc)       # model (smallest uncertainty first)
+    idx_or = np.argsort(errors)  # oracle (smallest true error first)
+    idx_unc = np.argsort(rel_unc)  # model (smallest uncertainty first)
     idx_rand = np.random.permutation(N)  # random baseline
     print(len(idx_or), len(idx_rand), len(idx_unc))
 
@@ -216,8 +213,8 @@ def viz_gmm(checkpoint, preds_list, targets_list, descaler, path):
             vals.append(errors[order[:k]].mean())
         return fractions, np.array(vals)
 
-    f_or,   curve_or   = curve(idx_or)
-    f_mod,  curve_mod  = curve(idx_unc)
+    f_or, curve_or = curve(idx_or)
+    f_mod, curve_mod = curve(idx_unc)
     f_rand, curve_rand = curve(idx_rand)
 
     ause = np.trapz(curve_mod - curve_or, f_or)
@@ -233,12 +230,12 @@ def viz_gmm(checkpoint, preds_list, targets_list, descaler, path):
         writer = csv.writer(fp)
         writer.writerow(["fraction_kept", "oracle", "model", "random"])
         for f, o, m, r in zip(f_or, curve_or, curve_mod, curve_rand):
-            writer.writerow([f, o, m, r])   
+            writer.writerow([f, o, m, r])
 
     print(f"Saved sparsification curves to: {csv_path}")
 
     plt.figure(figsize=(5.5, 5))
-    plt.plot(curve_or,  label="Oracle")
+    plt.plot(curve_or, label="Oracle")
     plt.plot(curve_mod, label="Model")
     plt.plot(curve_rand, "--", label="Random")
     plt.title("Sparsification (log space)")
@@ -258,6 +255,7 @@ def viz_gmm(checkpoint, preds_list, targets_list, descaler, path):
     print(f"AUSE      = {ause:.6f}")
     print(f"AURG      = {aure:.6f}")
     print("============================================\n")
+
 
 def calibrate_gmm(checkpoint, levels=(0.5, 0.68, 0.95)):
     """
@@ -280,12 +278,10 @@ def calibrate_gmm(checkpoint, levels=(0.5, 0.68, 0.95)):
     out_dir = os.path.join("src", "inference", "GMM_plots", run_name)
 
     y_true = np.load(os.path.join(out_dir, "y_true_log.npy"))
-    y_hat  = np.load(os.path.join(out_dir, "mean_log.npy"))
-    std    = np.load(os.path.join(out_dir, "std_log.npy"))
+    y_hat = np.load(os.path.join(out_dir, "mean_log.npy"))
+    std = np.load(os.path.join(out_dir, "std_log.npy"))
 
     assert y_true.shape == y_hat.shape == std.shape
-    N = len(y_true)
-
     # -----------------------------------------------------
     # Z-values per confidence level (two-sided)
     # -----------------------------------------------------
@@ -334,14 +330,14 @@ def calibrate_gmm(checkpoint, levels=(0.5, 0.68, 0.95)):
     # PRINT RESULT
     # -----------------------------------------------------
     print("\n====== Alpha Calibration (LOG space) ======")
-    print(f">> Raw (uncalibrated, alpha = 1.0)")
+    print(">> Raw (uncalibrated, alpha = 1.0)")
     for p in levels:
-        print(f" level {int(p*100):2d}%: empirical={raw_cov[p]:.4f}, nominal={p:.2f}")
+        print(f" level {int(p * 100):2d}%: empirical={raw_cov[p]:.4f}, nominal={p:.2f}")
     print(f" raw total squared error = {raw_err:.6e}\n")
 
     print(f">> Calibrated (alpha = {best_alpha:.4f})")
     for p in levels:
-        print(f" level {int(p*100):2d}%: empirical={best_cov[p]:.4f}, nominal={p:.2f}")
+        print(f" level {int(p * 100):2d}%: empirical={best_cov[p]:.4f}, nominal={p:.2f}")
     print(f" calibrated total squared error = {best_err:.6e}")
     print("===========================================\n")
 
@@ -350,10 +346,10 @@ def calibrate_gmm(checkpoint, levels=(0.5, 0.68, 0.95)):
     # -----------------------------------------------------
     out_json = {
         "alpha": float(best_alpha),
-        "raw_coverage":   {str(p): float(raw_cov[p])  for p in levels},
+        "raw_coverage": {str(p): float(raw_cov[p]) for p in levels},
         "calib_coverage": {str(p): float(best_cov[p]) for p in levels},
-        "raw_error":      float(raw_err),
-        "calib_error":    float(best_err),
+        "raw_error": float(raw_err),
+        "calib_error": float(best_err),
     }
     with open(os.path.join(out_dir, "alpha_calibration.json"), "w") as f:
         json.dump(out_json, f, indent=2)

@@ -1,0 +1,84 @@
+project: viscnet-rebuild
+entity: jongwonsohn-seoul-national-university
+name: repro_realonly_800_microbatch
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: true
+  gmm_bool: false
+  watch_bool: false
+  train_bool: true
+  test_bool: true
+  attn_bool: false
+  val_test_bool: true
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: dataset/RealArchive/train_993_wo_pat2
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 10
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+    manifest: configs/rebuild/manifests/real_train_800.json
+  test:
+    test_root: dataset/RealArchive/test_1000_wo_pat2
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 10
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+  embeddings:
+    rpm_bool: true
+    pat_bool: false
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: false
+  curr_ckpt: repro_synthetic_pretrain_sph35000.pth
+  checkpoint_name: repro_realonly_800_microbatch.pth
+  num_epochs: 30
+  loss: CE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    lr: 1.0e-05
+    eta_min: 1.0e-10
+    weight_decay: 0.01
+    patience: 10
+  update_density:
+    optimizer_microbatch_size: 1
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/repro_realonly_800_microbatch
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm

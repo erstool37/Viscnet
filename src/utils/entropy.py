@@ -1,9 +1,14 @@
 # ---------- entropy helpers ----------
+import cv2
+import numpy as np
+
+
 def _frame_entropy(gray: np.ndarray) -> float:
     hist = np.bincount(gray.ravel(), minlength=256).astype(np.float64)
     p = hist / hist.sum()
     p = p[p > 0]
     return float(-np.sum(p * np.log2(p)))
+
 
 def video_entropy_array(video_path: str) -> np.ndarray:
     """

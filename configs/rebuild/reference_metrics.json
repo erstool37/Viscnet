@@ -1,0 +1,102 @@
+{
+  "synthetic_pretrain": {
+    "project": "sph_test_run",
+    "run_id": "mffvc6vq",
+    "run_name": "35000_weightmaking_smallerVivit_layer10_1024_v0",
+    "accuracy": null,
+    "train_loss": 0.3351,
+    "val_loss": 0.6146,
+    "note": "Reference W&B used dataset/CFDArchive/sph_realvisc_diffback_35000, which is absent in this repo."
+  },
+  "transfer_curve": {
+    "300": {
+      "project": "dataefficiency",
+      "run_id": "2fn4fl9b",
+      "accuracy": 0.602
+    },
+    "400": {
+      "project": "dataefficiency",
+      "run_id": "ph6rwzbz",
+      "accuracy": 0.693
+    },
+    "500": {
+      "project": "dataefficiency",
+      "run_id": "jvqqegb9",
+      "accuracy": 0.716
+    },
+    "600": {
+      "project": "dataefficiency",
+      "run_id": "1gqccpob",
+      "accuracy": 0.735
+    },
+    "700": {
+      "project": "dataefficiency",
+      "run_id": "3mn3dnfp",
+      "accuracy": 0.772
+    },
+    "800": {
+      "project": "dataefficiency",
+      "run_id": "rznnlkan",
+      "accuracy": 0.801
+    },
+    "900": {
+      "project": "dataefficiency",
+      "run_id": "zhc7d47c",
+      "accuracy": 0.797
+    },
+    "993": {
+      "project": "dataefficiency",
+      "run_id": "6r1p7fet",
+      "accuracy": 0.809
+    }
+  },
+  "real_only_curve": {
+    "300": {
+      "project": "dataefficiency",
+      "run_id": "g5nheksd",
+      "accuracy": 0.318
+    },
+    "400": {
+      "project": "dataefficiency",
+      "run_id": "883f5m6k",
+      "accuracy": 0.421
+    },
+    "500": {
+      "project": "dataefficiency",
+      "run_id": "dp5p39bc",
+      "accuracy": 0.486
+    },
+    "600": {
+      "project": "dataefficiency",
+      "run_id": "utgbwbeu",
+      "accuracy": 0.521
+    },
+    "700": {
+      "project": "dataefficiency",
+      "run_id": "l4ibkqqg",
+      "accuracy": 0.601
+    },
+    "800": {
+      "project": "dataefficiency",
+      "run_id": "hq4o5lfo",
+      "accuracy": 0.646
+    },
+    "900": {
+      "project": "dataefficiency",
+      "run_id": "l7zrpyt7",
+      "accuracy": 0.695
+    },
+    "993": {
+      "project": "dataefficiency",
+      "run_id": "i58ha0w0",
+      "accuracy": 0.723
+    }
+  },
+  "pattern_reference": {
+    "project": "sph_test_run",
+    "run_id": "p5iarxc7",
+    "run_name": "5thpatVal_finetuning_0929_v0",
+    "accuracy": 0.8421,
+    "note": "Old run used unavailable 1back/4back split names and unavailable diffback checkpoint."
+  }
+}

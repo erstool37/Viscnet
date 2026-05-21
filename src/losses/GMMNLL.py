@@ -1,6 +1,8 @@
 import math
+
 import torch
 import torch.nn as nn
+
 
 class GMMNLL(nn.Module):
     """
@@ -8,6 +10,7 @@ class GMMNLL(nn.Module):
     has 3 features and viscosity is at index 1.
     Expects model outputs: {"pi":[B,K], "mu":[B,K], "sigma":[B,K], "y_hat":[B,1]}
     """
+
     def __init__(self, descaler, data_root_train, smoothing_label):
         super().__init__()
         self.eps = 1e-12
@@ -18,8 +21,8 @@ class GMMNLL(nn.Module):
         parameters: [..., 3]; viscosity is feature at index 1
         Returns shape [B] (flattening any leading dims into batch).
         """
-        
-        y = parameters[:, 2]                # pick viscosity
+
+        y = parameters[:, 2]  # pick viscosity
         if y.dim() == 1:
             return y
         # Flatten all but last dim to batch
@@ -31,22 +34,23 @@ class GMMNLL(nn.Module):
         parameters: tensor with last-dim size 3; viscosity at index 1
         Returns scalar mean NLL over batch.
         """
-        pi    = outputs["pi"]      # [B,K]
-        mu    = outputs["mu"]      # [B,K]
-        sigma = outputs["sigma"]   # [B,K]
+        pi = outputs["pi"]  # [B,K]
+        mu = outputs["mu"]  # [B,K]
+        sigma = outputs["sigma"]  # [B,K]
 
-        y = self._extract_viscosity(parameters)   # [B]
+        y = self._extract_viscosity(parameters)  # [B]
         if y.dim() == 1:
-            y = y.unsqueeze(-1)                   # [B,1]
+            y = y.unsqueeze(-1)  # [B,1]
 
-        var = sigma ** 2                          # [B,K]
+        var = sigma**2  # [B,K]
         # log N(y; mu, var)
         log_prob = -0.5 * (torch.log(2 * math.pi * var) + (y - mu) ** 2 / var)  # [B,K]
         # log sum_k pi_k * N_k
         log_mix = torch.logsumexp(torch.log(pi) + log_prob, dim=-1)  # [B]
-        nll = -(log_mix).mean()                                                   # scalar
+        nll = -(log_mix).mean()  # scalar
 
         return nll
+
 
 # import torch
 # import torch.nn as nn
@@ -104,9 +108,8 @@ class GMMNLL(nn.Module):
 #         var_mix = var_mix.clamp(min=self.eps)
 
 #         # --- Core Gaussian NLL ---
-        
-#         nll = 0.5 * ((target - mu_mix)**2 / var_mix + torch.log(var_mix))
 
+#         nll = 0.5 * ((target - mu_mix)**2 / var_mix + torch.log(var_mix))
 
 
 #         # --- β reweighting ---

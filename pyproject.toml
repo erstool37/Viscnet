@@ -1,0 +1,19 @@
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+extend-exclude = [
+  "ARCHIVE",
+  "dataset",
+  "rawdataset",
+  "outputs",
+  "wandb",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = [
+  "E501",
+  "E701",
+  "E702",
+  "E731",
+]

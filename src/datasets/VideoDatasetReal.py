@@ -1,11 +1,12 @@
-from torch.utils.data import Dataset
-import cv2
 import json
+import os.path as osp
+
+import albumentations as A
+import cv2
 import numpy as np
 import torch
-import torch.nn.functional as F
-import os.path as osp
-import albumentations as A
+from torch.utils.data import Dataset
+
 
 class VideoDatasetReal(Dataset):
     def __init__(self, video_paths, para_paths, frame_num, time, aug_bool, visc_class):
@@ -14,18 +15,18 @@ class VideoDatasetReal(Dataset):
         self.para_paths = para_paths
         self.frame_limit = int(frame_num * time)
         self.class_num = 10 // visc_class
-        self.cluster_map = {i: i // self.class_num for i in range(10)} # 10 clusters
+        self.cluster_map = {i: i // self.class_num for i in range(10)}  # 10 clusters
         self.aug_bool = aug_bool
 
-        self.augmentation = A.Compose([
-            A.Perspective(scale=(0.01, 0.02), keep_size=True, p=0.6),
-            A.MotionBlur(blur_limit=(3, 7), p=0.6),
-            A.RandomBrightnessContrast(0.05, 0.1, p=0.5),
-        ])
+        self.augmentation = A.Compose(
+            [
+                A.Perspective(scale=(0.01, 0.02), keep_size=True, p=0.6),
+                A.MotionBlur(blur_limit=(3, 7), p=0.6),
+                A.RandomBrightnessContrast(0.05, 0.1, p=0.5),
+            ]
+        )
 
-        self.center_resize = A.Compose([
-            A.Resize(224, 224, interpolation=1)
-        ])
+        self.center_resize = A.Compose([A.Resize(224, 224, interpolation=1)])
 
     def __getitem__(self, index):
         names = self._loadname(self.para_paths[index])
@@ -46,7 +47,7 @@ class VideoDatasetReal(Dataset):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frames.append(frame)
         cap.release()
-        frames = frames[:self.frame_limit]
+        frames = frames[: self.frame_limit]
 
         if self.aug_bool:
             data = {f"image{i}": frames[i] for i in range(self.frame_limit)}
@@ -54,18 +55,18 @@ class VideoDatasetReal(Dataset):
             out = self.augmentation(**data)
             frames_aug = [out[f"image{i}"] for i in range(self.frame_limit)]
         else:
-            frames_aug = [self.center_resize(image=f)["image"] for f in frames] # mostly for real images
+            frames_aug = [self.center_resize(image=f)["image"] for f in frames]  # mostly for real images
 
         frames_aug = [(f / 127.5 - 1.0).astype(np.float32) for f in frames_aug]
         frames_tensor = torch.tensor(np.stack(frames_aug)).permute(0, 3, 1, 2)
-        
+
         return frames_tensor
-    
+
     def _get_cluster(self, vis_idx: int) -> int:
         return self.cluster_map[vis_idx]
 
     def _loadparameters(self, para_path):
-        with open(para_path, 'r') as file:
+        with open(para_path, "r") as file:
             data = json.load(file)
 
             density = data["density"]
@@ -74,13 +75,17 @@ class VideoDatasetReal(Dataset):
             rpm_index = int(data["rpm_idx"])
             hotvector = self._get_cluster(int(data["visc_index"]))
             pattern_name = str(data["background"])
-            
-        return torch.tensor([density, surfT, kinVisc, rpm_index], dtype=torch.float32), torch.tensor(hotvector), pattern_name    # kept this state for CE loss shape compatibility
-    
+
+        return (
+            torch.tensor([density, surfT, kinVisc, rpm_index], dtype=torch.float32),
+            torch.tensor(hotvector),
+            pattern_name,
+        )  # kept this state for CE loss shape compatibility
+
     def _loadname(self, video_path):
         name = osp.splitext(osp.basename(video_path))
         return name[0]
-    
+
     def _loadpattern(self, video_path, pattern_name):
         base_path = osp.dirname(osp.dirname(video_path))
         pattern_path = osp.join(base_path, "backgrounds", f"{pattern_name}.png")
@@ -88,6 +93,12 @@ class VideoDatasetReal(Dataset):
         if img is None:
             raise FileNotFoundError(pattern_path)
         pattern = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        height, width = pattern.shape[:2]
+        if height < 224 or width < 224:
+            raise ValueError(f"Pattern image is smaller than 224x224: {pattern_path} has {width}x{height}")
+        top = (height - 224) // 2
+        left = (width - 224) // 2
+        pattern = pattern[top : top + 224, left : left + 224]
         pattern = (pattern / 127.5 - 1.0).astype(np.float32)  # [-1, 1]
         return pattern
 

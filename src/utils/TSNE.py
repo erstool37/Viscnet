@@ -1,31 +1,25 @@
-import os
-import re
-import json
-import csv
-import glob
-import datetime
 import argparse
+import csv
+import datetime
+import glob
 import importlib
+import json
+import os
 import os.path as osp
-from statistics import mean
+import re
 import warnings
 
-import yaml
-import numpy as np
 import torch
 import torch.optim as optim
-import torch.nn.functional as F
+import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from sklearn.model_selection import train_test_split
 
 from utils import (
-    MAPEcalculator,
+    confusion_matrix,
+    new_plot_error_distribution,
     sanity_check_alignment,
     set_seed,
-    confusion_matrix,
-    plot_error_distribution,
-    new_plot_error_distribution,
 )
 
 warnings.filterwarnings("ignore", message=".*resume_download.*", category=FutureWarning)

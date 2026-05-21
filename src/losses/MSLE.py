@@ -1,33 +1,23 @@
 import torch
 import torch.nn as nn
-import wandb
-import torch.nn.functional as F
-import importlib
+
 
 class MSLE(nn.Module):
     """
     simple MSLE loss for normalized data
     """
+
     def __init__(self, unnormalizer, path):
         super(MSLE, self).__init__()
 
-    def forward(self, pred, target):        
-        loss = (torch.log1p(pred[:,:3]) - torch.log1p(target[:,:3])) ** 2 
-        
+    def forward(self, pred, target):
+        loss = (torch.log1p(pred[:, :3]) - torch.log1p(target[:, :3])) ** 2
+
         loss_kinvisc = loss[:, 1].mean()
 
         loss_total = loss_kinvisc
 
         return loss_total
-
-
-
-
-
-
-
-
-
 
     # Intricate loss function, linking density and dynviscosity using real world kknematic viscosity, result : fail. unstable training
     """

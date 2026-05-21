@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Image processor class for Vivit."""
+
 from typing import Dict, List, Optional, Union
 
 import numpy as np
-
 from transformers.utils import is_vision_available
 from transformers.utils.generic import TensorType
 
@@ -42,7 +42,6 @@ from ...image_utils import (
     validate_preprocess_arguments,
 )
 from ...utils import logging
-
 
 if is_vision_available():
     import PIL

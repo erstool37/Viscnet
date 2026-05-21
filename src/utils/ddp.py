@@ -1,5 +1,8 @@
 import os
+
+import numpy as np
 import torch.distributed as dist
+
 
 def ddp_setup():
     rank = int(os.environ["RANK"])
@@ -10,13 +13,14 @@ def ddp_setup():
     dist.init_process_group("nccl", rank=rank, world_size=world_size, init_method="env://")
     return rank, world_size, local_rank
 
+
 def ddp_cleanup():
     dist.destroy_process_group()
 
+
 def gather_lists(arr_list):
     bucket = [None] * dist.get_world_size()
-    dist.all_gather_object(bucket, arr_list) 
-    print("33")
+    dist.all_gather_object(bucket, arr_list)
     merged = []
     for part in bucket:
         merged.extend(part)

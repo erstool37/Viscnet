@@ -1,12 +1,14 @@
+import math
+
 import torch
 import torch.nn as nn
-import math
+
 
 class GMMBetaNLL(nn.Module):
     """
     True β-NLL for Gaussian Mixture regression.
     Derived from:
-    'On the Pitfalls of Heteroscedastic Uncertainty Estimation 
+    'On the Pitfalls of Heteroscedastic Uncertainty Estimation
      with Probabilistic Neural Networks'
     """
 
@@ -29,17 +31,17 @@ class GMMBetaNLL(nn.Module):
         returns:
             scalar β-NLL of the true GMM
         """
-        pi    = outputs["pi"]        # [B,K]
-        mu    = outputs["mu"]        # [B,K]
-        sigma = outputs["sigma"]     # [B,K]
-        y     = self._extract_target(parameters)  # [B,1]
+        pi = outputs["pi"]  # [B,K]
+        mu = outputs["mu"]  # [B,K]
+        sigma = outputs["sigma"]  # [B,K]
+        y = self._extract_target(parameters)  # [B,1]
 
         # component variance
-        var = (sigma ** 2)  # [B,K]
+        var = sigma**2  # [B,K]
 
         # --- β applied ONLY to squared error (true β-NLL) ---
         # log N_beta(y | mu, sigma):
-        log_prob = -0.5 * (torch.log(2 * math.pi * var) + (y - mu)**2 / (var ** self.beta))  # [B,K]
+        log_prob = -0.5 * (torch.log(2 * math.pi * var) + (y - mu) ** 2 / (var**self.beta))  # [B,K]
 
         # mixture weighting in log space
         log_pi = torch.log(pi)  # [B,K]

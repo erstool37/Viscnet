@@ -1,25 +1,19 @@
-import os
-import re
-import json
-import csv
-import glob
-import datetime
 import argparse
+import csv
+import datetime
+import glob
 import importlib
+import json
+import os
 import os.path as osp
-from statistics import mean
-
 import warnings
 
-import yaml
-import numpy as np
 import torch
-import torch.optim as optim
-import torch.nn.functional as F
+import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from sklearn.model_selection import train_test_split
-from utils import sanity_check_alignment,set_seed, confusion_matrix
+
+from utils import confusion_matrix, sanity_check_alignment, set_seed
 
 warnings.filterwarnings("ignore", message=".*resume_download.*", category=FutureWarning)
 
@@ -97,7 +91,9 @@ encoder_class = getattr(encoder_module, ENCODER)
 if TRANS_BOOL:
     encoder = encoder_class(DROP_RATE, OUTPUT_SIZE, CLASS_BOOL, VISC_CLASS, GMM_NUM).to(device)
 else:
-    encoder = encoder_class(LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, RPM_CLASS, EMBED_SIZE, WEIGHT, VISC_CLASS).to(device)
+    encoder = encoder_class(
+        LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, RPM_CLASS, EMBED_SIZE, WEIGHT, VISC_CLASS
+    ).to(device)
 
 state_dict = torch.load(osp.join(CKPT_ROOT, CURR_CKPT), map_location=device)
 state_dict = {k: v for k, v in state_dict.items() if not k.startswith("fc")}
@@ -212,6 +208,7 @@ if CLASS_BOOL:
 
 try:
     import wandb
+
     if wandb.run is not None:
         wandb.finish()
 except Exception:

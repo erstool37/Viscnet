@@ -4,9 +4,11 @@
 
 dataset/CFDArchive/
 dataset/RealArchive/
+rawdataset/
 
 src/inference/attention_maps/
 src/inference/attentiongraph
+outputs/
 
 *.zip
 *.mov
@@ -16,6 +18,7 @@ src/inference/attentiongraph
 *.xlsx
 *.m
 *.sif
+.env
 
 src/inference/*/*
 

@@ -1,12 +1,11 @@
+import glob
 import os
 import re
-import glob
 from collections import Counter
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
 
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = 8
@@ -76,10 +75,7 @@ df_metric = pd.read_csv(CSV_PATH)
 if "name" not in df_metric.columns or METRIC_COL not in df_metric.columns:
     raise ValueError(f"{CSV_PATH} must contain 'name' and '{METRIC_COL}' columns.")
 
-name_to_metric = {
-    str(n): float(v)
-    for n, v in zip(df_metric["name"], df_metric[METRIC_COL])
-}
+name_to_metric = {str(n): float(v) for n, v in zip(df_metric["name"], df_metric[METRIC_COL])}
 
 
 def match_name_to_metric(path: str):
@@ -129,10 +125,7 @@ def mean_temporal_by_group(recs, key):
         if not Vs:
             continue
 
-        Vs = [
-            v if v.ndim == 3 else np.reshape(v, (1,) * (3 - v.ndim) + v.shape)
-            for v in Vs
-        ]
+        Vs = [v if v.ndim == 3 else np.reshape(v, (1,) * (3 - v.ndim) + v.shape) for v in Vs]
 
         Hm = max(v.shape[0] for v in Vs)
         Wm = max(v.shape[1] for v in Vs)
@@ -195,9 +188,7 @@ vals = np.array([r["metric"] for r in records], dtype=float)
 
 if BIN_MODE.lower() == "quantile":
     try:
-        bin_idx, edges = pd.qcut(
-            vals, q=NUM_BINS, labels=False, retbins=True, duplicates="drop"
-        )
+        bin_idx, edges = pd.qcut(vals, q=NUM_BINS, labels=False, retbins=True, duplicates="drop")
     except Exception:
         bin_idx = pd.cut(vals, bins=NUM_BINS, labels=False, include_lowest=True)
         vmin, vmax = float(np.nanmin(vals)), float(np.nanmax(vals))
