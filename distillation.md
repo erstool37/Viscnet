@@ -1,28 +1,44 @@
-# Viscnet Current Handoff
+# Viscnet Final Handoff
 
 Last updated: 2026-05-21 UTC.
 
-This is the concise starting document for a fresh agent in `/Viscnet`. Read `AGENTS.md` first. That file is authoritative for repo safety, dataset safety, and token-control rules.
+This is the canonical handoff for a fresh agent. It merges the previous `REBUILD_REPRODUCTION.md` runbook with the current experiment summary, GitHub state, raw-video config work, and token-control rules. After the repo move, start from `/root/Viscnet`.
 
-## Hard Rules
+## Non-Negotiable Rules
 
-- Do not delete, move, reformat, or commit `/Viscnet/dataset`, `/Viscnet/rawdataset`, checkpoints, generated outputs, `wandb/`, caches, or private data.
-- Do not move `/Viscnet` or push to GitHub until the rawdataset transfer is verified complete.
-- Rawdataset transfer status at this handoff: no `tar -xf - -C /Viscnet/rawdataset` process is active, but `outputs/rebuild_reproduction/notifications/rawdataset_transfer_complete.txt` is missing. Treat move/push as blocked until this is resolved.
-- Do not monitor training from inside Codex with repeated polling. Launch training plus a detached watcher/finalizer, then stop. After completion, read only exact bounded artifacts.
-- For active training, do not loop on `write_stdin`, `tmux capture-pane`, `nvidia-smi`, `ps`, `tail`, `grep`, `rg`, checker, or analyzer.
+- Read `AGENTS.md` first. If it still references `/Viscnet`, interpret the active root as `/root/Viscnet` after this move.
+- Do not delete, reformat, replace, commit, or upload `dataset/`, `rawdataset/`, `outputs/`, checkpoints, videos, W&B logs, caches, or private data.
+- `rawdataset/`, `dataset/RealArchive/`, `dataset/CFDArchive/`, and `outputs/` must stay ignored. The raw dataset must never be pushed.
+- Do not use Codex as a training monitor. Launch training plus a detached watcher/finalizer, then stop. Only read bounded artifacts after completion.
+- Do not repeatedly poll `tmux`, `nvidia-smi`, `ps`, `tail`, `grep`, `rg`, checker, or analyzer while training is active.
 
-## Current Code State
+## Git And Workspace State
 
-Multi-GPU and multi-batch inference has been implemented and validated.
+- GitHub repo: `https://github.com/erstool37/Viscnet.git`
+- Branch: `main`
+- Remote HEAD after message rewrite:
 
-Important files:
+```text
+8662716 edit: add rebuild inference and config tooling
+779d9bb edit: move runtime secrets to env file
+f1e1c0d init: refactor
+```
+
+- Pushed code excludes raw data, generated outputs, checkpoints, `.mov`, `.mp4`, `.pth`, and `.zip`.
+- Local-only unstaged changes existed before this handoff and should not be assumed intentional for future commits:
+  - `.env.example` deleted locally
+  - `.gitignore` modified locally
+  - `requirements.txt` modified locally
+- `gh` is installed and authenticated in this pod. Credentials were saved in plain text because no secure credential store exists. Logout or revoke the token when GitHub work is finished.
+
+## Current Code And Tooling
+
+Multi-GPU/multi-batch inference and analysis are implemented.
 
 - `src/main.py`: DDP final test inference uses all ranks, configurable test batch size, rank-0 gather/dedupe, and single writer behavior.
-- `scripts/window21_test_inference.py`: supports `torchrun`, rank sharding, multi-window batching, config defaults, and rank-0 metric/report writing.
+- `scripts/window21_test_inference.py`: supports `torchrun`, rank sharding, config defaults, multi-window batching, and rank-0 metrics/report writing.
 - `scripts/analyze_993_attention.py`: supports `torchrun`, rank-sharded attention analysis, and configurable `--batch-size`.
-- `src/utils/ddp.py`: DDP gather helper cleanup.
-- `configs/rebuild/retries/realonly_993_window30x21_ep50.yaml`: contains the visible inference block.
+- `scripts/build_raw_realvideo_configs.py`: builds metadata JSON configs for raw MOV archives without modifying videos.
 - `pyproject.toml`: ruff config for repo linting.
 
 Validation already run:
@@ -35,7 +51,76 @@ torchrun --nproc_per_node=4 scripts/window21_test_inference.py --max-videos 4 --
 torchrun --nproc_per_node=4 scripts/analyze_993_attention.py --max-samples 4 --batch-size 1 --output-root outputs/rebuild_reproduction/tmp_attention_ddp4_smoke_after_barrier_patch
 ```
 
-## Restored 21-Window Inference
+## Rebuild Runbook
+
+Rebuild scope is classification weights only. Excluded by default: label smoothing, architecture changes, uncertainty/regression variants, and unlabeled enhancement tuning.
+
+Important files:
+
+- Rebuild configs: `configs/rebuild/*.yaml`
+- Retry configs: `configs/rebuild/retries/*.yaml`
+- Real-data manifests: `configs/rebuild/manifests/*.json`
+- Reference metrics: `configs/rebuild/reference_metrics.json`
+- Checker: `scripts/check_rebuild_results.py`
+- Analyzer: `scripts/analyze_rebuild_results.py`
+- Runner: `scripts/run_rebuild_reproduction.sh`
+- Output root: `outputs/rebuild_reproduction/`
+
+Hardware assumptions:
+
+- Current pod had four H200 GPUs.
+- For 8 H200 pods, use `torchrun --nproc_per_node=8` for inference/analysis.
+- Active microbatch route uses dataloader batch size `10`, optimizer microbatch size `1`, `num_workers: 0`, `rpm_bool: true`, and `pat_bool: false`.
+
+Training order:
+
+1. Preserve or produce `outputs/rebuild_reproduction/checkpoints/repro_synthetic_pretrain_sph35000.pth`.
+2. Run the 993 real-only and transfer gate first.
+3. Run checker and analyzer.
+4. Only after the 993 pair is accepted, run the remaining real-only and transfer data-efficiency curve.
+5. Run pattern-generalization configs separately.
+
+Launch only when explicitly requested:
+
+```bash
+cd /root/Viscnet
+REBUILD_MIDRUN_ANALYSIS=1 NPROC_PER_NODE=4 MASTER_PORT=29513 bash scripts/run_rebuild_reproduction.sh
+```
+
+Checker and analyzer:
+
+```bash
+python scripts/check_rebuild_results.py
+python scripts/analyze_rebuild_results.py
+```
+
+The analyzer is downstream of `checklist.md`; it may propose hypotheses but must not redefine pass/fail validity.
+
+## Current Experiment Summary
+
+Key 993 results on the 1000-video test set:
+
+| Run | Accuracy | Note |
+| --- | ---: | --- |
+| `repro_realonly_993_microbatch` | `0.719` | early 30-epoch microbatch baseline |
+| `repro_transfer_993_microbatch` | `0.819` | transfer baseline |
+| `repro_realonly_993_microbatch_lrhold` | `0.888` | strong real-only lr-hold result |
+| `repro_transfer_993_microbatch_lrhold` | `0.872` | transfer lr-hold |
+| `repro_transfer_993_microbatch_lrhold_ep70_min87` | `0.880` | transfer gate run |
+| `repro_transfer_993_microbatch_lrhold_ep90_pat25` | `0.902` | best transfer result so far |
+| `repro_realonly_993_batch8_shortwarm_lrhold_ep100` | `0.827` | no-microbatch batch-8 retry underperformed |
+| `repro_transfer_993_batch8_shortwarm_lrhold_ep100` | `0.812` | no-microbatch transfer retry underperformed |
+| `repro_realonly_993_window30x21_ep50` | `0.898` | trained on 21 fixed 30-frame windows per real video, first-30 test |
+| `window21_test_inference` on that checkpoint | `0.940` | averages 21 contiguous 30-frame test logits per original video |
+
+Main interpretation:
+
+- LR-hold and sufficient optimizer updates matter more than blind epoch increases.
+- Batch-8 no-microbatch retries did not match the strong microbatch lr-hold behavior.
+- 30-frame window training plus 21-window averaged-logit inference is the strongest current real-only path.
+- Real-only beating many transfer runs is evidence to investigate synthetic-real mismatch and schedule sensitivity, not proof that synthetic data is categorically harmful.
+
+## 21-Window Inference
 
 Final restored output:
 
@@ -53,113 +138,57 @@ Final metrics:
 - Full frames read: `50`
 - Window batch size: `16`
 
-The accidental 2-sample smoke metrics were moved out of the final path:
-
-```text
-outputs/rebuild_reproduction/repro_realonly_993_window30x21_ep50/window21_test_inference_smoke_bad_20260521/
-```
-
-The 4-GPU restore command used:
-
-```bash
-MASTER_PORT=29622 PYTHONPATH=src torchrun --nproc_per_node=4 --master_port=29622 scripts/window21_test_inference.py --output-dir outputs/rebuild_reproduction/repro_realonly_993_window30x21_ep50/window21_test_inference_full_restore_tmp
-```
-
-The temp output was verified for `1000/1000` and then moved into the final output path.
-
-## Config-Visible Inference Settings
-
-The active config is:
+Config block lives in:
 
 ```text
 configs/rebuild/retries/realonly_993_window30x21_ep50.yaml
 ```
 
-It includes:
-
-```yaml
-inference:
-  temporal_window:
-    enabled: true
-    average_logits: true
-    checkpoint: outputs/rebuild_reproduction/checkpoints/repro_realonly_993_window30x21_ep50.pth
-    test_root: dataset/RealArchive/test_1000_wo_pat2
-    baseline_metrics: outputs/rebuild_reproduction/repro_realonly_993_window30x21_ep50/confusion_matrix/repro_realonly_993_window30x21_ep50_metrics.json
-    full_frames: 50
-    window_size: 30
-    num_windows: 21
-    window_batch_size: 16
-    output_dir: outputs/rebuild_reproduction/repro_realonly_993_window30x21_ep50/window21_test_inference
-```
-
-For an 8 H200 pod, start from `window_batch_size: 16`. If memory is still low, try `24` or `32` for inference only. Do not change training batch sizes just because inference has memory headroom.
-
-## Current Experiment Summary
-
-Key 993 results on the 1000-video test set:
-
-| Run | Accuracy | Note |
-| --- | ---: | --- |
-| `repro_realonly_993_microbatch` | `0.719` | early 30-epoch style baseline |
-| `repro_transfer_993_microbatch` | `0.819` | transfer baseline |
-| `repro_realonly_993_microbatch_lrhold` | `0.888` | strong real-only lr-hold result |
-| `repro_transfer_993_microbatch_lrhold` | `0.872` | transfer lr-hold |
-| `repro_transfer_993_microbatch_lrhold_ep70_min87` | `0.880` | transfer gate run |
-| `repro_transfer_993_microbatch_lrhold_ep90_pat25` | `0.902` | best transfer result so far |
-| `repro_realonly_993_batch8_shortwarm_lrhold_ep100` | `0.827` | no-microbatch batch-8 retry underperformed |
-| `repro_transfer_993_batch8_shortwarm_lrhold_ep100` | `0.812` | no-microbatch transfer retry underperformed |
-| `repro_realonly_993_window30x21_ep50` | `0.898` | trained on 21 fixed 30-frame windows per real video, first-30 test |
-| `window21_test_inference` on that checkpoint | `0.940` | averages 21 contiguous 30-frame test logits per original video |
-
-Main interpretation:
-
-- LR-hold and sufficient optimizer updates matter more than simply increasing epochs blindly.
-- The no-microbatch batch-8 retry did not reproduce the strong microbatch lr-hold behavior, so update density and schedule shape remain important.
-- The 30-frame window training plus 21-window test-time logit averaging is the strongest current real-only path. It strongly suggests temporal segment choice is a major source of variance.
-- Real-only performance beating many transfer runs is not proof that synthetic data is harmful in general. It may reflect synthetic-real mismatch, transfer schedule sensitivity, and train/test similarity in the real archive.
-
-## Next-Pod Instructions
-
-1. Start in `/Viscnet`.
-2. Read `AGENTS.md`, then this file.
-3. Verify the rawdataset transfer marker before any move/push work:
-
-```bash
-test -f outputs/rebuild_reproduction/notifications/rawdataset_transfer_complete.txt
-```
-
-4. If the marker is still missing, do not move `/Viscnet` and do not push. Resolve transfer provenance first.
-5. Confirm the restored inference metrics:
-
-```bash
-python - <<'PY'
-import json
-from pathlib import Path
-p = Path("outputs/rebuild_reproduction/repro_realonly_993_window30x21_ep50/window21_test_inference/window21_test_inference_metrics.json")
-m = json.loads(p.read_text())
-print(m["accuracy"], m["evaluated_sample_count"], m["confusion_matrix_total"])
-PY
-```
-
-Expected output values are `0.94`, `1000`, `1000`.
-
-6. On an 8 H200 pod, run inference with 8 ranks:
+For an 8 H200 pod, start with:
 
 ```bash
 MASTER_PORT=29630 PYTHONPATH=src torchrun --nproc_per_node=8 --master_port=29630 scripts/window21_test_inference.py
-```
-
-7. For attention analysis on 8 GPUs:
-
-```bash
 MASTER_PORT=29631 PYTHONPATH=src torchrun --nproc_per_node=8 --master_port=29631 scripts/analyze_993_attention.py --batch-size 1
 ```
 
-8. For any new training, use a detached watcher/finalizer. Do not make Codex wait or poll.
+If memory is still low, increase `inference.temporal_window.window_batch_size` from `16` to `24` or `32` for inference only.
 
-## Open Work
+## Raw Video Configs
 
-- Decide whether the 30-frame temporal window method is an experimental enhancement or a new baseline. It should not be mixed into paper reproduction claims without labeling it.
-- Run transfer-side window training only if the research question is whether synthetic pretraining helps under the same temporal-window augmentation.
-- Cleanly resolve rawdataset transfer status before moving the repo or pushing to GitHub.
-- If pushing, inspect staged scope carefully and exclude `dataset/`, `rawdataset/`, `outputs/`, checkpoints, W&B data, and caches.
+Raw MOV archives were not modified.
+
+Generated config locations:
+
+- `rawdataset/rawvideos/impeller_1000_originals/configs/` - 1000 configs
+- `rawdataset/rawvideos/raw_real_20rpmincrement_1500/configs/` - 1500 configs
+- `dataset/RealArchive/real_20rpm_increment_2500/parameters_rebuilt_from_raw/` - 2500 consolidated configs
+- `dataset/RealArchive/real_20rpm_increment_2500/raw_config_manifest.json`
+- `dataset/RealArchive/real_20rpm_increment_2500/raw_config_build_report.json`
+
+Mapping logic:
+
+- `impeller_1000_originals`: source files `0000.mov` to `999.mov`, renders `A-J`.
+- `raw_real_20rpmincrement_1500`: source files `0001.mov` to `1500.mov`, renders `K-Y`.
+- RPM cycles `270, 290, ..., 450`; render advances every 10 RPMs.
+- Viscosity block advances by sorted source order.
+
+Observed final-dataset issue:
+
+- Existing `dataset/RealArchive/real_20rpm_increment_2500/parameters/` has `2493` configs, not `2500`.
+- It has mixed key schemas: `1494` configs include `dynamic_viscosity_str`, `RPM_index`, `RENDER`, `INDEX`; `999` configs omit those keys.
+- Seven expected final video/config stems are missing from the existing final dataset:
+  - `decay_10fps_visc000.89274_rpm270_renderV`
+  - `decay_10fps_visc015.97088_rpm330_renderU`
+  - `decay_10fps_visc021.31029_rpm290_renderR`
+  - `decay_10fps_visc028.43477_rpm270_renderK`
+  - `decay_10fps_visc037.94112_rpm270_renderL`
+  - `decay_10fps_visc067.55088_rpm330_renderW`
+  - `decay_10fps_visc090.13457_rpm350_renderA`
+
+## Known Caveats And Next Work
+
+- Old W&B synthetic pretrain used `dataset/CFDArchive/sph_realvisc_diffback_35000`; this repo uses available `dataset/CFDArchive/sph_35000`.
+- Old pattern references depend on unavailable old dataset/checkpoint paths.
+- Treat the 30-frame temporal window method as an enhancement unless explicitly redefined as the new baseline.
+- Run transfer-side window training only if the research question is whether synthetic pretraining helps under identical temporal-window augmentation.
+- Before any future push, inspect staged scope and exclude `dataset/`, `rawdataset/`, `outputs/`, checkpoints, W&B data, videos, and caches.
