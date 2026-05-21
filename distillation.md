@@ -172,18 +172,21 @@ Mapping logic:
 - RPM cycles `270, 290, ..., 450`; render advances every 10 RPMs.
 - Viscosity block advances by sorted source order.
 
-Observed final-dataset issue:
+Observed final-dataset issue and exclusion rule:
 
 - Existing `dataset/RealArchive/real_20rpm_increment_2500/parameters/` has `2493` configs, not `2500`.
 - It has mixed key schemas: `1494` configs include `dynamic_viscosity_str`, `RPM_index`, `RENDER`, `INDEX`; `999` configs omit those keys.
-- Seven expected final video/config stems are missing from the existing final dataset:
-  - `decay_10fps_visc000.89274_rpm270_renderV`
-  - `decay_10fps_visc015.97088_rpm330_renderU`
-  - `decay_10fps_visc021.31029_rpm290_renderR`
-  - `decay_10fps_visc028.43477_rpm270_renderK`
-  - `decay_10fps_visc037.94112_rpm270_renderL`
-  - `decay_10fps_visc067.55088_rpm330_renderW`
-  - `decay_10fps_visc090.13457_rpm350_renderA`
+- The seven missing stems are connected to contaminated source videos with mixing and must not be used for training, validation, testing, or future dataset construction.
+- `scripts/build_raw_realvideo_configs.py` marks these seven generated config records with `usable: false`, `use_in_training: false`, and `exclude_reason: contaminated_source_video_mixing`.
+- The raw source videos to exclude are:
+  - `rawdataset/rawvideos/impeller_1000_originals/204.mov` -> `decay_10fps_visc090.13457_rpm350_renderA`
+  - `rawdataset/rawvideos/raw_real_20rpmincrement_1500/0574.mov` -> `decay_10fps_visc067.55088_rpm330_renderW`
+  - `rawdataset/rawvideos/raw_real_20rpmincrement_1500/0761.mov` -> `decay_10fps_visc037.94112_rpm270_renderL`
+  - `rawdataset/rawvideos/raw_real_20rpmincrement_1500/0901.mov` -> `decay_10fps_visc028.43477_rpm270_renderK`
+  - `rawdataset/rawvideos/raw_real_20rpmincrement_1500/1122.mov` -> `decay_10fps_visc021.31029_rpm290_renderR`
+  - `rawdataset/rawvideos/raw_real_20rpmincrement_1500/1304.mov` -> `decay_10fps_visc015.97088_rpm330_renderU`
+  - `rawdataset/rawvideos/raw_real_20rpmincrement_1500/1461.mov` -> `decay_10fps_visc000.89274_rpm270_renderV`
+- After excluding these contaminated records, `raw_config_build_report.json` reports no missing active rebuilt videos/configs.
 
 ## Known Caveats And Next Work
 

@@ -36,6 +36,16 @@ DENSITY_KG_PER_M3 = [
 ]
 RPM_VALUES = [270, 290, 310, 330, 350, 370, 390, 410, 430, 450]
 SURFACE_TENSION_N_PER_M = 0.0762
+EXCLUDE_REASON = "contaminated_source_video_mixing"
+CONTAMINATED_TARGET_STEMS = {
+    "decay_10fps_visc000.89274_rpm270_renderV",
+    "decay_10fps_visc015.97088_rpm330_renderU",
+    "decay_10fps_visc021.31029_rpm290_renderR",
+    "decay_10fps_visc028.43477_rpm270_renderK",
+    "decay_10fps_visc037.94112_rpm270_renderL",
+    "decay_10fps_visc067.55088_rpm330_renderW",
+    "decay_10fps_visc090.13457_rpm350_renderA",
+}
 
 
 @dataclass(frozen=True)
@@ -73,6 +83,7 @@ def metadata_for(spec: SourceSpec, group_index: int, source_file: Path) -> tuple
     rpm_value = RPM_VALUES[rpm_index]
     render_tag = spec.render_tags[render_index]
     target_stem = f"decay_10fps_visc{viscosity_str}_rpm{rpm_value}_render{render_tag}"
+    use_in_training = target_stem not in CONTAMINATED_TARGET_STEMS
 
     metadata = {
         "height": 224,
@@ -101,6 +112,9 @@ def metadata_for(spec: SourceSpec, group_index: int, source_file: Path) -> tuple
         "combined_index": spec.combined_offset + group_index,
         "target_video_stem": target_stem,
         "target_video_file": f"{target_stem}.mp4",
+        "usable": use_in_training,
+        "use_in_training": use_in_training,
+        "exclude_reason": None if use_in_training else EXCLUDE_REASON,
     }
     return target_stem, metadata
 
@@ -169,17 +183,32 @@ def build_configs(overwrite: bool) -> dict:
     write_json(final_root / "raw_config_manifest.json", manifest_records)
 
     existing_videos = {path.stem for path in (final_root / "videos").glob("*.mp4")}
-    rebuilt_configs = {record["target_video_stem"] for record in manifest_records}
+    all_rebuilt_configs = {record["target_video_stem"] for record in manifest_records}
+    usable_rebuilt_configs = {record["target_video_stem"] for record in manifest_records if record["use_in_training"]}
+    excluded_records = [record for record in manifest_records if not record["use_in_training"]]
     existing_parameters = {path.stem for path in (final_root / "parameters").glob("*.json")}
     report.update(
         {
             "manifest_path": str((final_root / "raw_config_manifest.json").relative_to(ROOT)),
+            "excluded_config_count": len(excluded_records),
+            "excluded_raw_sources": [
+                {
+                    "target_video_stem": record["target_video_stem"],
+                    "source_group": record["source_group"],
+                    "source_file": record["source_file"],
+                    "source_path": record["source_path"],
+                    "exclude_reason": record["exclude_reason"],
+                }
+                for record in excluded_records
+            ],
             "existing_final_video_count": len(existing_videos),
             "existing_final_parameter_count": len(existing_parameters),
-            "missing_existing_videos_for_rebuilt_configs": sorted(rebuilt_configs - existing_videos),
-            "missing_existing_parameters_for_rebuilt_configs": sorted(rebuilt_configs - existing_parameters),
-            "existing_videos_not_in_rebuilt_configs": sorted(existing_videos - rebuilt_configs),
-            "existing_parameters_not_in_rebuilt_configs": sorted(existing_parameters - rebuilt_configs),
+            "missing_existing_videos_for_rebuilt_configs": sorted(all_rebuilt_configs - existing_videos),
+            "missing_existing_parameters_for_rebuilt_configs": sorted(all_rebuilt_configs - existing_parameters),
+            "missing_existing_videos_for_active_rebuilt_configs": sorted(usable_rebuilt_configs - existing_videos),
+            "missing_existing_parameters_for_active_rebuilt_configs": sorted(usable_rebuilt_configs - existing_parameters),
+            "existing_videos_not_in_rebuilt_configs": sorted(existing_videos - all_rebuilt_configs),
+            "existing_parameters_not_in_rebuilt_configs": sorted(existing_parameters - all_rebuilt_configs),
         }
     )
     write_json(final_root / "raw_config_build_report.json", report)
