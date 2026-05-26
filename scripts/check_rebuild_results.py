@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 from pathlib import Path
@@ -13,11 +14,12 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_ROOT = ROOT / "configs" / "rebuild"
 REFERENCE_PATH = CONFIG_ROOT / "reference_metrics.json"
+CHECKLIST_PATH = ROOT / "checklist.md"
 OUTPUT_ROOT = ROOT / "outputs" / "rebuild_reproduction"
 REPORT_PATH = OUTPUT_ROOT / "checker_report.md"
 TABLE_PATH = OUTPUT_ROOT / "metrics_table.json"
-WANDB_ENTITY = "jongwonsohn-seoul-national-university"
-WANDB_PROJECT = "viscnet-rebuild"
+DEFAULT_WANDB_ENTITY = "jongwonsohn-seoul-national-university"
+DEFAULT_WANDB_PROJECT = "viscnet-rebuild"
 EXPECTED_EPOCHS = 300
 EXPECTED_MICROBATCH_EPOCHS = 30
 EXPECTED_OPTIMIZER_MICROBATCH_SIZE = 1
@@ -54,7 +56,9 @@ def wandb_run_exists(run_id: str) -> bool | None:
         import wandb
 
         api = wandb.Api()
-        api.run(f"{WANDB_ENTITY}/{WANDB_PROJECT}/{run_id}")
+        entity = os.environ.get("WANDB_ENTITY", DEFAULT_WANDB_ENTITY)
+        project = os.environ.get("WANDB_PROJECT", DEFAULT_WANDB_PROJECT)
+        api.run(f"{entity}/{project}/{run_id}")
         return True
     except Exception:
         return False
@@ -81,6 +85,17 @@ def parse_wandb_run_id(log_path: Path) -> str:
 
 def load_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text())
+
+
+def checklist_provenance() -> dict:
+    if not CHECKLIST_PATH.exists():
+        return {"path": str(CHECKLIST_PATH.relative_to(ROOT)), "exists": False, "sha256": ""}
+    data = CHECKLIST_PATH.read_bytes()
+    return {
+        "path": str(CHECKLIST_PATH.relative_to(ROOT)),
+        "exists": True,
+        "sha256": hashlib.sha256(data).hexdigest(),
+    }
 
 
 def relative(path: Path) -> str:
@@ -140,6 +155,7 @@ def methodology_fit(config_path: Path, cfg: dict) -> tuple[str, list[str]]:
     if batch_size != 1:
         fit = "current-repo reproduction"
         notes.append(f"Uses per-GPU batch_size={batch_size}; old W&B configs used 1.")
+    is_synthetic_pretrain = config_path.stem == "synthetic_pretrain"
     if optimizer_microbatch_size is not None:
         fit = "current-repo reproduction"
         notes.append(
@@ -175,8 +191,9 @@ def methodology_fit(config_path: Path, cfg: dict) -> tuple[str, list[str]]:
         notes.append(f"Uses explicit min_accuracy={float(acceptance['min_accuracy']):.4f}.")
 
     mismatches = []
-    if cfg.get("project") != WANDB_PROJECT:
-        mismatches.append("W&B project is not viscnet-rebuild.")
+    expected_project = os.environ.get("WANDB_PROJECT", DEFAULT_WANDB_PROJECT)
+    if cfg.get("project") != expected_project:
+        mismatches.append(f"W&B project is not {expected_project}.")
     if cfg["model"].get("transformer", {}).get("encoder") != "VivitEmbed":
         mismatches.append("model encoder is not VivitEmbed.")
     if training.get("label_smoothing") != 0.0:
@@ -193,8 +210,9 @@ def methodology_fit(config_path: Path, cfg: dict) -> tuple[str, list[str]]:
         mismatches.append("scheduler is not CosineAnnealingLR.")
     lr = float(optimizer.get("lr", -1.0))
     if acceptance.get("allow_lr_override"):
-        if not (0.0 < lr <= 1e-5):
-            mismatches.append("bounded lr override must be positive and no greater than 1e-5.")
+        max_lr = 5e-5 if optimizer_microbatch_size is None and acceptance.get("allow_batch_size_override") else 1e-5
+        if not (0.0 < lr <= max_lr):
+            mismatches.append(f"bounded lr override must be positive and no greater than {max_lr:.1e}.")
     elif lr != 1e-5:
         mismatches.append("learning rate is not 1e-5.")
     if float(optimizer.get("weight_decay", -1.0)) != 1e-2:
@@ -214,7 +232,12 @@ def methodology_fit(config_path: Path, cfg: dict) -> tuple[str, list[str]]:
         elif num_epochs != EXPECTED_MICROBATCH_EPOCHS:
             mismatches.append(f"num_epochs is not {EXPECTED_MICROBATCH_EPOCHS}.")
     elif acceptance.get("allow_epoch_override"):
-        if not (EXPECTED_MICROBATCH_EPOCHS < num_epochs < EXPECTED_EPOCHS):
+        if is_synthetic_pretrain:
+            if not (50 <= num_epochs <= 450):
+                mismatches.append(
+                    "bounded synthetic pretrain epoch override must use between 50 and 450 epochs."
+                )
+        elif not (EXPECTED_MICROBATCH_EPOCHS < num_epochs < EXPECTED_EPOCHS):
             mismatches.append(
                 f"bounded non-microbatch epoch override must use more than {EXPECTED_MICROBATCH_EPOCHS} and less than {EXPECTED_EPOCHS} epochs."
             )
@@ -289,6 +312,11 @@ def inspect_config(config_path: Path, references: dict) -> dict:
     reliability_json = output_root / "reliability_plots" / f"{run_name}_metrics.json"
     confusion_png = output_root / "confusion_matrix" / f"{run_name}.png"
     reliability_png = output_root / "reliability_plots" / f"{run_name}.png"
+    window_cfg = cfg.get("inference", {}).get("temporal_window", {})
+    window_enabled = bool(window_cfg.get("enabled", False))
+    window_output = ROOT / window_cfg.get("output_dir", "") if window_enabled else None
+    window_metrics_json = window_output / "window21_test_inference_metrics.json" if window_output else None
+    window_png = window_output / "window21_test_inference.png" if window_output else None
     family, target, reference_run_id = expected_target(config_path, references)
     fit, notes = methodology_fit(config_path, cfg)
     acceptance = cfg["training"].get("acceptance", {})
@@ -305,6 +333,8 @@ def inspect_config(config_path: Path, references: dict) -> dict:
         or (family != "synthetic_pretrain" and "Accuracy:" in log_text)
     )
     observed = json_accuracy(confusion_json) if log_complete else None
+    if observed is None and window_metrics_json is not None and window_metrics_json.exists():
+        observed = json_accuracy(window_metrics_json)
     artifacts_ok = ckpt.exists()
     if required_test_artifacts:
         artifacts_ok = (
@@ -312,6 +342,8 @@ def inspect_config(config_path: Path, references: dict) -> dict:
             and log_complete
             and all(p.exists() for p in [confusion_json, reliability_json, confusion_png, reliability_png])
         )
+        if window_enabled and window_metrics_json is not None and window_png is not None:
+            artifacts_ok = ckpt.exists() and log_complete and window_metrics_json.exists() and window_png.exists()
     wandb_ok = wandb_confirmed is True
     metric_pass = None
     if target is not None and observed is not None:
@@ -323,6 +355,9 @@ def inspect_config(config_path: Path, references: dict) -> dict:
         status = "pending"
     elif required_test_artifacts and observed is None:
         status = "pending"
+    elif wandb_confirmed is None and ckpt.exists() and log_complete:
+        notes.append("W&B run could not be verified because WANDB_API_KEY is unavailable.")
+        status = "blocked"
     elif metric_pass is False or (required_test_artifacts and not artifacts_ok) or not log_complete or not wandb_ok:
         status = "fail"
     elif metric_pass is True and artifacts_ok:
@@ -353,6 +388,8 @@ def inspect_config(config_path: Path, references: dict) -> dict:
         "reliability_metrics_exists": reliability_json.exists(),
         "confusion_plot_exists": confusion_png.exists(),
         "reliability_plot_exists": reliability_png.exists(),
+        "window_metrics_exists": bool(window_metrics_json and window_metrics_json.exists()),
+        "window_plot_exists": bool(window_png and window_png.exists()),
         "artifacts_usable": artifacts_ok,
     }
 
@@ -373,9 +410,26 @@ def write_report(rows: list[dict]) -> None:
         "",
         "This report is generated from `scripts/check_rebuild_results.py`.",
         "",
-        "| Status | Config | Methodology | Target | Observed | Notes |",
-        "| --- | --- | --- | ---: | ---: | --- |",
+        "## Checklist Provenance",
+        "",
     ]
+    checklist = checklist_provenance()
+    lines.extend(
+        [
+            f"- Path: `{checklist['path']}`",
+            f"- Exists: `{checklist['exists']}`",
+            f"- SHA256: `{checklist['sha256'] or 'missing'}`",
+            "",
+            "## Result Table",
+            "",
+        ]
+    )
+    lines.extend(
+        [
+            "| Status | Config | Methodology | Target | Observed | Notes |",
+            "| --- | --- | --- | ---: | ---: | --- |",
+        ]
+    )
     for row in rows:
         target = "" if row["target_accuracy"] is None else f"{row['target_accuracy']:.4f}"
         observed = "" if row["observed_accuracy"] is None else f"{row['observed_accuracy']:.4f}"
@@ -417,7 +471,8 @@ def write_report(rows: list[dict]) -> None:
         )
 
     pending = [row for row in rows if row["status"] == "pending"]
-    failed = [row for row in rows if row["status"] in {"fail", "blocked"}]
+    blocked = [row for row in rows if row["status"] == "blocked"]
+    failed = [row for row in rows if row["status"] == "fail"]
     passed = [row for row in rows if row["status"] == "pass"]
     lines.extend(
         [
@@ -426,13 +481,17 @@ def write_report(rows: list[dict]) -> None:
             "",
             f"- Passed: {len(passed)}",
             f"- Pending: {len(pending)}",
-            f"- Failed or blocked: {len(failed)}",
+            f"- Failed: {len(failed)}",
+            f"- Blocked: {len(blocked)}",
             "",
             "## Final Recommendation",
             "",
         ]
     )
-    if failed:
+    if blocked:
+        lines.append("- blocked")
+        lines.append("- Reason: one or more rows have methodology, path, artifact-provenance, or W&B-verification blockers.")
+    elif failed:
         lines.append("- retry required")
     elif pending:
         lines.append("- retry required")
@@ -446,9 +505,13 @@ def main() -> None:
     load_env()
     OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
     references = json.loads(REFERENCE_PATH.read_text())
-    configs = sorted(CONFIG_ROOT.glob("*.yaml"))
-    if os.environ.get("REBUILD_INCLUDE_RETRIES") == "1":
-        configs.extend(sorted((CONFIG_ROOT / "retries").glob("*.yaml")))
+    config_list = os.environ.get("REBUILD_CHECK_CONFIGS") or os.environ.get("REBUILD_CONFIGS")
+    if config_list:
+        configs = [ROOT / item for item in config_list.split()]
+    else:
+        configs = sorted(CONFIG_ROOT.glob("*.yaml"))
+        if os.environ.get("REBUILD_INCLUDE_RETRIES") == "1":
+            configs.extend(sorted((CONFIG_ROOT / "retries").glob("*.yaml")))
     rows = [inspect_config(path, references) for path in configs]
     TABLE_PATH.write_text(json.dumps(rows, indent=2) + "\n")
     write_report(rows)

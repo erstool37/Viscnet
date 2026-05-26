@@ -29,8 +29,8 @@ run_post_analysis() {
 
 trap signal_rebuild_done EXIT
 
-if [ -n "${WANDB_API_KEY:-}" ]; then
-  wandb login "${WANDB_API_KEY}"
+if [ -z "${WANDB_API_KEY:-}" ]; then
+  echo "WANDB_API_KEY is not set; wandb.init may run unauthenticated or offline depending on W&B settings." >&2
 fi
 
 if [ -n "${REBUILD_CONFIGS:-}" ]; then

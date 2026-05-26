@@ -20,6 +20,48 @@ Reject or mark out of scope:
 - UQ/regression runs.
 - Runs that train on copied or modified dataset folders instead of manifests or imported folders.
 
+## No-RPM Policy Suite
+
+The user-requested no-RPM experiment family is a current policy suite, not a
+legacy reproduction route. For this suite, reject or mark retry-required any new
+training run that passes RPM conditioning to the model.
+
+Required no-RPM suite runs:
+
+- No-RPM synthetic pretraining on `dataset/CFDArchive/sph_35000`, using previous
+  bounded synthetic-pretrain hyperparameters rather than a broad sweep.
+- No-RPM real-only 993/1000 training and evaluation.
+- No-RPM synthetic-pretrained transfer on the same 993/1000 real split.
+- No-RPM dual-pattern synthetic-transfer training and evaluation on
+  `dataset/RealArchive/dualpatterndataset_V2_450_train` to
+  `dataset/RealArchive/dualpatterndataset_V2_450_test`.
+
+No-RPM suite gates:
+
+- Every no-RPM config must set `model.embeddings.rpm_bool: false`.
+- `src/models/vivit/modeling_vivit.py` must not access `rpm_embed` when
+  `rpm_bool` is false.
+- `src/main.py` must defensively zero the batch RPM tensor before model calls
+  when `RPM_BOOL` is false.
+- No-RPM launch queues must run `scripts/verify_no_rpm_policy.py` before
+  training.
+- No-RPM transfer acceptance target is classification accuracy `>= 0.9001`.
+- Transfer better than the best no-RPM real-only result is desirable and must be
+  reported, but it is optional unless the user makes it a hard gate.
+- The no-RPM completion report must be written to
+  `outputs/rebuild_reproduction/no_rpm_policy_report/summary.md` and
+  `outputs/rebuild_reproduction/no_rpm_policy_report/summary.json`.
+
+No-RPM suite evidence:
+
+- `tests/test_no_rpm_policy.py` covers config-level acceptance/rejection.
+- `tests/test_no_rpm_model_behavior.py` covers model-level non-use of RPM
+  embeddings.
+- `tests/test_no_rpm_policy_summary.py` covers the transfer target and
+  transfer-minus-real-only report calculations.
+- Completion is unproven until all required no-RPM metrics exist and the final
+  no-RPM policy report evaluates the transfer target.
+
 ## Analyzer Figure Trigger Policy
 
 After checker outputs exist for a completed classification run, the analyzer should

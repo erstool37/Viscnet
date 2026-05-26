@@ -1,0 +1,98 @@
+project: re-rebuild-viscnet
+entity: jongwonsohn-seoul-national-university
+name: rawfps_realonly_ratio1500_500_nativefps_336px
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: true
+  gmm_bool: false
+  watch_bool: false
+  train_bool: true
+  test_bool: true
+  attn_bool: false
+  val_test_bool: true
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: outputs/rebuild_reproduction/derived_datasets/raw_fps_benchmark/ratio1500_500/nativefps/image336/train
+    use_all_samples: true
+    frame_num: 6
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal336
+      batch_size: 4
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+    manifest: outputs/rebuild_reproduction/derived_datasets/raw_fps_benchmark/ratio1500_500/nativefps/image336/train/manifest.json
+  test:
+    test_root: outputs/rebuild_reproduction/derived_datasets/raw_fps_benchmark/ratio1500_500/nativefps/image336/test
+    frame_num: 6
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal336
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+    manifest: outputs/rebuild_reproduction/derived_datasets/raw_fps_benchmark/ratio1500_500/nativefps/image336/test/manifest.json
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+    num_frames: 30
+    image_size: 336
+  embeddings:
+    rpm_bool: true
+    pat_bool: false
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: false
+  curr_ckpt: repro_synthetic_pretrain_sph35000.pth
+  checkpoint_name: rawfps_realonly_ratio1500_500_nativefps_336px.pth
+  num_epochs: 50
+  loss: CE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    schedule_policy: warmup_hold_cosine
+    warmup_epochs: 1
+    warmup_start_factor: 0.5
+    lr_hold_epochs: 10
+    lr: 1.0e-05
+    eta_min: 1.0e-10
+    weight_decay: 0.01
+    patience: 12
+  acceptance:
+    allow_frame_count_override: true
+    allow_derived_window_dataset: true
+    note: raw real-only FPS-aware variable-window benchmark; not a paper reproduction
+      pass/fail run
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/rawfps_realonly_ratio1500_500_nativefps_336px
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm
+evaluation:
+  report_source_averaged: true
+  report_fps_stratified: true

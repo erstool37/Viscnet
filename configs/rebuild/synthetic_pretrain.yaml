@@ -1,4 +1,4 @@
-project: viscnet-rebuild
+project: re-rebuild-viscnet
 entity: jongwonsohn-seoul-national-university
 name: repro_synthetic_pretrain_sph35000
 version: v0
@@ -21,7 +21,7 @@ dataset:
     rpm_class: 10
     dataloader:
       dataloader: VideoDataset
-      batch_size: 10
+      batch_size: 8
       aug_bool: false
       test_size: 0.2
       random_state: 37
@@ -32,7 +32,7 @@ dataset:
     rpm_class: 10
     dataloader:
       dataloader: VideoDatasetReal
-      batch_size: 10
+      batch_size: 8
       aug_bool: false
       test_size: 1.0e-06
       random_state: 37
@@ -63,16 +63,25 @@ training:
   curr_bool: false
   curr_ckpt: repro_synthetic_pretrain_sph35000.pth
   checkpoint_name: repro_synthetic_pretrain_sph35000.pth
-  num_epochs: 300
+  num_epochs: 50
   loss: CE
   label_smoothing: 0.0
   optimizer:
     optim_class: AdamW
     scheduler_class: CosineAnnealingLR
+    schedule_policy: warmup_hold_cosine
+    warmup_epochs: 1
+    warmup_start_factor: 0.5
+    lr_hold_epochs: 20
     lr: 1.0e-05
-    eta_min: 1.0e-10
+    eta_min: 1.0e-07
     weight_decay: 0.01
-    patience: 10
+    patience: 25
+  acceptance:
+    allow_batch_size_override: true
+    allow_epoch_override: true
+    allow_patience_override: true
+    note: synthetic pretrain retry for re-rebuild-viscnet; viscnet-rebuild run 8kfc4cta and sph_test_run synthetic/base-weight logs show 30-epoch cosine runs were still improving late, often during the low-LR tail, so this 50-epoch batch-8 schedule warms up for 1 epoch, holds lr at 1e-5 for 20 epochs, then preserves a substantial cosine refinement tail to 1e-7
 misc_dir:
   ckpt_root: outputs/rebuild_reproduction/checkpoints
   output_root: outputs/rebuild_reproduction/repro_synthetic_pretrain_sph35000

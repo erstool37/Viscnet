@@ -74,7 +74,7 @@ class VideoDatasetReal(Dataset):
             kinVisc = float(data["kinematic_viscosity"])
             rpm_index = int(data["rpm_idx"])
             hotvector = self._get_cluster(int(data["visc_index"]))
-            pattern_name = str(data["background"])
+            pattern_name = str(data.get("background", self._infer_background_from_path(para_path)))
 
         return (
             torch.tensor([density, surfT, kinVisc, rpm_index], dtype=torch.float32),
@@ -85,6 +85,19 @@ class VideoDatasetReal(Dataset):
     def _loadname(self, video_path):
         name = osp.splitext(osp.basename(video_path))
         return name[0]
+
+    def _infer_background_from_path(self, para_path):
+        stem = osp.splitext(osp.basename(para_path))[0]
+        render = stem.split("_render")[-1]
+        if render in set("ABCDEFGHIJ"):
+            return 1
+        if render in set("KLMNO"):
+            return 2
+        if render in set("PQRST"):
+            return 3
+        if render in set("UVWXY"):
+            return 4
+        return 1
 
     def _loadpattern(self, video_path, pattern_name):
         base_path = osp.dirname(osp.dirname(video_path))

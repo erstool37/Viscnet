@@ -1,0 +1,90 @@
+project: re-rebuild-viscnet
+entity: jongwonsohn-seoul-national-university
+name: dual_pattern_transfer_no_rpm_from_synth_no_rpm_ep70
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: true
+  gmm_bool: false
+  watch_bool: false
+  train_bool: true
+  test_bool: true
+  attn_bool: false
+  val_test_bool: true
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: dataset/RealArchive/dualpatterndataset_V2_450_train
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetRealZeroPattern
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  test:
+    test_root: dataset/RealArchive/dualpatterndataset_V2_450_test
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetRealZeroPattern
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+  embeddings:
+    rpm_bool: false
+    pat_bool: false
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: true
+  curr_ckpt: repro_synthetic_pretrain_sph35000_no_rpm_ep50.pth
+  checkpoint_name: dual_pattern_transfer_no_rpm_from_synth_no_rpm_ep70.pth
+  num_epochs: 70
+  loss: CE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    schedule_policy: warmup_hold_cosine
+    warmup_epochs: 2
+    warmup_start_factor: 0.25
+    lr_hold_epochs: 15
+    lr: 3.0e-05
+    eta_min: 3.0e-07
+    weight_decay: 0.01
+    patience: 18
+  acceptance:
+    dataset: dualpatterndataset_V2_450_train_to_test
+    train_videos: 224
+    test_videos: 225
+    note: Dual-pattern synthetic-transfer diagnostic under the no-RPM policy. Uses zero pattern tensors because the split has no backgrounds directory.
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/dual_pattern_transfer_no_rpm_from_synth_no_rpm_ep70
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm

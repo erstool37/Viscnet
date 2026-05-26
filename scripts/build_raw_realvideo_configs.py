@@ -8,6 +8,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+import cv2
+
 ROOT = Path(__file__).resolve().parents[1]
 
 DYNAMIC_VISCOSITY_CP = [
@@ -58,7 +60,12 @@ class SourceSpec:
 
 
 def numeric_movs(source_dir: Path) -> list[Path]:
-    paths = sorted(source_dir.glob("*.mov"), key=lambda path: int(path.stem))
+    paths = [
+        path
+        for path in source_dir.iterdir()
+        if path.is_file() and path.suffix.lower() == ".mov" and not path.name.startswith("._")
+    ]
+    paths = sorted(paths, key=lambda path: int(path.stem))
     return paths
 
 
@@ -66,6 +73,59 @@ def format_visc_cp(value: float) -> str:
     integer = int(value)
     fraction = value - integer
     return f"{integer:03d}.{int(round(fraction * 1e5)):05d}"
+
+
+def probe_video(path: Path) -> dict:
+    cap = cv2.VideoCapture(str(path))
+    if not cap.isOpened():
+        cap.release()
+        raise RuntimeError(f"Could not open raw video: {path}")
+    fps = float(cap.get(cv2.CAP_PROP_FPS) or 0.0)
+    frame_count = int(round(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0.0))
+    width = int(round(cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 0.0))
+    height = int(round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0.0))
+    cap.release()
+    duration = frame_count / fps if fps > 0.0 else 0.0
+    if frame_count <= 0 or width <= 0 or height <= 0:
+        raise RuntimeError(f"Raw video metadata is invalid for {path}")
+    return {
+        "source_fps": fps,
+        "source_frame_count": frame_count,
+        "source_duration_seconds": duration,
+        "source_width": width,
+        "source_height": height,
+    }
+
+
+def summarize_video_root(video_root: Path) -> dict:
+    paths = sorted(video_root.glob("*.mp4"))
+    facts = {
+        "video_root": str(video_root.relative_to(ROOT)),
+        "video_count": len(paths),
+        "fps_values": {},
+        "frame_count_values": {},
+        "width_values": {},
+        "height_values": {},
+    }
+    for path in paths:
+        cap = cv2.VideoCapture(str(path))
+        if not cap.isOpened():
+            cap.release()
+            continue
+        fps = round(float(cap.get(cv2.CAP_PROP_FPS) or 0.0), 3)
+        frame_count = int(round(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0.0))
+        width = int(round(cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 0.0))
+        height = int(round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0.0))
+        cap.release()
+        for key, value in [
+            ("fps_values", fps),
+            ("frame_count_values", frame_count),
+            ("width_values", width),
+            ("height_values", height),
+        ]:
+            value_key = str(value)
+            facts[key][value_key] = facts[key].get(value_key, 0) + 1
+    return facts
 
 
 def metadata_for(spec: SourceSpec, group_index: int, source_file: Path) -> tuple[str, dict]:
@@ -89,6 +149,7 @@ def metadata_for(spec: SourceSpec, group_index: int, source_file: Path) -> tuple
         "height": 224,
         "width": 224,
         "fps": 10,
+        "derived_fps": 10,
         "dynamic_viscosity": viscosity_pa_s,
         "dynamic_viscosity_cP": viscosity_cp,
         "dynamic_viscosity_Pa_s": viscosity_pa_s,
@@ -108,6 +169,7 @@ def metadata_for(spec: SourceSpec, group_index: int, source_file: Path) -> tuple
         "source_file": source_file.name,
         "source_path": str(source_file.relative_to(ROOT)),
         "source_capture_index": int(source_file.stem),
+        **probe_video(source_file),
         "group_index": group_index,
         "combined_index": spec.combined_offset + group_index,
         "target_video_stem": target_stem,
@@ -124,18 +186,18 @@ def write_json(path: Path, payload: dict | list) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n")
 
 
-def build_configs(overwrite: bool) -> dict:
+def build_configs(overwrite: bool, audit_only: bool = False) -> dict:
     specs = [
         SourceSpec(
             name="impeller_1000_originals",
-            source_dir=ROOT / "rawdataset/rawvideos/impeller_1000_originals",
+            source_dir=ROOT / "rawdataset/realworld/rawvideos/impeller_1000_originals",
             render_tags=[chr(ord("A") + idx) for idx in range(10)],
             expected_count=1000,
             combined_offset=0,
         ),
         SourceSpec(
             name="raw_real_20rpmincrement_1500",
-            source_dir=ROOT / "rawdataset/rawvideos/raw_real_20rpmincrement_1500",
+            source_dir=ROOT / "rawdataset/realworld/rawvideos/raw_real_20rpmincrement_1500",
             render_tags=[chr(ord("K") + idx) for idx in range(15)],
             expected_count=1500,
             combined_offset=1000,
@@ -161,10 +223,11 @@ def build_configs(overwrite: bool) -> dict:
             target_stem, metadata = metadata_for(spec, group_index, source_file)
             group_path = group_dir / f"{target_stem}.json"
             final_path = consolidated_dir / f"{target_stem}.json"
-            if not overwrite and (group_path.exists() or final_path.exists()):
+            if not audit_only and not overwrite and (group_path.exists() or final_path.exists()):
                 raise FileExistsError(f"Refusing to overwrite existing config: {group_path} or {final_path}")
-            write_json(group_path, metadata)
-            write_json(final_path, metadata)
+            if not audit_only:
+                write_json(group_path, metadata)
+                write_json(final_path, metadata)
             manifest_records.append(metadata)
             group_written += 1
 
@@ -180,7 +243,8 @@ def build_configs(overwrite: bool) -> dict:
         )
         report["written_total"] += group_written
 
-    write_json(final_root / "raw_config_manifest.json", manifest_records)
+    if not audit_only:
+        write_json(final_root / "raw_config_manifest.json", manifest_records)
 
     existing_videos = {path.stem for path in (final_root / "videos").glob("*.mp4")}
     all_rebuilt_configs = {record["target_video_stem"] for record in manifest_records}
@@ -190,6 +254,7 @@ def build_configs(overwrite: bool) -> dict:
     report.update(
         {
             "manifest_path": str((final_root / "raw_config_manifest.json").relative_to(ROOT)),
+            "audit_only": audit_only,
             "excluded_config_count": len(excluded_records),
             "excluded_raw_sources": [
                 {
@@ -209,17 +274,24 @@ def build_configs(overwrite: bool) -> dict:
             "missing_existing_parameters_for_active_rebuilt_configs": sorted(usable_rebuilt_configs - existing_parameters),
             "existing_videos_not_in_rebuilt_configs": sorted(existing_videos - all_rebuilt_configs),
             "existing_parameters_not_in_rebuilt_configs": sorted(existing_parameters - all_rebuilt_configs),
+            "existing_generated_dataset_facts": {
+                "real_20rpm_increment_2500": summarize_video_root(final_root / "videos"),
+                "train_993_wo_pat2": summarize_video_root(ROOT / "dataset/RealArchive/train_993_wo_pat2/videos"),
+                "test_1000_wo_pat2": summarize_video_root(ROOT / "dataset/RealArchive/test_1000_wo_pat2/videos"),
+            },
         }
     )
-    write_json(final_root / "raw_config_build_report.json", report)
+    if not audit_only:
+        write_json(final_root / "raw_config_build_report.json", report)
     return report
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--audit-only", action="store_true")
     args = parser.parse_args()
-    report = build_configs(overwrite=args.overwrite)
+    report = build_configs(overwrite=args.overwrite, audit_only=args.audit_only)
     print(json.dumps(report, indent=2))
 
 

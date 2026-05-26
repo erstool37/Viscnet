@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 from collections import defaultdict
@@ -16,6 +17,7 @@ CHECKER_TABLE = OUTPUT_ROOT / "metrics_table.json"
 CHECKER_REPORT = OUTPUT_ROOT / "checker_report.md"
 ANALYZER_REPORT = OUTPUT_ROOT / "analyzer_report.md"
 REFERENCE_PATH = ROOT / "configs" / "rebuild" / "reference_metrics.json"
+CHECKLIST_PATH = ROOT / "checklist.md"
 WANDB_ENTITY = "jongwonsohn-seoul-national-university"
 
 
@@ -40,6 +42,13 @@ def read_json(path: Path) -> dict | list:
     if not path.exists():
         return {}
     return json.loads(path.read_text())
+
+
+def checklist_provenance() -> str:
+    if not CHECKLIST_PATH.exists():
+        return "`checklist.md` missing"
+    data = CHECKLIST_PATH.read_bytes()
+    return f"`{CHECKLIST_PATH.relative_to(ROOT)}` sha256={hashlib.sha256(data).hexdigest()}"
 
 
 def run_output_root(row: dict) -> Path:
@@ -296,16 +305,38 @@ def hypothesis_lines(rows: list[dict]) -> list[str]:
 
 
 def structured_hypothesis_lines(rows: list[dict]) -> list[str]:
-    real993 = next((row for row in rows if Path(row["config"]).stem == "realonly_993"), {})
-    transfer993 = next((row for row in rows if Path(row["config"]).stem == "transfer_993"), {})
-    transfer993_lrhold_rows = [
-        row
-        for row in rows
-        if "transfer_993_microbatch_lrhold" in Path(row["config"]).stem
-        or str(row.get("run_name", "")).startswith("repro_transfer_993_microbatch_lrhold")
-    ]
-    transfer993_lrhold = max(
-        transfer993_lrhold_rows,
+    def is_993_gate(row: dict, prefix: str) -> bool:
+        text = f"{Path(row.get('config', '')).stem} {row.get('run_name', '')}"
+        return prefix in text and "window30x21" not in text
+
+    def select_gate(prefix: str) -> dict:
+        candidates = [row for row in rows if is_993_gate(row, prefix)]
+        return max(
+            candidates,
+            key=lambda row: (
+                row.get("observed_accuracy") is not None,
+                row.get("observed_accuracy") or -1.0,
+                row.get("checkpoint_exists") is True,
+                str(row.get("run_name", "")),
+            ),
+            default={},
+        )
+
+    def policy_label(row: dict) -> str:
+        text = f"{Path(row.get('config', '')).stem} {row.get('run_name', '')} {' '.join(row.get('notes', []))}".lower()
+        if "optimizer_microbatch_size" in text or "microbatch" in text:
+            return "microbatch-update"
+        if "batch8_normal" in text or "normal" in text:
+            return "normal batch-8"
+        if "window30x21" in text:
+            return "window30x21"
+        return "selected"
+
+    real993 = select_gate("realonly_993")
+    transfer993 = select_gate("transfer_993")
+    transfer993_retry_rows = [row for row in rows if is_993_gate(row, "transfer_993")]
+    transfer993_retry = max(
+        transfer993_retry_rows,
         key=lambda row: (
             row.get("observed_accuracy") is not None,
             row.get("observed_accuracy") or -1.0,
@@ -328,50 +359,51 @@ def structured_hypothesis_lines(rows: list[dict]) -> list[str]:
         best = min(real993_losses, key=lambda item: item["val_loss"])
         real993_status = real993.get("status")
         real993_accuracy = real993.get("observed_accuracy")
+        real993_policy = policy_label(real993)
         if real993_status == "pass":
             inference = (
-                "- Inference or hypothesis: the microbatch `realonly_993` gate succeeded; "
-                "the earlier failed plain 30-epoch real-only family is consistent with insufficient optimizer-update density after the batch-size change."
+                f"- Inference or hypothesis: the {real993_policy} `realonly_993` gate succeeded; "
+                "the earlier failed 30-epoch real-only family is consistent with an optimization schedule or horizon mismatch."
             )
             prediction = (
-                "- Prediction: rerunning the remaining real-only sample counts with the accepted optimizer-microbatch policy "
+                f"- Prediction: rerunning comparable gates with the accepted {real993_policy} policy "
                 "should materially improve their validation losses and confusion structure relative to the failed 30-epoch baselines."
             )
             falsifier = (
-                "- Falsifying artifact or run: repeated real-only sample-count retries using the accepted policy still miss targets "
+                "- Falsifying artifact or run: repeated same-policy sample-count retries still miss targets "
                 "with the same low-accuracy confusion pattern seen in the failed baselines."
             )
-            allowed = "- Allowed next action: train and verify `transfer_993` with the same microbatch policy, then compare the 993 real-only and transfer results before launching data-efficiency curves."
+            allowed = f"- Allowed next action: train and verify `transfer_993` with the same {real993_policy} policy, then compare the 993 real-only and transfer results before launching data-efficiency curves."
             blocked = "- Blocked next action: treating enhancement variants as valid reproduction or changing pass/fail targets after seeing this result."
         elif real993_status == "pending":
-            inference = "- Inference or hypothesis: this run is still in-progress, so current loss movement is only a mid-run diagnostic for the optimizer-microbatch route."
-            prediction = "- Prediction: if the update-density hypothesis is right, the completed microbatch `realonly_993` run should produce usable confusion/reliability artifacts and accuracy materially closer to the 0.723 reference than the failed plain 30-epoch baseline."
-            falsifier = "- Falsifying artifact or run: completed microbatch `realonly_993` checker row with valid artifacts and accuracy still far below target, especially if validation loss has plateaued before the schedule end."
-            allowed = "- Allowed next action: keep the existing tmux run alive and rerun checker plus analyzer after completion or a meaningful milestone."
-            blocked = "- Blocked next action: launching the full data-efficiency curve or redefining the pass/fail standard before the 993 microbatch gate is verified."
+            inference = f"- Inference or hypothesis: this run is not yet verifier-complete, so current loss movement is only a diagnostic for the {real993_policy} route."
+            prediction = f"- Prediction: if the {real993_policy} schedule is appropriate, the completed `realonly_993` run should produce usable confusion/reliability artifacts and accuracy materially closer to the reference than the failed 30-epoch baseline."
+            falsifier = f"- Falsifying artifact or run: completed {real993_policy} `realonly_993` checker row with valid artifacts and accuracy still far below target, especially if validation loss has plateaued before the schedule end."
+            allowed = "- Allowed next action: wait for the detached completion marker, then rerun checker plus analyzer once."
+            blocked = "- Blocked next action: polling active training, launching the full data-efficiency curve, or redefining the pass/fail standard before the 993 gate is verified."
         else:
             miss = None
             if real993_accuracy is not None and real993.get("target_accuracy") is not None:
                 miss = real993.get("target_accuracy") - real993_accuracy
             if miss is not None and miss <= 0.01:
                 inference = (
-                    "- Inference or hypothesis: the microbatch real-only gate is a near miss rather than a broad reproduction collapse; "
-                    "the final-epoch best validation loss suggests the 30-epoch microbatch horizon may still be slightly short for real-only training."
+                    f"- Inference or hypothesis: the {real993_policy} real-only gate is a near miss rather than a broad reproduction collapse; "
+                    "the final-epoch best validation loss suggests the schedule or horizon may still be slightly short for real-only training."
                 )
                 prediction = "- Prediction: a conservative same-method retry with a predeclared small horizon or scheduler adjustment should close the sub-1 percentage-point gap if optimization horizon is the limiting factor."
                 falsifier = "- Falsifying artifact or run: repeated same-method 993 real-only retries remain below target with the same class 1/2/3 confusion pattern despite comparable or better validation loss."
                 allowed = "- Allowed next action: compare against the completed 993 transfer run, inspect class confusions and provenance, then decide whether a bounded real-only gate retry is justified before full curves."
             else:
-                inference = "- Inference or hypothesis: the microbatch gate did not validate the reproduction path; the failure should be treated as evidence for a data, preprocessing, split, checkpoint, or model-wiring mismatch before transfer runs."
+                inference = f"- Inference or hypothesis: the {real993_policy} gate did not validate the reproduction path; the failure should be treated as evidence for a data, preprocessing, split, checkpoint, or model-wiring mismatch before transfer runs."
                 prediction = "- Prediction: artifact inspection should reveal persistent class-confusion structure or provenance mismatch explaining why longer training did not reach the reference target."
                 falsifier = "- Falsifying artifact or run: a corrected provenance or wiring check followed by a rerun reaches the target without enhancement variants."
                 allowed = "- Allowed next action: inspect confusion/reliability outputs, W&B config, dataset manifests, label mapping, and checkpoint provenance before launching another family."
             blocked = "- Blocked next action: launching the full data-efficiency curve or changing the reproduction standard while the real-only gate is failed."
         lines.extend(
             [
-                "### Microbatch 993 real-only gate",
+                "### 993 real-only gate",
                 "",
-                f"- Evidence observed: `realonly_993` is `{real993_status}` at epoch {last['epoch']}/{last['total_epochs']}; observed accuracy is {real993_accuracy}; best validation loss is {best['val_loss']:.4f} at epoch {best['epoch']}; target accuracy is {real993.get('target_accuracy')}.",
+                f"- Evidence observed: `{real993.get('run_name')}` is `{real993_status}` at epoch {last['epoch']}/{last['total_epochs']}; observed accuracy is {real993_accuracy}; best validation loss is {best['val_loss']:.4f} at epoch {best['epoch']}; target accuracy is {real993.get('target_accuracy')}.",
                 inference,
                 prediction,
                 falsifier,
@@ -381,15 +413,16 @@ def structured_hypothesis_lines(rows: list[dict]) -> list[str]:
             ]
         )
     elif real993:
+        real993_policy = policy_label(real993)
         lines.extend(
             [
-                "### Microbatch 993 real-only gate",
+                "### 993 real-only gate",
                 "",
-                f"- Evidence observed: `realonly_993` checker status is `{real993.get('status')}`; observed accuracy is {real993.get('observed_accuracy')}; target accuracy is {real993.get('target_accuracy')}.",
-                "- Inference or hypothesis: the optimizer-microbatch gate has not yet produced complete local loss and artifact evidence.",
-                "- Prediction: if update density explains the earlier failures, the microbatch gate should improve accuracy and confusion structure without requiring a 300-epoch route.",
-                "- Falsifying artifact or run: completed microbatch `realonly_993` artifacts still miss the target with persistent collapse despite valid methodology.",
-                "- Allowed next action: run or preserve the `realonly_993` microbatch gate and rerun checker plus analyzer after completion.",
+                f"- Evidence observed: `{real993.get('run_name')}` checker status is `{real993.get('status')}`; observed accuracy is {real993.get('observed_accuracy')}; target accuracy is {real993.get('target_accuracy')}.",
+                f"- Inference or hypothesis: the {real993_policy} gate has not yet produced complete local loss and artifact evidence.",
+                f"- Prediction: if the {real993_policy} route fixes the earlier failures, the gate should improve accuracy and confusion structure without requiring a 300-epoch route.",
+                f"- Falsifying artifact or run: completed {real993_policy} `realonly_993` artifacts still miss the target with persistent collapse despite valid methodology.",
+                "- Allowed next action: wait for the completion marker and rerun checker plus analyzer once.",
                 "- Blocked next action: launching full data-efficiency curves before the 993 real-only and transfer comparison exists.",
                 "",
             ]
@@ -401,10 +434,10 @@ def structured_hypothesis_lines(rows: list[dict]) -> list[str]:
             [
                 "### Below-target real-only gate",
                 "",
-                f"- Evidence observed: {len(failed_realonly)} completed real-only microbatch run is below target; best below-target run is `{best_failed['run_name']}` with accuracy {best_failed.get('observed_accuracy')} against target {best_failed.get('target_accuracy')}.",
+                f"- Evidence observed: {len(failed_realonly)} completed real-only run is below target; best below-target run is `{best_failed['run_name']}` with accuracy {best_failed.get('observed_accuracy')} against target {best_failed.get('target_accuracy')}.",
                 "- Inference or hypothesis: the current gate remains below the checker threshold even though it is much closer to the reference than the failed plain 30-epoch family.",
-                "- Prediction: an optimizer-microbatch retry should improve validation loss and confusion structure before the same sample-count curve is relaunched.",
-                "- Falsifying artifact or run: completed microbatch `realonly_993` and `transfer_993` gates with no accuracy or confusion-matrix improvement over the failed baseline.",
+                "- Prediction: a predeclared same-policy retry should improve validation loss and confusion structure before the same sample-count curve is relaunched.",
+                "- Falsifying artifact or run: completed `realonly_993` and `transfer_993` gates with no accuracy or confusion-matrix improvement over the failed baseline.",
                 "- Allowed next action: compare the completed 993 real-only and transfer confusion matrices against the paper/reference behavior before scheduling the full data-efficiency curve.",
                 "- Blocked next action: treating the failed 30-epoch metrics as valid reproduction or using them to justify transfer-family conclusions.",
                 "",
@@ -416,7 +449,7 @@ def structured_hypothesis_lines(rows: list[dict]) -> list[str]:
         transfer993_gate = transfer993.get("status")
         if real993_gate == "pass" and transfer993_gate == "pass":
             transfer_evidence = "- Evidence observed: both 993 gates are verified as `pass`; remaining transfer/data-efficiency configs are still pending."
-            transfer_allowed = "- Allowed next action: compare 993 real-only versus 993 transfer gain, then launch the full microbatch data-efficiency curve if the comparison supports it."
+            transfer_allowed = "- Allowed next action: compare 993 real-only versus 993 transfer gain, then launch the full data-efficiency curve if the comparison supports it."
             transfer_blocked = "- Blocked next action: treating unrun transfer/data-efficiency outputs as accepted before their checker rows pass."
         elif transfer993_gate == "pass" and real993_gate == "fail":
             transfer_evidence = "- Evidence observed: the 993 pair has completed with `transfer_993` passing and `realonly_993` failing just below target."
@@ -424,11 +457,11 @@ def structured_hypothesis_lines(rows: list[dict]) -> list[str]:
             transfer_blocked = "- Blocked next action: launching the full transfer/data-efficiency curve solely because transfer passed while the real-only gate remains failed."
         elif real993_gate == "pass":
             transfer_evidence = f"- Evidence observed: `realonly_993` is verified as `pass`, `transfer_993` is `{transfer993_gate}`, and {len(pending_transfer)} transfer configs are pending."
-            transfer_allowed = "- Allowed next action: run `transfer_993` with the same optimizer-microbatch policy, then compare against the 993 real-only result."
+            transfer_allowed = f"- Allowed next action: run `transfer_993` with the same {policy_label(real993)} policy, then compare against the 993 real-only result."
             transfer_blocked = "- Blocked next action: launching the full transfer/data-efficiency curve before the 993 transfer comparison exists."
         else:
-            transfer_evidence = f"- Evidence observed: {len(pending_transfer)} transfer configs are still pending, and the active 993 microbatch pair has not produced a verified comparison yet."
-            transfer_allowed = "- Allowed next action: run or preserve the 993 microbatch gate pair in order, `realonly_993` then `transfer_993`, and compare their artifacts after checker/analyzer complete."
+            transfer_evidence = f"- Evidence observed: {len(pending_transfer)} transfer configs are still pending, and the active 993 pair has not produced a verified comparison yet."
+            transfer_allowed = "- Allowed next action: run or preserve the 993 gate pair in order, `realonly_993` then `transfer_993`, and compare their artifacts after checker/analyzer complete."
             transfer_blocked = "- Blocked next action: launching duplicate jobs or the full transfer/data-efficiency curve before the 993 pair comparison exists."
         lines.extend(
             [
@@ -444,10 +477,11 @@ def structured_hypothesis_lines(rows: list[dict]) -> list[str]:
             ]
         )
 
-    if transfer993_lrhold:
-        lrhold_losses = parse_losses(ROOT / transfer993_lrhold["log_path"])
-        target = transfer993_lrhold.get("target_accuracy")
-        observed = transfer993_lrhold.get("observed_accuracy")
+    if transfer993_retry:
+        lrhold_losses = parse_losses(ROOT / transfer993_retry["log_path"])
+        target = transfer993_retry.get("target_accuracy")
+        observed = transfer993_retry.get("observed_accuracy")
+        transfer_policy = policy_label(transfer993_retry)
         if lrhold_losses:
             best = min(lrhold_losses, key=lambda item: item["val_loss"])
             last = lrhold_losses[-1]
@@ -457,24 +491,24 @@ def structured_hypothesis_lines(rows: list[dict]) -> list[str]:
             )
         else:
             loss_evidence = "loss history is missing or pending"
-        if transfer993_lrhold.get("status") == "pass":
+        if transfer993_retry.get("status") == "pass":
             inference = (
-                "- Inference or hypothesis: holding the LR before late cosine decay improved the synthetic-pretrained microbatch transfer route enough "
+                f"- Inference or hypothesis: the {transfer_policy} transfer route improved enough "
                 "to beat the 300-epoch real-only diagnostic threshold."
             )
             allowed = "- Allowed next action: treat this transfer retry as accepted for the user-requested threshold, while keeping any separate real-only gate decision explicit."
             blocked = "- Blocked next action: treating the accuracy gain as calibrated confidence or as proof that every data-efficiency sample count will pass."
         else:
-            inference = "- Inference or hypothesis: the LR-hold retry has not yet beaten the 300-epoch real-only diagnostic threshold."
+            inference = f"- Inference or hypothesis: the {transfer_policy} transfer retry has not yet beaten the 300-epoch real-only diagnostic threshold."
             allowed = "- Allowed next action: inspect loss curve, class confusions, and W&B config before deciding another retry."
             blocked = "- Blocked next action: counting this retry as accepted before it exceeds the explicit threshold."
         lines.extend(
             [
-                "### Transfer 993 LR-hold retry",
+                "### Transfer 993 gate",
                 "",
-                f"- Evidence observed: `{transfer993_lrhold.get('run_name')}` is `{transfer993_lrhold.get('status')}` with accuracy {observed} against target {target}; {loss_evidence}.",
+                f"- Evidence observed: `{transfer993_retry.get('run_name')}` is `{transfer993_retry.get('status')}` with accuracy {observed} against target {target}; {loss_evidence}.",
                 inference,
-                "- Prediction: if the improvement is from useful-LR dwell time, the class 1/2 confusion should improve relative to the 30-epoch microbatch transfer run.",
+                "- Prediction: if the improvement is from useful-LR dwell time, the class 1/2 confusion should improve relative to the failed 30-epoch transfer run.",
                 "- Falsifying artifact or run: a repeated LR-hold transfer run fails to improve the same class confusions or only improves by test-set checkpoint selection noise.",
                 allowed,
                 blocked,
@@ -526,6 +560,7 @@ def main() -> None:
         "",
         f"- Checker table present: `{CHECKER_TABLE.relative_to(ROOT)}` = {CHECKER_TABLE.exists()}",
         f"- Checker report present: `{CHECKER_REPORT.relative_to(ROOT)}` = {CHECKER_REPORT.exists()}",
+        f"- Checklist provenance: {checklist_provenance()}",
         "- Treat every hypothesis below as invalid for final decisions until the verifier marks the relevant run as `pass`, `fail`, or `blocked` with evidence.",
         "",
         "## Data Efficiency View",

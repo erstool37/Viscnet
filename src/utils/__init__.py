@@ -10,6 +10,7 @@ from .analysis_attn import save_attention, viz_attention
 from .analysis_gmm import calibrate_gmm, viz_gmm
 from .ddp import ddp_cleanup, ddp_setup, gather_lists
 from .setseed import set_seed
+from .tensor_shapes import as_batch_vector
 from .utils import (
     MAPEcalculator,
     MAPEGMMcalculator,
@@ -39,6 +40,7 @@ __all__ = [
     "MAPEtestcalculator",
     "RandomCrop",
     "RandomHorizontalFlip",
+    "as_batch_vector",
     "calibrate_gmm",
     "confusion_matrix",
     "csv_export",

@@ -6,7 +6,18 @@ from models.vivit.modeling_vivit import VivitModel
 
 
 class VivitEmbed(nn.Module):
-    def __init__(self, dropout, output_size, class_bool, visc_class, gmm_num, rpm_bool, pat_bool, num_frames=50):
+    def __init__(
+        self,
+        dropout,
+        output_size,
+        class_bool,
+        visc_class,
+        gmm_num,
+        rpm_bool,
+        pat_bool,
+        num_frames=50,
+        image_size=224,
+    ):
         super(VivitEmbed, self).__init__()
 
         ##### for pretrained model
@@ -19,7 +30,7 @@ class VivitEmbed(nn.Module):
             num_attention_heads=8,
             intermediate_size=1024,  # 1024
             tubelet_size=(2, 16, 16),
-            image_size=224,
+            image_size=int(image_size),
             num_frames=int(num_frames),
             num_channels=3,
             use_mean_pooling=False,

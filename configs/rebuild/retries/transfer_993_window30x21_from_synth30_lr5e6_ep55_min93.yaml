@@ -1,0 +1,110 @@
+project: re-rebuild-viscnet
+entity: jongwonsohn-seoul-national-university
+name: repro_transfer_993_window30x21_from_synth30_lr5e6_ep55_min93
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: true
+  gmm_bool: false
+  watch_bool: false
+  train_bool: true
+  test_bool: false
+  attn_bool: false
+  val_test_bool: true
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: outputs/rebuild_reproduction/derived_datasets/real_train_993_windows30_stride1
+    use_all_samples: true
+    frame_num: 6
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+    manifest: outputs/rebuild_reproduction/derived_datasets/real_train_993_windows30_stride1/manifest.json
+  test:
+    test_root: dataset/RealArchive/test_1000_wo_pat2
+    frame_num: 6
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+    num_frames: 30
+  embeddings:
+    rpm_bool: true
+    pat_bool: false
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: true
+  curr_ckpt: repro_synthetic_pretrain_window30_batch8_ep50.pth
+  checkpoint_name: repro_transfer_993_window30x21_from_synth30_lr5e6_ep55_min93.pth
+  num_epochs: 55
+  loss: CE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    schedule_policy: warmup_hold_cosine
+    warmup_epochs: 1
+    warmup_start_factor: 0.5
+    lr_hold_epochs: 12
+    lr: 5.0e-06
+    eta_min: 5.0e-08
+    weight_decay: 0.01
+    patience: 14
+  acceptance:
+    min_accuracy: 0.93
+    baseline_accuracy: 0.966
+    baseline_run: repro_realonly_993_window30x21_ep50_window21
+    allow_batch_size_override: true
+    allow_epoch_override: true
+    allow_patience_override: true
+    allow_frame_count_override: true
+    allow_derived_window_dataset: true
+    note: lower-lr transfer-learning version of the window30x21 path, used if lr1e-5 transfers too aggressively from synthetic to real windows.
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/repro_transfer_993_window30x21_from_synth30_lr5e6_ep55_min93
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm
+inference:
+  temporal_window:
+    enabled: true
+    average_logits: true
+    checkpoint: outputs/rebuild_reproduction/checkpoints/repro_transfer_993_window30x21_from_synth30_lr5e6_ep55_min93.pth
+    test_root: dataset/RealArchive/test_1000_wo_pat2
+    baseline_metrics: outputs/rebuild_reproduction/repro_realonly_993_window30x21_ep50/window21_test_inference/window21_test_inference_metrics.json
+    full_frames: 50
+    window_size: 30
+    num_windows: 21
+    window_batch_size: 16
+    output_dir: outputs/rebuild_reproduction/repro_transfer_993_window30x21_from_synth30_lr5e6_ep55_min93/window21_test_inference

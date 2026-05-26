@@ -1,0 +1,95 @@
+project: re-rebuild-viscnet
+entity: jongwonsohn-seoul-national-university
+name: repro_transfer_993_batch8_normal_lr3e5_ep70
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: true
+  gmm_bool: false
+  watch_bool: false
+  train_bool: true
+  test_bool: false
+  attn_bool: false
+  val_test_bool: true
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: dataset/RealArchive/train_993_wo_pat2
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+    manifest: configs/rebuild/manifests/real_train_993.json
+  test:
+    test_root: dataset/RealArchive/test_1000_wo_pat2
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+  embeddings:
+    rpm_bool: true
+    pat_bool: false
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: true
+  curr_ckpt: repro_synthetic_pretrain_sph35000.pth
+  checkpoint_name: repro_transfer_993_batch8_normal_lr3e5_ep70.pth
+  num_epochs: 70
+  loss: CE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    schedule_policy: warmup_hold_cosine
+    warmup_epochs: 2
+    warmup_start_factor: 0.25
+    lr_hold_epochs: 15
+    lr: 3.0e-05
+    eta_min: 3.0e-07
+    weight_decay: 0.01
+    patience: 18
+  acceptance:
+    min_accuracy: 0.9001
+    baseline_accuracy: 0.888
+    baseline_run: repro_realonly_993_microbatch_lrhold
+    allow_lr_override: true
+    allow_epoch_override: true
+    allow_patience_override: true
+    allow_batch_size_override: true
+    note: normal batch-8 transfer recovery run. Microbatch optimizer updates are disabled; lr is raised by about sqrt(8) from the 1e-5 microbatch schedule, with short warmup, mid-run hold, and a cosine tail for a faster normal-step regime.
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/repro_transfer_993_batch8_normal_lr3e5_ep70
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm

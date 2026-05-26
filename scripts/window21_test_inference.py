@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -47,14 +48,37 @@ def cleanup_distributed(world_size: int) -> None:
         dist.destroy_process_group()
 
 
-def gather_records(local_records: list[dict], world_size: int) -> list[dict]:
+def gather_records(
+    local_records: list[dict],
+    world_size: int,
+    output_dir: Path,
+    run_name: str,
+    rank: int,
+    device: torch.device,
+) -> list[dict]:
     if world_size == 1:
         return local_records
-    bucket = [None] * world_size
-    dist.all_gather_object(bucket, local_records)
+    record_root = output_dir / "_distributed_records" / run_name
+    if rank == 0:
+        shutil.rmtree(record_root, ignore_errors=True)
+        record_root.mkdir(parents=True, exist_ok=True)
+    if device.type == "cuda":
+        dist.barrier(device_ids=[device.index])
+    else:
+        dist.barrier()
+
+    (record_root / f"rank{rank}.json").write_text(json.dumps(local_records) + "\n")
+
+    if device.type == "cuda":
+        dist.barrier(device_ids=[device.index])
+    else:
+        dist.barrier()
+    if rank != 0:
+        return []
+
     records: list[dict] = []
-    for part in bucket:
-        records.extend(part)
+    for gathered_rank in range(world_size):
+        records.extend(json.loads((record_root / f"rank{gathered_rank}.json").read_text()))
     return records
 
 
@@ -171,6 +195,34 @@ def write_report(
     (output_dir / f"{run_name}_report.md").write_text("\n".join(lines) + "\n")
 
 
+def write_report_without_baseline(
+    output_dir: Path,
+    metrics: dict,
+    run_name: str,
+    config_path: Path,
+    checkpoint: Path,
+    baseline_path: Path,
+) -> None:
+    accuracy = float(metrics["accuracy"])
+    cm_counts = metrics["confusion_matrix_counts"]
+    lines = [
+        "# 21-Window Test-Time Inference",
+        "",
+        f"- Config: `{config_path.relative_to(ROOT)}`",
+        f"- Checkpoint: `{checkpoint.relative_to(ROOT)}`",
+        f"- Evaluated samples: `{sum(metrics['support'])}`",
+        f"- Confusion-matrix total: `{sum(sum(row) for row in cm_counts)}`",
+        f"- 21-window averaged-logit accuracy: `{accuracy:.4f}`",
+        f"- Baseline metrics: missing at `{baseline_path.relative_to(ROOT)}`",
+        "",
+        "## Top Confusions",
+        "",
+    ]
+    for item in top_confusions(cm_counts, limit=12):
+        lines.append(f"- `{item['true']} -> {item['pred']}`: {item['count']}")
+    (output_dir / f"{run_name}_report.md").write_text("\n".join(lines) + "\n")
+
+
 def apply_config_defaults(config: dict, args: argparse.Namespace) -> argparse.Namespace:
     window_cfg = config.get("inference", {}).get("temporal_window", {})
     if window_cfg and not bool(window_cfg.get("enabled", False)):
@@ -257,25 +309,43 @@ def run(args: argparse.Namespace) -> None:
                 pattern_batch = pattern[: batch.shape[0]]
                 outputs = model(batch, rpm, pattern_batch)
                 video_logits.append(outputs.detach().cpu())
-            mean_logits = torch.cat(video_logits, dim=0).mean(dim=0)
-            pred = int(mean_logits.argmax().item())
-            local_records.append(
-                {
-                    "index": global_idx,
-                    "name": video_path.stem,
-                    "target": int(label),
-                    "prediction": pred,
-                    "logits": [float(value) for value in mean_logits.tolist()],
-                }
-            )
+            logits_by_window = torch.cat(video_logits, dim=0)
+            if args.prediction_mode == "clip":
+                for window_idx, logits_row in enumerate(logits_by_window):
+                    pred = int(logits_row.argmax().item())
+                    local_records.append(
+                        {
+                            "index": global_idx * args.num_windows + window_idx,
+                            "source_index": global_idx,
+                            "window_index": window_idx,
+                            "window_start": window_idx,
+                            "name": video_path.stem,
+                            "clip_name": f"{video_path.stem}_window{window_idx:02d}",
+                            "target": int(label),
+                            "prediction": pred,
+                            "logits": [float(value) for value in logits_row.tolist()],
+                        }
+                    )
+            else:
+                mean_logits = logits_by_window.mean(dim=0)
+                pred = int(mean_logits.argmax().item())
+                local_records.append(
+                    {
+                        "index": global_idx,
+                        "name": video_path.stem,
+                        "target": int(label),
+                        "prediction": pred,
+                        "logits": [float(value) for value in mean_logits.tolist()],
+                    }
+                )
 
-    records = sorted(gather_records(local_records, world_size), key=lambda item: item["index"])
+    run_name = "window21_clip_test_inference" if args.prediction_mode == "clip" else "window21_test_inference"
+    records = sorted(gather_records(local_records, world_size, output_dir, run_name, rank, device), key=lambda item: item["index"])
     if rank != 0:
         cleanup_distributed(world_size)
         return
     logits = torch.tensor([record["logits"] for record in records], dtype=torch.float32)
     labels_all = [int(record["target"]) for record in records]
-    run_name = "window21_test_inference"
     confusion_matrix(run_name, logits.numpy(), labels_all, save_dir=str(output_dir))
 
     metrics_path = output_dir / f"{run_name}_metrics.json"
@@ -288,7 +358,8 @@ def run(args: argparse.Namespace) -> None:
             "window_size": args.window_size,
             "full_frames_read": args.full_frames,
             "window_batch_size": args.window_batch_size,
-            "averaging": "logits",
+            "prediction_mode": args.prediction_mode,
+            "averaging": "none" if args.prediction_mode == "clip" else "logits",
             "checkpoint": args.checkpoint,
             "config": args.config,
             "test_root": args.test_root,
@@ -303,6 +374,10 @@ def run(args: argparse.Namespace) -> None:
             [
                 {
                     "name": record["name"],
+                    "clip_name": record.get("clip_name"),
+                    "source_index": record.get("source_index"),
+                    "window_index": record.get("window_index"),
+                    "window_start": record.get("window_start"),
                     "target": int(record["target"]),
                     "prediction": int(record["prediction"]),
                     "logits": [float(v) for v in logit],
@@ -316,10 +391,13 @@ def run(args: argparse.Namespace) -> None:
     )
 
     baseline_path = ROOT / args.baseline_metrics
-    baseline_metrics = json.loads(baseline_path.read_text())
-    write_report(output_dir, metrics, baseline_metrics, run_name, config_path, checkpoint)
+    if baseline_path.exists():
+        baseline_metrics = json.loads(baseline_path.read_text())
+        write_report(output_dir, metrics, baseline_metrics, run_name, config_path, checkpoint)
+    else:
+        write_report_without_baseline(output_dir, metrics, run_name, config_path, checkpoint, baseline_path)
     print(
-        f"window21 accuracy={metrics['accuracy']:.4f}; "
+        f"window21 {args.prediction_mode} accuracy={metrics['accuracy']:.4f}; "
         f"samples={metrics['evaluated_sample_count']}; "
         f"cm_total={metrics['confusion_matrix_total']}"
     )
@@ -338,6 +416,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-windows", type=int, default=None)
     parser.add_argument("--window-batch-size", type=int, default=None)
     parser.add_argument("--max-videos", type=int, default=None)
+    parser.add_argument("--prediction-mode", choices=["average", "clip"], default="average")
     parser.add_argument("--device", default="")
     return parser.parse_args()
 

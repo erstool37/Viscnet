@@ -126,12 +126,10 @@ class VivitEmbeddings(nn.Module):
         cls_tokens = self.cls_token.tile([batch_size, 1, 1])
         embeddings = torch.cat((cls_tokens, embeddings), dim=1)
 
-        # generate RPM tokens
-        rpm_idx = rpm_idx.view(batch_size)
-        rpm_tok = self.rpm_embed(rpm_idx).unsqueeze(1)  # (B,1,H)
-        rpm_tok = rpm_tok.expand(-1, embeddings.size(1), -1)  # (B,seq,H)
-
         if self.rpm_bool:
+            rpm_idx = rpm_idx.view(batch_size)
+            rpm_tok = self.rpm_embed(rpm_idx).unsqueeze(1)  # (B,1,H)
+            rpm_tok = rpm_tok.expand(-1, embeddings.size(1), -1)  # (B,seq,H)
             embeddings = embeddings + rpm_tok  # conditioned on rpm
         if self.pat_bool:
             pattern = pattern.permute(0, 3, 1, 2).contiguous()

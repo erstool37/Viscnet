@@ -6,6 +6,7 @@ import json
 import math
 import os
 import os.path as osp
+import shutil
 import warnings
 from statistics import mean
 
@@ -32,6 +33,7 @@ from utils import (
     reliability_diagram,
     sanity_check_alignment,
     save_attention,
+    as_batch_vector,
     set_seed,
     viz_attention,
     viz_gmm,
@@ -80,7 +82,39 @@ def dedupe_records_by_name(records):
     return [deduped[name] for name in sorted(deduped)]
 
 
+def gather_records_via_files(local_records, output_root, run_name, rank, world_size):
+    record_root = osp.join(output_root, "_distributed_records", run_name)
+    if rank == 0:
+        shutil.rmtree(record_root, ignore_errors=True)
+        os.makedirs(record_root, exist_ok=True)
+    if torch.cuda.is_available():
+        dist.barrier(device_ids=[local_rank])
+    else:
+        dist.barrier()
+
+    record_path = osp.join(record_root, f"rank{rank}.json")
+    with open(record_path, "w") as file:
+        json.dump(local_records, file)
+
+    if torch.cuda.is_available():
+        dist.barrier(device_ids=[local_rank])
+    else:
+        dist.barrier()
+
+    if rank != 0:
+        return []
+
+    records = []
+    for gathered_rank in range(world_size):
+        path = osp.join(record_root, f"rank{gathered_rank}.json")
+        with open(path, "r") as file:
+            records.extend(json.load(file))
+    return records
+
+
 PROJECT = config["project"]
+if f"{osp.sep}configs{osp.sep}rebuild{osp.sep}" in osp.abspath(args.config):
+    PROJECT = "re-rebuild-viscnet"
 ENTITY = config.get("entity")
 NAME = config["name"]
 VER = config["version"]
@@ -125,6 +159,7 @@ TRANS_BOOL = config["model"]["transformer_bool"]
 ENCODER = config["model"]["transformer"]["encoder"]
 VISC_CLASS = config["model"]["transformer"]["class"]
 TRANSFORMER_NUM_FRAMES = int(config["model"]["transformer"].get("num_frames", int(FRAME_NUM * TIME)))
+TRANSFORMER_IMAGE_SIZE = int(config["model"]["transformer"].get("image_size", 224))
 CNN_TRAIN = bool(config["model"]["cnn"]["cnn_train"])
 CNN = config["model"]["cnn"]["cnn"]
 LSTM_SIZE = int(config["model"]["cnn"]["lstm_size"])
@@ -198,6 +233,7 @@ if TRANS_BOOL:
         RPM_BOOL,
         PAT_BOOL,
         num_frames=TRANSFORMER_NUM_FRAMES,
+        image_size=TRANSFORMER_IMAGE_SIZE,
     ).to(device)
 else:
     encoder = encoder_class(
@@ -334,7 +370,7 @@ if TRAIN_BOOL:
                 frames.to(device),
                 parameters.to(device),
                 hotvector.to(device),
-                rpm_idx.to(device).long().squeeze(-1),
+                as_batch_vector(rpm_idx, dtype=torch.long, device=device),
                 pattern.to(device),
             )
             local_batch_size = frames.shape[0]
@@ -349,6 +385,8 @@ if TRAIN_BOOL:
                 hotvector_micro = hotvector[micro_start:micro_end]
                 rpm_idx_micro = rpm_idx[micro_start:micro_end]
                 pattern_micro = pattern[micro_start:micro_end]
+                if not RPM_BOOL:
+                    rpm_idx_micro = torch.zeros_like(rpm_idx_micro)
 
                 outputs = encoder(frames_micro, rpm_idx_micro, pattern_micro)
                 if CLASS_BOOL:  # Classification
@@ -413,9 +451,11 @@ if TRAIN_BOOL:
                     frames.to(device),
                     parameters.to(device),
                     hotvector.to(device),
-                    rpm_idx.to(device, dtype=torch.int).squeeze(-1),
+                    as_batch_vector(rpm_idx, dtype=torch.int, device=device),
                     pattern.to(device),
                 )
+                if not RPM_BOOL:
+                    rpm_idx = torch.zeros_like(rpm_idx)
                 outputs = encoder(frames, rpm_idx, pattern)
                 if CLASS_BOOL:  # Classification
                     val_loss = criterion(outputs, hotvector)
@@ -503,9 +543,11 @@ if TEST_BOOL:
                 frames.to(device),
                 parameters.to(device),
                 hotvector.to(device),
-                rpm_idx.to(device).long().squeeze(-1),
+                as_batch_vector(rpm_idx, dtype=torch.long, device=device),
                 pattern.to(device),
             )
+            if not RPM_BOOL:
+                rpm_idx = torch.zeros_like(rpm_idx)
             outputs = encoder(frames, rpm_idx, pattern)
             if ATTN_BOOL and rank == 0:
                 save_attention(
@@ -542,7 +584,7 @@ if TEST_BOOL:
                     outputs_cpu = outputs.detach().cpu().numpy().tolist()
                 for name, pred, target in zip(names_batch, outputs_cpu, params_cpu):
                     records_local.append({"name": name, "prediction": pred, "target": target})
-    records_all = dedupe_records_by_name(gather_object_records(records_local))
+    records_all = dedupe_records_by_name(gather_records_via_files(records_local, OUTPUT_ROOT, run_name, rank, world_size))
     if rank == 0:
         if CLASS_BOOL:
             logits = torch.tensor([record["logits"] for record in records_all], dtype=torch.float32)

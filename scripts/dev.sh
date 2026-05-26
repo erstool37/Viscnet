@@ -12,10 +12,8 @@ if [ -f .env ]; then
   set +a
 fi
 
-if [ -n "${WANDB_API_KEY:-}" ]; then
-  wandb login "${WANDB_API_KEY}"
-else
-  echo "WANDB_API_KEY is not set; skipping wandb login." >&2
+if [ -z "${WANDB_API_KEY:-}" ]; then
+  echo "WANDB_API_KEY is not set; wandb.init may run unauthenticated or offline depending on W&B settings." >&2
 fi
 
 ### Normalizing dataset

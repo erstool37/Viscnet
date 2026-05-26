@@ -1,0 +1,92 @@
+project: re-rebuild-viscnet
+entity: jongwonsohn-seoul-national-university
+name: repro_synthetic_pretrain_window30_batch8_ep50
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: true
+  gmm_bool: false
+  watch_bool: false
+  train_bool: true
+  test_bool: false
+  attn_bool: false
+  val_test_bool: false
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: dataset/CFDArchive/sph_35000
+    frame_num: 6
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDataset
+      batch_size: 8
+      aug_bool: false
+      test_size: 0.2
+      random_state: 37
+  test:
+    test_root: dataset/RealArchive/test_1000_wo_pat2
+    frame_num: 6
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+    num_frames: 30
+  embeddings:
+    rpm_bool: true
+    pat_bool: false
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: false
+  curr_ckpt: repro_synthetic_pretrain_window30_batch8_ep50.pth
+  checkpoint_name: repro_synthetic_pretrain_window30_batch8_ep50.pth
+  num_epochs: 50
+  loss: CE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    schedule_policy: warmup_hold_cosine
+    warmup_epochs: 1
+    warmup_start_factor: 0.5
+    lr_hold_epochs: 20
+    lr: 1.0e-05
+    eta_min: 1.0e-07
+    weight_decay: 0.01
+    patience: 25
+  acceptance:
+    allow_batch_size_override: true
+    allow_epoch_override: true
+    allow_patience_override: true
+    allow_frame_count_override: true
+    note: 30-frame synthetic pretrain so transfer weights match the window30x21 model feature shapes.
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/repro_synthetic_pretrain_window30_batch8_ep50
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm

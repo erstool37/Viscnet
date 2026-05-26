@@ -31,9 +31,10 @@ class VideoDatasetReal336(Dataset):
     def __getitem__(self, index):
         names = self._loadname(self.para_paths[index])
         frames = self._loadvideo(self.video_paths[index])
-        parameters, hotvector = self._loadparameters(self.para_paths[index])
+        parameters, hotvector, pattern_name = self._loadparameters(self.para_paths[index])
+        pattern = self._loadpattern(self.video_paths[index], pattern_name)
         rpm = parameters[-1]
-        return frames, parameters, hotvector, names, rpm
+        return frames, parameters, hotvector, names, rpm, pattern
 
     def _widen224_to_336(self, img, mode="replicate", constant_value=None):
         # 224x224 → 상하좌우 56px 패딩 → 336x336
@@ -74,11 +75,16 @@ class VideoDatasetReal336(Dataset):
         else:
             frames_aug = frames
 
-        # 224→336 외삽
-        frames_aug = [self._widen224_to_336(f, mode="replicate") for f in frames_aug]
+        processed = []
+        for frame in frames_aug:
+            height, width = frame.shape[:2]
+            if height == 224 and width == 224:
+                processed.append(self._widen224_to_336(frame, mode="replicate"))
+            else:
+                processed.append(cv2.resize(frame, (336, 336), interpolation=cv2.INTER_LINEAR))
 
         # [-1, 1] 정규화
-        frames_aug = [(f / 127.5 - 1.0).astype(np.float32) for f in frames_aug]
+        frames_aug = [(f / 127.5 - 1.0).astype(np.float32) for f in processed]
         frames_tensor = torch.tensor(np.stack(frames_aug)).permute(0, 3, 1, 2)  # (T,C,H,W)
 
         return frames_tensor
@@ -95,14 +101,47 @@ class VideoDatasetReal336(Dataset):
             kinVisc = float(data["kinematic_viscosity"])
             rpm_index = int(data["rpm_idx"])
             hotvector = self._get_cluster(int(data["visc_index"]))
+            pattern_name = str(data.get("background", self._infer_background_from_path(para_path)))
 
-        return torch.tensor([density, surfT, kinVisc, rpm_index], dtype=torch.float32), torch.tensor(
-            hotvector
+        return (
+            torch.tensor([density, surfT, kinVisc, rpm_index], dtype=torch.float32),
+            torch.tensor(hotvector),
+            pattern_name,
         )  # kept this state for CE loss shape compatibility
 
     def _loadname(self, video_path):
         name = osp.splitext(osp.basename(video_path))
         return name[0]
+
+    def _infer_background_from_path(self, para_path):
+        stem = osp.splitext(osp.basename(para_path))[0]
+        render = stem.split("_render")[-1]
+        if render in set("ABCDEFGHIJ"):
+            return 1
+        if render in set("KLMNO"):
+            return 2
+        if render in set("PQRST"):
+            return 3
+        if render in set("UVWXY"):
+            return 4
+        return 1
+
+    def _loadpattern(self, video_path, pattern_name):
+        base_path = osp.dirname(osp.dirname(video_path))
+        pattern_path = osp.join(base_path, "backgrounds", f"{pattern_name}.png")
+        img = cv2.imread(pattern_path)
+        if img is None:
+            raise FileNotFoundError(pattern_path)
+        pattern = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        height, width = pattern.shape[:2]
+        if height < 336 or width < 336:
+            pattern = cv2.resize(pattern, (336, 336), interpolation=cv2.INTER_LINEAR)
+        else:
+            top = (height - 336) // 2
+            left = (width - 336) // 2
+            pattern = pattern[top : top + 336, left : left + 336]
+        pattern = (pattern / 127.5 - 1.0).astype(np.float32)
+        return pattern
 
     def __len__(self):
         return len(self.video_paths)
