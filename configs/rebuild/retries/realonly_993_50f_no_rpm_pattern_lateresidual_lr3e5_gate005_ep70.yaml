@@ -1,0 +1,106 @@
+project: allnewviscnet
+entity: jongwonsohn-seoul-national-university
+name: repro_realonly_993_50f_no_rpm_pattern_lateresidual_lr3e5_gate005_ep70
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: true
+  gmm_bool: false
+  watch_bool: false
+  train_bool: true
+  test_bool: true
+  attn_bool: false
+  val_test_bool: true
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: dataset/RealArchive/train_993_wo_pat2
+    use_all_samples: true
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+    manifest: configs/rebuild/manifests/real_train_993.json
+  test:
+    test_root: dataset/RealArchive/test_1000_wo_pat2
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+    num_frames: 50
+    image_size: 224
+  embeddings:
+    rpm_bool: false
+    pat_bool: true
+    pat_mode: late_residual
+    pattern_gate_init: 0.05
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: false
+  curr_ckpt: repro_realonly_993_50f_no_rpm_pattern_lateresidual_lr3e5_gate005_ep70.pth
+  checkpoint_name: repro_realonly_993_50f_no_rpm_pattern_lateresidual_lr3e5_gate005_ep70.pth
+  num_epochs: 70
+  real_test_monitor:
+    enabled: true
+    dataset: test
+    interval_epochs: 1
+    log_confusion_matrix: true
+  checkpoint_selection:
+    metric: val_loss
+  loss: CE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    schedule_policy: warmup_hold_cosine
+    warmup_epochs: 2
+    warmup_start_factor: 0.25
+    lr_hold_epochs: 15
+    lr: 3.0e-05
+    eta_min: 3.0e-07
+    weight_decay: 0.01
+    patience: 18
+  acceptance:
+    baseline_run: repro_realonly_993_batch8_normal_no_rpm_lr3e5_ep70
+    ablation: no_rpm_late_residual_pattern_fixed50_hparam_grid
+    target_accuracy: 0.8
+    allow_epoch_override: true
+    note: Hyperparameter-only grid run for real-only fixed-50-frame no-RPM pattern
+      conditioning. No data, architecture, or model-code changes; checkpointing and
+      early stopping use val_loss only.
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/repro_realonly_993_50f_no_rpm_pattern_lateresidual_lr3e5_gate005_ep70
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm

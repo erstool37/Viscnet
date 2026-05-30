@@ -1,0 +1,89 @@
+project: allnewViscnet
+entity: jongwonsohn-seoul-national-university
+name: allnew_synth_no_rpm_augv1_realtest_frozen_eval
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: true
+  gmm_bool: false
+  watch_bool: false
+  train_bool: false
+  test_bool: true
+  attn_bool: false
+  val_test_bool: false
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: dataset/CFDArchive/sph_35000
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDataset
+      batch_size: 8
+      aug_bool: false
+      test_size: 0.2
+      random_state: 37
+  test:
+    test_root: dataset/RealArchive/test_1000_wo_pat2
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+  embeddings:
+    rpm_bool: false
+    pat_bool: false
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: true
+  curr_ckpt: allnew_synthetic_pretrain_sph35000_no_rpm_augv1_ep80.pth
+  checkpoint_name: allnew_synth_no_rpm_augv1_realtest_frozen_eval.pth
+  num_epochs: 1
+  loss: CE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    schedule_policy: cosine
+    warmup_epochs: 0
+    warmup_start_factor: 0.5
+    lr_hold_epochs: 0
+    lr: 1.0e-05
+    eta_min: 1.0e-07
+    weight_decay: 0.01
+    patience: 1
+  acceptance:
+    diagnostic: frozen_synthetic_realtest_distribution
+    source_checkpoint: allnew_synthetic_pretrain_sph35000_no_rpm_augv1_ep80.pth
+    note: Frozen synthetic no-RPM eval on held-out real videos. Judge only prediction distribution for transfer-candidate selection; do not compare to previous LOPO collapse.
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/allnew_synth_no_rpm_augv1_realtest_frozen_eval
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm

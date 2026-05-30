@@ -1,0 +1,97 @@
+project: allnewViscnet
+entity: jongwonsohn-seoul-national-university
+name: allnew_synthetic_pretrain_sph35000_no_rpm_augv2_ep80
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: true
+  gmm_bool: false
+  watch_bool: false
+  train_bool: true
+  test_bool: false
+  attn_bool: false
+  val_test_bool: false
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: dataset/CFDArchive/sph_35000
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDataset
+      batch_size: 8
+      aug_bool: true
+      augmentation:
+        type: augv2
+        probability: 0.9
+        strength: 1.25
+      test_size: 0.2
+      random_state: 37
+  test:
+    test_root: dataset/RealArchive/test_1000_wo_pat2
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+  embeddings:
+    rpm_bool: false
+    pat_bool: false
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: false
+  curr_ckpt: allnew_synthetic_pretrain_sph35000_no_rpm_augv2_ep80.pth
+  checkpoint_name: allnew_synthetic_pretrain_sph35000_no_rpm_augv2_ep80.pth
+  num_epochs: 60
+  real_test_monitor:
+    enabled: true
+    dataset: test
+    interval_epochs: 1
+    log_confusion_matrix: true
+  loss: CE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    schedule_policy: warmup_hold_cosine
+    warmup_epochs: 1
+    warmup_start_factor: 0.5
+    lr_hold_epochs: 50
+    lr: 1.0e-05
+    eta_min: 5.0e-06
+    weight_decay: 0.01
+    patience: 18
+  acceptance:
+    ablation: allnew_no_rpm_synthetic_augv2
+    note: Diagnostic synthetic pretrain from scratch for allnewViscnet. Uses no RPM conditioning and stronger video-consistent augmentation. Revised before launch from 80 epochs to a 60-epoch high-LR schedule after augv1 loss curves kept improving while LR decayed below 5e-6. Frozen real-test selection is distribution-based, not a reproduction pass/fail claim.
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/allnew_synthetic_pretrain_sph35000_no_rpm_augv2_ep80
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm

@@ -103,6 +103,7 @@ class VivitConfig(PretrainedConfig):
         layer_norm_eps=1e-06,
         qkv_bias=True,
         pat_bool=False,
+        pat_mode="legacy",
         rpm_bool=False,
         **kwargs,
     ):
@@ -124,6 +125,7 @@ class VivitConfig(PretrainedConfig):
 
         self.rpm_bool = rpm_bool
         self.pat_bool = pat_bool
+        self.pat_mode = pat_mode
 
         self.qkv_bias = qkv_bias
 

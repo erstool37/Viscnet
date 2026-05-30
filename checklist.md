@@ -62,6 +62,69 @@ No-RPM suite evidence:
 - Completion is unproven until all required no-RPM metrics exist and the final
   no-RPM policy report evaluates the transfer target.
 
+## Allnew No-RPM Synthetic Augmentation Diagnostic
+
+The user-requested allnew synthetic augmentation suite is a diagnostic selection
+route under W&B project `allnewViscnet`, not a paper-reproduction pass/fail
+claim.
+
+Required allnew run order:
+
+- `allnew_synthetic_pretrain_sph35000_no_rpm_augv1_ep80`: synthetic pretraining
+  from scratch on `dataset/CFDArchive/sph_35000`, no RPM conditioning, `augv1`.
+- `allnew_synthetic_pretrain_sph35000_no_rpm_augv2_ep80`: synthetic pretraining
+  from scratch on `dataset/CFDArchive/sph_35000`, no RPM conditioning, `augv2`.
+  Despite the historical `ep80` run name, the active launch plan is now a
+  60-epoch high-LR schedule: `num_epochs: 60`, `lr_hold_epochs: 50`, and
+  `eta_min: 5e-6`.
+- `allnew_synth_no_rpm_augv1_realtest_frozen_eval`: frozen direct eval on
+  `dataset/RealArchive/test_1000_wo_pat2` from the `augv1` checkpoint.
+- `allnew_synth_no_rpm_augv2_realtest_frozen_eval`: frozen direct eval on
+  `dataset/RealArchive/test_1000_wo_pat2` from the `augv2` checkpoint.
+
+Allnew gates:
+
+- Queue script must source `.env`, require `WANDB_API_KEY`, set
+  `WANDB_PROJECT=allnewViscnet`, and use `NPROC_PER_NODE=8` by default.
+- Queue script must run `scripts/verify_no_rpm_policy.py` before any training or
+  frozen eval.
+- Every allnew config must set `model.embeddings.rpm_bool: false`.
+- Synthetic augmentation must be config-visible under
+  `dataset.train.dataloader.augmentation` with `type`, `probability`, and
+  `strength`.
+- Video augmentation must sample once per clip and replay the same transform
+  across all frames.
+- `src/main.py` W&B config must include launch provenance: Git commit, branch,
+  dirty flag, config path, and launch command.
+- Allnew synthetic pretraining configs should enable
+  `training.real_test_monitor` so each monitored epoch runs frozen inference on
+  the configured real test split, writes a local confusion matrix, and logs
+  `test_loss`, `real_test_loss`, `real_test_accuracy`, and the confusion matrix
+  image to W&B.
+
+Frozen real-video distribution diagnostic:
+
+- Report predicted class counts and shares, number of predicted classes used,
+  max predicted-class share, zero-predicted classes, support, and per-class
+  accuracy using `scripts/check_confusion_distribution.py`.
+- Default "well distributed" criteria are at least `8/10` predicted classes,
+  max predicted-class share `<= 0.35`, and no more than `2` zero-predicted
+  classes.
+- Select the synthetic checkpoint with the better frozen real-test
+  class-distribution diagnostic. If both diagnostics are similar, use higher
+  frozen real-test accuracy as the tie-breaker.
+- Do not launch transfer until both frozen eval distribution summaries exist.
+- Do not compare these frozen synthetic evals against the previous collapsed
+  LOPO confusion matrix.
+
+Loss-curve update:
+
+- As of 2026-05-27, the `augv1` curve was still improving through epoch 59
+  (`train_loss=0.5912`, `val_loss=0.6220`) while the LR had decayed to
+  `3.7e-6`.
+  This supports shortening the next synthetic run and keeping LR in the higher
+  range rather than spending a long tail at very low LR.
+
 ## Analyzer Figure Trigger Policy
 
 After checker outputs exist for a completed classification run, the analyzer should

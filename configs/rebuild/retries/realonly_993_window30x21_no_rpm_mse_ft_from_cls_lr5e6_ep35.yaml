@@ -1,0 +1,103 @@
+project: REALVISCNET
+entity: jongwonsohn-seoul-national-university
+name: realonly_993_window30x21_no_rpm_mse_ft_from_cls_lr5e6_ep35
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: false
+  gmm_bool: false
+  watch_bool: false
+  train_bool: true
+  test_bool: true
+  attn_bool: false
+  val_test_bool: true
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: outputs/rebuild_reproduction/derived_datasets/real_train_993_windows30_stride1
+    use_all_samples: true
+    frame_num: 6
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 16
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+    manifest: outputs/rebuild_reproduction/derived_datasets/real_train_993_windows30_stride1/manifest.json
+  test:
+    test_root: dataset/RealArchive/test_1000_wo_pat2
+    frame_num: 6
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 16
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+    num_frames: 30
+  embeddings:
+    rpm_bool: false
+    pat_bool: false
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: true
+  curr_ckpt: repro_realonly_993_window30x21_no_rpm_ep50.pth
+  checkpoint_name: realonly_993_window30x21_no_rpm_mse_ft_from_cls_lr5e6_ep35.pth
+  num_epochs: 35
+  real_test_monitor:
+    enabled: true
+    dataset: test
+    interval_epochs: 1
+    log_confusion_matrix: false
+  checkpoint_selection:
+    metric: val_loss
+  log_regression_mape: false
+  loss: MSE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    schedule_policy: warmup_hold_cosine
+    warmup_epochs: 1
+    warmup_start_factor: 0.5
+    lr_hold_epochs: 4
+    lr: 5.0e-06
+    eta_min: 1.0e-10
+    weight_decay: 0.01
+    patience: 8
+  acceptance:
+    diagnostic: realonly_regression_finetune_from_window30x21_no_rpm_classification
+    source_checkpoint: outputs/rebuild_reproduction/checkpoints/repro_realonly_993_window30x21_no_rpm_ep50.pth
+    note: Regression fine-tune from real-only window30x21 no-RPM classification
+      checkpoint. Uses the same derived 993x21 training windows and the
+      1000-video real test set. Learning rate is 5e-6, slightly lower than the
+      source classification LR of 1e-5. Checkpoint selection is val_loss only.
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/realonly_993_window30x21_no_rpm_mse_ft_from_cls_lr5e6_ep35
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm

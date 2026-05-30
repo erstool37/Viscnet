@@ -2,11 +2,13 @@ import argparse
 import datetime
 import glob
 import importlib
+import inspect
 import json
 import math
 import os
 import os.path as osp
 import shutil
+import sys
 import warnings
 from statistics import mean
 
@@ -24,17 +26,25 @@ import wandb
 from utils import (
     MAPEcalculator,
     MAPEGMMcalculator,
+    as_batch_vector,
+    broadcast_object_list_for_device,
+    build_wandb_config,
     calibrate_gmm,
+    collect_launch_metadata,
     confusion_matrix,
     ddp_cleanup,
     ddp_setup,
     load_weights,
+    log_classification_real_test_monitor,
+    log_regression_real_test_monitor,
     plot_error_distribution,
     reliability_diagram,
+    resolve_wandb_project,
     sanity_check_alignment,
     save_attention,
-    as_batch_vector,
     set_seed,
+    should_replace_diagnostic_checkpoint,
+    should_run_real_test_monitor,
     viz_attention,
     viz_gmm,
 )
@@ -112,12 +122,12 @@ def gather_records_via_files(local_records, output_root, run_name, rank, world_s
     return records
 
 
-PROJECT = config["project"]
-if f"{osp.sep}configs{osp.sep}rebuild{osp.sep}" in osp.abspath(args.config):
-    PROJECT = "re-rebuild-viscnet"
+PROJECT = resolve_wandb_project(config, args.config)
 ENTITY = config.get("entity")
 NAME = config["name"]
 VER = config["version"]
+WANDB_METADATA = collect_launch_metadata(args.config, sys.argv)
+WANDB_CONFIG = build_wandb_config(config, WANDB_METADATA, project=PROJECT)
 # Basic settings
 NUM_WORKERS = int(config["train_settings"]["num_workers"])
 SEED = int(config["train_settings"]["seed"])
@@ -139,6 +149,8 @@ TIME = float(config["dataset"]["train"]["time"])
 RPM_CLASS = int(config["dataset"]["train"]["rpm_class"])
 USE_ALL_TRAIN_SAMPLES = bool(config["dataset"]["train"].get("use_all_samples", False))
 AUG_BOOL = bool(config["dataset"]["train"]["dataloader"]["aug_bool"])
+TRAIN_AUGMENTATION = config["dataset"]["train"]["dataloader"].get("augmentation")
+TRAIN_TEMPORAL_WINDOW = config["dataset"]["train"]["dataloader"].get("temporal_window")
 BATCH_SIZE = int(config["dataset"]["train"]["dataloader"]["batch_size"])
 TEST_SIZE = float(config["dataset"]["train"]["dataloader"]["test_size"])
 RAND_STATE = int(config["dataset"]["train"]["dataloader"]["random_state"])
@@ -150,6 +162,7 @@ FRAME_NUM_TEST = float(config["dataset"]["test"]["frame_num"])
 TIME_TEST = float(config["dataset"]["test"]["time"])
 RPM_CLASS_TEST = int(config["dataset"]["test"]["rpm_class"])
 AUG_BOOL_TEST = bool(config["dataset"]["test"]["dataloader"]["aug_bool"])
+TEST_TEMPORAL_WINDOW = config["dataset"]["test"]["dataloader"].get("temporal_window")
 BATCH_SIZE_TEST = int(config["dataset"]["test"]["dataloader"]["batch_size"])
 TEST_SIZE_TEST = float(config["dataset"]["test"]["dataloader"]["test_size"])
 RAND_STATE_TEST = int(config["dataset"]["test"]["dataloader"]["random_state"])
@@ -171,6 +184,9 @@ WEIGHT = float(config["model"]["cnn"]["embed_weight"])
 GMM_NUM = int(config["model"]["gmm"]["gmm_num"])
 RPM_BOOL = bool(config["model"]["embeddings"]["rpm_bool"])
 PAT_BOOL = bool(config["model"]["embeddings"]["pat_bool"])
+PAT_MODE = config["model"]["embeddings"].get("pat_mode", "legacy")
+PATTERN_GATE_INIT = float(config["model"]["embeddings"].get("pattern_gate_init", 0.01))
+PATTERN_NORM = config["model"].get("pattern_norm", {})
 
 # Train Settings
 VAL_TEST_BOOL = bool(config["train_settings"]["val_test_bool"])
@@ -178,6 +194,10 @@ CURR_BOOL = int(config["training"]["curr_bool"])
 CURR_CKPT = config["training"]["curr_ckpt"]
 CHECKPOINT_NAME = config["training"].get("checkpoint_name")
 NUM_EPOCHS = int(config["training"]["num_epochs"])
+REAL_TEST_MONITOR = config["training"].get("real_test_monitor", {})
+CHECKPOINT_SELECTION = config["training"].get("checkpoint_selection", {})
+CHECKPOINT_SELECTION_METRIC = CHECKPOINT_SELECTION.get("metric", "val_loss")
+LOG_REGRESSION_MAPE = bool(config["training"].get("log_regression_mape", True))
 LOSS = config["training"]["loss"]
 SMTH_LABEL = float(config["training"]["label_smoothing"])
 OPTIM_CLASS = config["training"]["optimizer"]["optim_class"]
@@ -224,17 +244,26 @@ device = f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu"
 
 # Model Definition
 if TRANS_BOOL:
-    encoder = encoder_class(
-        DROP_RATE,
-        OUTPUT_SIZE,
-        CLASS_BOOL,
-        VISC_CLASS,
-        GMM_NUM,
-        RPM_BOOL,
-        PAT_BOOL,
-        num_frames=TRANSFORMER_NUM_FRAMES,
-        image_size=TRANSFORMER_IMAGE_SIZE,
-    ).to(device)
+    transformer_kwargs = {
+        "dropout": DROP_RATE,
+        "output_size": OUTPUT_SIZE,
+        "class_bool": CLASS_BOOL,
+        "visc_class": VISC_CLASS,
+        "gmm_num": GMM_NUM,
+        "rpm_bool": RPM_BOOL,
+        "pat_bool": PAT_BOOL,
+        "num_frames": TRANSFORMER_NUM_FRAMES,
+        "image_size": TRANSFORMER_IMAGE_SIZE,
+        "pat_mode": PAT_MODE,
+        "pattern_gate_init": PATTERN_GATE_INIT,
+        "pattern_norm": PATTERN_NORM,
+    }
+    encoder_signature = inspect.signature(encoder_class.__init__)
+    if not any(param.kind == inspect.Parameter.VAR_KEYWORD for param in encoder_signature.parameters.values()):
+        transformer_kwargs = {
+            key: value for key, value in transformer_kwargs.items() if key in encoder_signature.parameters
+        }
+    encoder = encoder_class(**transformer_kwargs).to(device)
 else:
     encoder = encoder_class(
         LSTM_SIZE, LSTM_LAYERS, OUTPUT_SIZE, DROP_RATE, CNN, CNN_TRAIN, RPM_CLASS, EMBED_SIZE, WEIGHT, VISC_CLASS
@@ -265,8 +294,31 @@ else:
     train_video_paths, val_video_paths = train_test_split(video_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
     train_para_paths, val_para_paths = train_test_split(para_paths, test_size=TEST_SIZE, random_state=RAND_STATE)
 
-train_ds = dataset_class(train_video_paths, train_para_paths, FRAME_NUM, TIME, AUG_BOOL, VISC_CLASS)
-val_ds = dataset_class(val_video_paths, val_para_paths, FRAME_NUM, TIME, aug_bool=False, visc_class=VISC_CLASS)
+VAL_TEMPORAL_WINDOW = None
+if TRAIN_TEMPORAL_WINDOW:
+    VAL_TEMPORAL_WINDOW = dict(TRAIN_TEMPORAL_WINDOW)
+    if "validation_mode" in VAL_TEMPORAL_WINDOW:
+        VAL_TEMPORAL_WINDOW["mode"] = VAL_TEMPORAL_WINDOW["validation_mode"]
+
+train_ds = dataset_class(
+    train_video_paths,
+    train_para_paths,
+    FRAME_NUM,
+    TIME,
+    AUG_BOOL,
+    VISC_CLASS,
+    augmentation_config=TRAIN_AUGMENTATION,
+    temporal_window_config=TRAIN_TEMPORAL_WINDOW,
+)
+val_ds = dataset_class(
+    val_video_paths,
+    val_para_paths,
+    FRAME_NUM,
+    TIME,
+    aug_bool=False,
+    visc_class=VISC_CLASS,
+    temporal_window_config=VAL_TEMPORAL_WINDOW,
+)
 
 train_sampler = DistributedSampler(train_ds, num_replicas=world_size, rank=rank, shuffle=True)
 val_sampler = DistributedSampler(val_ds, num_replicas=world_size, rank=rank, shuffle=False)
@@ -334,7 +386,13 @@ else:
     test_video_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, VIDEO_SUBDIR, "*.mp4")))
     test_para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, NORM_SUBDIR, "*.json")))
 test_ds = test_dataset_class(
-    test_video_paths, test_para_paths, FRAME_NUM_TEST, TIME_TEST, aug_bool=False, visc_class=VISC_CLASS
+    test_video_paths,
+    test_para_paths,
+    FRAME_NUM_TEST,
+    TIME_TEST,
+    aug_bool=False,
+    visc_class=VISC_CLASS,
+    temporal_window_config=TEST_TEMPORAL_WINDOW,
 )
 test_sampler = DistributedSampler(test_ds, num_replicas=world_size, rank=rank, shuffle=False)
 test_dl = DataLoader(test_ds, batch_size=BATCH_SIZE, sampler=test_sampler, num_workers=NUM_WORKERS)
@@ -342,7 +400,7 @@ test_dl = DataLoader(test_ds, batch_size=BATCH_SIZE, sampler=test_sampler, num_w
 # WANDB INITIATE
 if TRAIN_BOOL:
     if rank == 0:
-        wandb.init(project=PROJECT, entity=ENTITY, name=run_name, reinit=True, resume="never", config=config)
+        wandb.init(project=PROJECT, entity=ENTITY, name=run_name, reinit=True, resume="never", config=WANDB_CONFIG)
         print(
             f"Optimizer steps per epoch: {OPTIMIZER_STEPS_PER_EPOCH}; "
             f"Scheduler T_max: {SCHEDULER_T_MAX}; scheduler_units_per_epoch: {SCHEDULER_UNITS_PER_EPOCH}; "
@@ -355,6 +413,7 @@ if TRAIN_BOOL:
     # TRAIN MODEL
     preds_train, tgts_train = [], []
     best_val_loss = float("inf")
+    best_diagnostic_checkpoint = None
     counter = 0
     for epoch in range(NUM_EPOCHS):
         train_sampler.set_epoch(epoch)
@@ -401,7 +460,7 @@ if TRAIN_BOOL:
                     else:
                         preds_train.append(outputs)
                         tgts_train.extend(parameters_micro.detach().cpu().numpy().tolist())
-                        if rank == 0:
+                        if rank == 0 and LOG_REGRESSION_MAPE:
                             MAPEcalculator(
                                 outputs.detach().cpu(),
                                 parameters_micro.detach().cpu(),
@@ -467,7 +526,7 @@ if TRAIN_BOOL:
                         preds_val.append(outputs)
                         tgts_val.extend(parameters.detach().cpu().numpy().tolist())
                     else:
-                        if rank == 0:
+                        if rank == 0 and LOG_REGRESSION_MAPE:
                             MAPEcalculator(
                                 outputs.detach().cpu(), parameters.detach().cpu(), DESCALER, "val", DATA_ROOT_TRAIN
                             )
@@ -482,6 +541,95 @@ if TRAIN_BOOL:
         val_losses.clear()
         if rank == 0:
             wandb.log({"val_loss": mean_val_loss})
+        real_monitor_metrics = None
+        if CLASS_BOOL and should_run_real_test_monitor(epoch + 1, REAL_TEST_MONITOR):
+            real_test_losses = []
+            records_local = []
+            encoder.eval()
+            with torch.no_grad():
+                if rank == 0:
+                    print(f"Epoch {epoch + 1}/{NUM_EPOCHS} - Real Test Monitor")
+                monitor_loader = tqdm(test_dl) if rank == 0 else test_dl
+                for frames, parameters, hotvector, names, rpm_idx, pattern in monitor_loader:
+                    frames, parameters, hotvector, rpm_idx, pattern = (
+                        frames.to(device),
+                        parameters.to(device),
+                        hotvector.to(device),
+                        as_batch_vector(rpm_idx, dtype=torch.long, device=device),
+                        pattern.to(device),
+                    )
+                    if not RPM_BOOL:
+                        rpm_idx = torch.zeros_like(rpm_idx)
+                    outputs = encoder(frames, rpm_idx, pattern)
+                    real_test_loss = criterion(outputs, hotvector)
+                    torch.distributed.all_reduce(real_test_loss, op=torch.distributed.ReduceOp.SUM)
+                    avg_real_test_loss = real_test_loss / world_size
+                    real_test_losses.append(avg_real_test_loss.item())
+
+                    logits_cpu = outputs.detach().cpu().float()
+                    labels_cpu = hotvector.detach().cpu().view(-1).long()
+                    preds_cpu = logits_cpu.argmax(dim=1)
+                    for name, label, pred, logits_row in zip(
+                        names_to_list(names), labels_cpu.tolist(), preds_cpu.tolist(), logits_cpu.tolist()
+                    ):
+                        records_local.append(
+                            {
+                                "name": f"epoch{epoch + 1:03d}_{name}",
+                                "target": int(label),
+                                "prediction": int(pred),
+                                "logits": [float(value) for value in logits_row],
+                            }
+                        )
+            records_all = dedupe_records_by_name(
+                gather_records_via_files(
+                    records_local,
+                    OUTPUT_ROOT,
+                    f"{run_name}_realtest_epoch{epoch + 1:03d}",
+                    rank,
+                    world_size,
+                )
+            )
+            if rank == 0 and records_all:
+                logits = torch.tensor([record["logits"] for record in records_all], dtype=torch.float32)
+                idx = torch.tensor([record["target"] for record in records_all], dtype=torch.long)
+                real_monitor_metrics = log_classification_real_test_monitor(
+                    run_name=run_name,
+                    epoch_number=epoch + 1,
+                    mean_loss=mean(real_test_losses),
+                    logits=logits.numpy(),
+                    labels=idx.numpy(),
+                    output_root=OUTPUT_ROOT,
+                    wandb_module=wandb,
+                    confusion_matrix_fn=confusion_matrix,
+                )
+        elif (not CLASS_BOOL) and should_run_real_test_monitor(epoch + 1, REAL_TEST_MONITOR):
+            real_test_losses = []
+            encoder.eval()
+            with torch.no_grad():
+                if rank == 0:
+                    print(f"Epoch {epoch + 1}/{NUM_EPOCHS} - Real Test Monitor")
+                monitor_loader = tqdm(test_dl) if rank == 0 else test_dl
+                for frames, parameters, hotvector, names, rpm_idx, pattern in monitor_loader:
+                    frames, parameters, hotvector, rpm_idx, pattern = (
+                        frames.to(device),
+                        parameters.to(device),
+                        hotvector.to(device),
+                        as_batch_vector(rpm_idx, dtype=torch.long, device=device),
+                        pattern.to(device),
+                    )
+                    if not RPM_BOOL:
+                        rpm_idx = torch.zeros_like(rpm_idx)
+                    outputs = encoder(frames, rpm_idx, pattern)
+                    real_test_loss = criterion(outputs, parameters)
+                    torch.distributed.all_reduce(real_test_loss, op=torch.distributed.ReduceOp.SUM)
+                    avg_real_test_loss = real_test_loss / world_size
+                    real_test_losses.append(avg_real_test_loss.item())
+            if rank == 0 and real_test_losses:
+                real_monitor_metrics = log_regression_real_test_monitor(
+                    epoch_number=epoch + 1,
+                    mean_loss=mean(real_test_losses),
+                    wandb_module=wandb,
+                )
         if not SCHEDULER_STEP_PER_OPTIMIZER_STEP:
             scheduler.step()
         current_lr = scheduler.get_last_lr()[0]
@@ -490,7 +638,40 @@ if TRAIN_BOOL:
                 f"Epoch {epoch + 1}/{NUM_EPOCHS} results - Train Loss: {mean_train_loss:.4f} Validation Loss: {mean_val_loss:.4f} - LR: {current_lr:.7f}"
             )
         ### PATIENCE
-        if mean_val_loss < best_val_loss:
+        if CHECKPOINT_SELECTION_METRIC == "real_test_distribution_score":
+            checkpoint_decision = [None]
+            if rank == 0 and real_monitor_metrics is not None:
+                candidate = {
+                    "epoch": epoch + 1,
+                    "distribution_score": float(real_monitor_metrics["distribution_score"]),
+                    "real_test_loss": float(real_monitor_metrics["real_test_loss"]),
+                    "accuracy": float(real_monitor_metrics["accuracy"]),
+                    "predicted_classes_used": int(real_monitor_metrics["predicted_classes_used"]),
+                    "max_predicted_class_share": float(real_monitor_metrics["max_predicted_class_share"]),
+                    "zero_predicted_classes": list(real_monitor_metrics["zero_predicted_classes"]),
+                }
+                replace_checkpoint = should_replace_diagnostic_checkpoint(best_diagnostic_checkpoint, candidate)
+                if replace_checkpoint:
+                    best_diagnostic_checkpoint = candidate
+                    torch.save(encoder.module.state_dict(), checkpoint)
+                    print(
+                        f"Diagnostic checkpoint saved to {checkpoint} "
+                        f"(score={candidate['distribution_score']:.4f}, "
+                        f"real_test_loss={candidate['real_test_loss']:.4f})"
+                    )
+                checkpoint_decision[0] = replace_checkpoint
+            if world_size > 1:
+                broadcast_object_list_for_device(checkpoint_decision, src=0, device=torch.device(device))
+            if checkpoint_decision[0] is None:
+                counter = 0
+            elif checkpoint_decision[0]:
+                counter = 0
+            else:
+                counter += 1
+                if counter >= PATIENCE:
+                    print(f"Early stopping at epoch {epoch + 1}")
+                    break
+        elif mean_val_loss < best_val_loss:
             best_val_loss = mean_val_loss
             counter = 0
             if rank == 0:
@@ -523,7 +704,13 @@ if TEST_BOOL:
         test_video_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, VIDEO_SUBDIR, "*.mp4")))
         test_para_paths = sorted(glob.glob(osp.join(DATA_ROOT_TEST, NORM_SUBDIR, "*.json")))
     test_ds = test_dataset_class(
-        test_video_paths, test_para_paths, FRAME_NUM_TEST, TIME_TEST, aug_bool=False, visc_class=VISC_CLASS
+        test_video_paths,
+        test_para_paths,
+        FRAME_NUM_TEST,
+        TIME_TEST,
+        aug_bool=False,
+        visc_class=VISC_CLASS,
+        temporal_window_config=TEST_TEMPORAL_WINDOW,
     )
     test_sampler = DistributedSampler(test_ds, num_replicas=world_size, rank=rank, shuffle=False)
     test_dl = DataLoader(
@@ -599,7 +786,14 @@ if TEST_BOOL:
                 viz_gmm(checkpoint, preds_local, tgts_local, DESCALER, DATA_ROOT_TEST)
                 calibrate_gmm(checkpoint)
             else:
-                plot_error_distribution(run_name, preds_local, tgts_local, DESCALER, DATA_ROOT_TEST)
+                plot_error_distribution(
+                    run_name,
+                    preds_local,
+                    tgts_local,
+                    DESCALER,
+                    DATA_ROOT_TEST,
+                    save_dir=osp.join(OUTPUT_ROOT, "error_plots"),
+                )
         if ATTN_BOOL:
             viz_attention(checkpoint)
 

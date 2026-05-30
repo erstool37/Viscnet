@@ -225,12 +225,17 @@ def load_weights(model, ckpt_path: str):
 
     msd = target.state_dict()
 
-    # Partition keys
+    # Partition keys. Older ViViT wrappers keep backbone weights under
+    # featureextractor.*, while additive models may expose backbone modules
+    # directly. Transfer all matching non-head weights in both cases.
+    head_prefixes = ("fc", "gmm")
     feat_keys = [k for k in ckpt.keys() if k.startswith("featureextractor")]
-    head_keys = [k for k in ckpt.keys() if k.startswith(("fc", "gmm"))]
+    head_keys = [k for k in ckpt.keys() if k.startswith(head_prefixes)]
+    backbone_keys = [k for k in ckpt.keys() if not k.startswith(head_prefixes)]
 
-    # 1) Feature extractor (strict: require matching key+shape)
-    feat_load = {k: v for k, v in ckpt.items() if k in feat_keys and k in msd and msd[k].shape == v.shape}
+    # 1) Backbone / feature extractor weights. For legacy featureextractor
+    # checkpoints, keep the previous strict shape check on those keys.
+    feat_load = {k: v for k, v in ckpt.items() if k in backbone_keys and k in msd and msd[k].shape == v.shape}
     missing_feats = [k for k in feat_keys if k not in feat_load]
     if missing_feats:
         raise RuntimeError(f"Feature extractor mismatch/missing keys (first few): {missing_feats[:5]}")

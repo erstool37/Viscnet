@@ -7,9 +7,22 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
+from .augmentations import apply_video_augmentation_consistently, build_video_augmentation
+from .temporal import select_temporal_window
+
 
 class VideoDataset(Dataset):
-    def __init__(self, video_paths, para_paths, frame_num, time, aug_bool, visc_class):
+    def __init__(
+        self,
+        video_paths,
+        para_paths,
+        frame_num,
+        time,
+        aug_bool,
+        visc_class,
+        augmentation_config=None,
+        temporal_window_config=None,
+    ):
 
         self.video_paths = video_paths
         self.para_paths = para_paths
@@ -17,13 +30,12 @@ class VideoDataset(Dataset):
         self.class_num = 50 // visc_class
         self.cluster_map = {i: i // self.class_num for i in range(50)}  # 10 clusters
         self.aug_bool = aug_bool
+        self.augmentation_config = dict(augmentation_config or {})
+        self.temporal_window_config = dict(temporal_window_config or {})
+        self.temporal_window_mode = self.temporal_window_config.get("mode", "last")
 
-        self.augmentation = A.Compose(
-            [
-                A.Perspective(scale=(0.01, 0.02), keep_size=True, p=0.6),
-                A.MotionBlur(blur_limit=(3, 7), p=0.6),
-                A.RandomBrightnessContrast(0.05, 0.1, p=0.5),
-            ]
+        self.augmentation = (
+            build_video_augmentation(self.augmentation_config, output_size=224) if self.aug_bool else None
         )
 
         self.center_resize = A.Compose([A.Resize(224, 224, interpolation=1)])
@@ -47,13 +59,10 @@ class VideoDataset(Dataset):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frames.append(frame)
         cap.release()
-        frames = frames[-self.frame_limit :]
+        frames = select_temporal_window(frames, self.frame_limit, mode=self.temporal_window_mode)
 
         if self.aug_bool:
-            data = {f"image{i}": frames[i] for i in range(self.frame_limit)}
-            data["image"] = frames[0]
-            out = self.augmentation(**data)
-            frames_aug = [out[f"image{i}"] for i in range(self.frame_limit)]
+            frames_aug = apply_video_augmentation_consistently(frames, self.augmentation)
         else:
             frames_aug = [self.center_resize(image=f)["image"] for f in frames]  # mostly for real images
 

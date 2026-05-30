@@ -108,6 +108,7 @@ def build(args: argparse.Namespace) -> None:
     expected_count = len(records) * args.windows_per_video * len(phase_offsets)
 
     if not args.force and existing_manifest_ok(output_manifest, expected_count):
+        ensure_backgrounds(records, output_root)
         print(f"Window dataset already exists: {relative(output_manifest)} ({expected_count} samples)")
         return
 

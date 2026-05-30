@@ -39,7 +39,7 @@ def verify_config(path: Path) -> dict[str, Any]:
         errors.append(f"{path}: model.embeddings.rpm_bool must be false, got {rpm_bool!r}")
     if curr_bool and "no_rpm" not in curr_ckpt:
         errors.append(f"{path}: curr_ckpt for no-RPM transfer must reference no_rpm weights, got {curr_ckpt!r}")
-    if not str(name).startswith(("repro_", "dual_pattern_")):
+    if not str(name).startswith(("repro_", "dual_pattern_", "allnew_", "crosspat_")):
         errors.append(f"{path}: unexpected run name {name!r}")
     return {
         "path": str(path),

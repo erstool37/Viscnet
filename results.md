@@ -31,6 +31,10 @@ No-RPM policy update: from 2026-05-26 onward, new training configs should keep `
 
 No-RPM queue guard: `scripts/verify_no_rpm_policy.py` is wired into the no-RPM queues and fails before launch if any queued config has `model.embeddings.rpm_bool` not exactly `false`.
 
+Allnew no-RPM augmentation queue: `scripts/run_allnew_no_rpm_aug_queue.sh` is the launch wrapper for W&B project `allnewViscnet`. It preflights no-RPM policy, trains the `augv1` and `augv2` synthetic checkpoints from scratch, runs frozen held-out real-video eval for both, writes class-distribution summaries, and selects a transfer candidate without launching transfer.
+
+Allnew loss-curve adjustment: on 2026-05-27, `allnew_synthetic_pretrain_sph35000_no_rpm_augv1_ep80` had best observed validation loss at epoch 59 (`train_loss=0.5912`, `val_loss=0.6220`) while LR had decayed to `3.7e-6`. The next `augv2` run keeps the existing active queue path but now uses `num_epochs: 60`, `lr_hold_epochs: 50`, and `eta_min: 5e-6` so training spends less time in the low-LR tail.
+
 No-RPM completion report: `scripts/watch_no_rpm_policy_completion.sh` waits for the no-RPM queues to finish and then writes `outputs/rebuild_reproduction/no_rpm_policy_report/summary.md` and `summary.json` once.
 
 No-RPM acceptance marker: `scripts/watch_no_rpm_policy_acceptance.sh` waits for the no-RPM queues and writes either `outputs/rebuild_reproduction/session_markers/no_rpm_policy.accepted` or `outputs/rebuild_reproduction/session_markers/no_rpm_policy.retry_required`.

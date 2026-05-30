@@ -1,0 +1,105 @@
+project: allnewviscnet
+entity: jongwonsohn-seoul-national-university
+name: crosspat_train134_test5_no_rpm_lateconcat_mse_reg_lr1e5_ep35
+version: v0
+train_settings:
+  num_workers: 0
+  seed: 1205
+  classification: false
+  gmm_bool: false
+  watch_bool: false
+  train_bool: true
+  test_bool: true
+  attn_bool: false
+  val_test_bool: true
+  sanity_check_bool: false
+dataset:
+  train:
+    train_root: dataset/RealArchive/real_20rpm_increment_train134
+    use_all_samples: true
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  test:
+    test_root: dataset/RealArchive/real_20rpm_increment_test5
+    frame_num: 10
+    time: 5
+    rpm_class: 10
+    dataloader:
+      dataloader: VideoDatasetReal
+      batch_size: 8
+      aug_bool: false
+      test_size: 1.0e-06
+      random_state: 37
+  preprocess:
+    scaler: interscaler
+    descaler: interdescaler
+model:
+  transformer_bool: true
+  transformer:
+    encoder: VivitEmbed
+    class: 10
+    num_frames: 50
+    image_size: 224
+  embeddings:
+    rpm_bool: false
+    pat_bool: true
+    pat_mode: late_concat
+    pattern_gate_init: 1.0
+  cnn:
+    encoder: Resnet34LSTMEMBED
+    cnn_train: true
+    cnn: resnet34
+    lstm_size: 256
+    lstm_layers: 5
+    output_size: 3
+    drop_rate: 0.0
+    embedding_size: 512
+    embed_weight: 0.0
+  gmm:
+    gmm_num: 3
+training:
+  curr_bool: false
+  curr_ckpt: crosspat_train134_test5_no_rpm_lateconcat_mse_reg_lr1e5_ep35.pth
+  checkpoint_name: crosspat_train134_test5_no_rpm_lateconcat_mse_reg_lr1e5_ep35.pth
+  num_epochs: 35
+  real_test_monitor:
+    enabled: true
+    dataset: test
+    interval_epochs: 1
+    log_confusion_matrix: false
+  checkpoint_selection:
+    metric: val_loss
+  log_regression_mape: false
+  loss: MSE
+  label_smoothing: 0.0
+  optimizer:
+    optim_class: AdamW
+    scheduler_class: CosineAnnealingLR
+    schedule_policy: warmup_hold_cosine
+    warmup_epochs: 1
+    warmup_start_factor: 0.5
+    lr_hold_epochs: 6
+    lr: 1.0e-05
+    eta_min: 1.0e-10
+    weight_decay: 0.01
+    patience: 10
+  acceptance:
+    split: train134_test5
+    train_root: dataset/RealArchive/real_20rpm_increment_train134
+    test_root: dataset/RealArchive/real_20rpm_increment_test5
+    note: Simple no-RPM cross-pattern regression. Fixed 50 frames, late_concat pattern
+      conditioning with pattern_gate_init=1.0, no training augmentation, MSE on normalized
+      kinematic viscosity, val_loss checkpointing.
+misc_dir:
+  ckpt_root: outputs/rebuild_reproduction/checkpoints
+  output_root: outputs/rebuild_reproduction/crosspat_train134_test5_no_rpm_lateconcat_mse_reg_lr1e5_ep35
+  video_subdir: videos
+  para_subdir: parameters
+  norm_subdir: parametersNorm

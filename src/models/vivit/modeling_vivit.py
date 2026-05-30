@@ -99,6 +99,7 @@ class VivitEmbeddings(nn.Module):
         self.cls_token = nn.Parameter(torch.zeros(1, 1, config.hidden_size))
         self.patch_embeddings = VivitTubeletEmbeddings(config)
         self.pat_bool = config.pat_bool
+        self.pat_mode = getattr(config, "pat_mode", "legacy")
         self.rpm_bool = config.rpm_bool
 
         self.position_embeddings = nn.Parameter(
@@ -110,7 +111,7 @@ class VivitEmbeddings(nn.Module):
 
         if self.pat_bool:
             self.pat_backbone = timm.create_model("resnet18", pretrained=True, num_classes=0)
-            self.pat_proj = nn.Linear(512, 256)
+            self.pat_proj = nn.Linear(512, config.hidden_size)
 
             for p in self.pat_backbone.parameters():
                 p.requires_grad = False
@@ -138,12 +139,13 @@ class VivitEmbeddings(nn.Module):
             left = (width - 224) // 2
             pattern = pattern[:, :, top : top + 224, left : left + 224]
 
+            self.pat_backbone.eval()
             with torch.no_grad():
                 feat = self.pat_backbone(pattern)  # (B,512)
 
             feat = self.pat_proj(feat)  # (B,256)
-            pat_tok = feat.unsqueeze(1)  # (B,1,256)
-            pat_tok = pat_tok.expand(-1, 4900, -1)  # (B,4900,256)  (no extra memory)
+            pat_tok = feat.unsqueeze(1)  # (B,1,H)
+            pat_tok = pat_tok.expand(-1, embeddings.size(1) - 1, -1)  # (B,num_tubelets,H)
             embeddings[:, 1:] = embeddings[:, 1:] + pat_tok  # per tubelet embedding
 
         embeddings = embeddings + self.position_embeddings

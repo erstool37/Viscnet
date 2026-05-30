@@ -4,19 +4,38 @@ These are local instructions for `/root/Viscnet`. They specialize the global
 Codex operating laws with concrete repository structure, commands, and
 experiment workflow.
 
+Keep this file repository-specific. Cross-project laws, long vocabularies,
+generic model/runtime settings, schedule state, and reusable task procedures
+belong in global config, local rule files, or skills unless they are needed to
+operate this repository.
+
 ## Instruction Hierarchy
 
 Follow instructions in this order:
 
 1. User request and current conversation context.
 2. This local `AGENTS.md` and nested project instructions.
-3. Rules under `rules/`.
+3. Repo-local rule-layer files under `rules/` and `.codex/` when this file
+   delegates to them for a concrete workflow.
 4. Active skills and workflow references.
-5. General conventions.
+5. Global Codex operating laws.
+6. General conventions.
 
 Never override truth, provenance, or user-safety requirements from higher-priority
 instructions. If evidence is incomplete, say what is known, what is inferred, and
 what remains unverified.
+
+## Truth And Provenance For Viscnet Work
+
+- Never hallucinate file existence, run completion, metric values, source
+  contents, W&B provenance, checkpoint lineage, or dataset availability.
+- Treat checked-in files, exact local artifact paths, W&B run IDs/URLs, logs,
+  metrics JSON, and checker/analyzer reports as evidence. If an expected artifact
+  is absent, report it as missing.
+- Mark causal links, experiment explanations, and cross-run relationships as
+  inference unless an artifact explicitly proves them.
+- Keep raw evidence, source explanation, synthesis, user-facing reports, and
+  agent operations conceptually separate.
 
 ## Repository Boundary
 
@@ -54,6 +73,8 @@ reproduction analysis.
   analysis, checker reports, plotting, and dataset derivation.
 - `checklist.md`: current reproduction validity standard. Treat it as a checker
   contract, not loose notes.
+- `pipeline.md`: future new-dataset paper-rebuild methodology protocol. Use it
+  only after the user provides or explicitly scopes work to a new dataset.
 - `distillation.md`: canonical rebuild handoff and current experiment state.
 - `REBUILD_REPRODUCTION.md`: compatibility pointer to `distillation.md`.
 - `ARCHIVE/`: old experimental code. Do not make archived code part of the active
@@ -65,9 +86,28 @@ reproduction analysis.
 
 - `checklist.md` is the durable reproduction and acceptance contract.
 - `distillation.md` is the canonical handoff for current rebuild state.
-- Durable workflow rules live in `rules/`.
+- `pipeline.md` is a future-dataset methodology protocol, not the active
+  acceptance contract for current rebuild runs. It does not override
+  `checklist.md` unless the user explicitly accepts a migration before launch.
+- Durable Viscnet workflow rules live in `rules/`.
+- Cross-project Codex helper rules checked into `.codex/` may guide
+  clarification, permissions, and git hygiene, but they do not replace
+  Viscnet-specific paths, entrypoints, or ML contracts in this file or `rules/`.
 - Subagent or role-specific conclusions must be reflected in durable files when
   they change gates, acceptance criteria, required artifacts, or launch policy.
+
+## Agent Structure And Rule Layers
+
+- The main agent is the `Orchestrator`: it owns scope, decomposition,
+  integration, final edits, and final reporting.
+- Stable role names such as `ML Code Builder`, `Result Analyzer`, and
+  `Checklist` are responsibility contracts. They are not guaranteed persistent
+  processes across sessions.
+- Use `rules/` for Viscnet-specific ML role and structure guidance. Use `.codex/`
+  only for generic local Codex helpers such as interactive clarification,
+  permission-rule hygiene, and git hygiene.
+- If `.codex/` and `rules/` disagree about Viscnet repository paths or execution
+  layout, prefer this `AGENTS.md` and `rules/`.
 
 ## Standard Commands
 
@@ -88,6 +128,21 @@ rebuild runs require `WANDB_API_KEY`; if it is absent, do not claim acceptance
 for completed runs until W&B provenance is restored or the user explicitly
 accepts a non-W&B diagnostic.
 
+## Interactive Clarification
+
+- Do not silently choose among materially different interpretations of a user
+  request when the decision changes scope, destination, deletion, git history,
+  external service behavior, workflow structure, durable rules, or long-running
+  compute.
+- Use `request_user_input` for bounded choices when it is available in the
+  current mode. If it is unavailable, ask a concise plain-chat question and wait
+  only when the ambiguity blocks safe progress.
+- If the safe next step is obvious and does not commit the user to a materially
+  different branch, proceed with the smallest defensible assumption and state it
+  when useful.
+- For the detailed local helper, read `.codex/interactive-clarification.md` when
+  it exists.
+
 ## W&B Provenance And Troubleshooting
 
 Training through `src/main.py` logs to W&B because it calls `wandb.init` and
@@ -104,16 +159,18 @@ When the user reports that W&B is not updating:
   `WANDB_MODE`.
 - Check whether the launcher sources `.env`. Detached queue scripts that need
   W&B must load `.env` before launching Python or post-eval loggers.
-- The canonical rebuild project is `re-rebuild-viscnet`. Rebuild queues and
-  post-eval loggers must set or pass this project explicitly; do not let `.env`
-  silently redirect rebuild evidence to a generic project such as `viscnet`.
-- `src/main.py` forces configs launched from `configs/rebuild/` to use
-  `re-rebuild-viscnet` even if an older YAML still has `project:
-  viscnet-rebuild`.
+- The canonical project for new W&B-backed training, evaluation logging, queues,
+  and post-eval provenance is `REALVISCNET`. Do not let `.env`, legacy YAMLs,
+  or old launch scripts silently redirect current evidence to historical
+  projects such as `viscnet`, `viscnet-rebuild`, `re-rebuild-viscnet`, or
+  `allnewViscnet`.
+- If a legacy rebuild config or script still forces a different W&B project,
+  fork or update that launch path before running so the actual W&B run lands in
+  `REALVISCNET`.
 - Verify the actual W&B project and entity from the environment or run URL before
-  deciding that a run is missing. If a rebuild run lands outside
-  `re-rebuild-viscnet`, re-log or rerun the provenance step into
-  `re-rebuild-viscnet` and record the corrected run ID.
+  deciding that a run is missing. If a current run lands outside
+  `REALVISCNET`, re-log or rerun the provenance step into `REALVISCNET` and
+  record the corrected run ID.
 - Check local `wandb/run-*` directories and the exact queue log for a new W&B run
   ID, URL, offline mode, authentication error, or network failure.
 - When local logs claim sync but the UI does not show the run, verify through the
@@ -124,6 +181,10 @@ When the user reports that W&B is not updating:
 - If a queue has both compute and post-eval W&B upload, treat W&B upload failure
   as an incomplete provenance state, not as accepted completion. Record the local
   metric path and the missing/failed W&B state explicitly.
+- Keep W&B scalar logging simple for current training unless the user explicitly
+  asks otherwise: log `train_loss`, `val_loss`, and `test_loss`; write richer
+  diagnostics such as confusion matrices, class counts, class shares, attention
+  maps, and distribution summaries to local artifacts instead of W&B scalar keys.
 - Never write API keys, tokens, or `.env` contents into docs, logs, summaries, or
   final responses.
 
@@ -134,15 +195,36 @@ For machine learning training, refactor, debugging, or result-analysis work, rea
 - `rules/subagents/machine-learning.md`
 - `rules/structures/machine-learning-codebase-structure.md`
 
+These `rules/` files are the Viscnet-specific source of truth for ML work even
+when similarly named generic `.codex/` files exist.
+
 Use `checklist.md` as the active standard for reproduction validity. Do not
 retroactively change acceptance criteria to make a run pass. Enhancement variants,
 hyperparameter sweeps, architecture changes, label smoothing, UQ/regression work,
 or alternative datasets are out of scope for reproduction unless the user accepts
 that change before launch.
 
+Use `pipeline.md` only for future new-dataset paper-rebuild pipeline work after
+the user provides or explicitly scopes a new dataset. Manifest adapters,
+quantitative thresholds, and dataset-specific acceptance targets are intentionally
+deferred until that dataset is available and accepted before launch.
+
 For substantial ML tasks:
 
 - Distill the requested method and expected artifacts before launch.
+- All newly authored training configs must be no-RPM only:
+  `model.embeddings.rpm_bool: false`. Historical RPM-enabled configs and runs
+  may remain in the repository only as comparators or archived evidence, not as
+  the launch policy for new training.
+- Current training early stopping and checkpoint selection must be based only on
+  loss values, specifically `val_loss` and/or `test_loss`. Do not use
+  `real_test_distribution_score`, class-count balance, confusion-matrix shape,
+  real-test accuracy, or other distribution diagnostics as an early-stopping or
+  checkpoint-selection metric unless the user explicitly asks for that change
+  before launch.
+- Confusion matrices and predicted-class distribution summaries remain required
+  diagnostic artifacts when requested, but they are for analysis only and must
+  not decide whether training stops.
 - Do not use `training.update_density.optimizer_microbatch_size` or per-sample
   optimizer stepping for rebuild training unless the user explicitly asks for it.
   Normal batch training is the default for new recovery runs. If an old config
@@ -194,9 +276,9 @@ For substantial ML tasks:
   early-stopping behavior, scheduler phase, and whether the loss curves support
   or contradict the accuracy/confusion interpretation.
 - Loss-graph analysis must be performed by a `Result Analyzer` subagent when
-  the runtime supports subagents and the user has not prohibited delegation. If subagents are not
-  available, state that explicitly and perform the same loss-curve analysis
-  locally before making result-analysis claims.
+  the runtime supports subagents and the user has not prohibited delegation. If
+  subagents are not available, state that explicitly and perform the same
+  loss-curve analysis locally before making result-analysis claims.
 - Compare current results against the matching baseline and previous best result
   on the same split and evaluation scope.
 - Inspect loss behavior and checkpoint traces when available, including training
@@ -219,6 +301,12 @@ For substantial ML tasks:
   mapped to evidence and explicitly accepted before launch.
 - Analyzer reports must include explicit allowed-next-action and
   blocked-next-action guidance.
+- When the user asks for a methodology-review subagent for a future-dataset paper
+  pipeline, the reviewer should assess whether the proposed research method is
+  robust, well described, and scientifically grounded. If it is robust under the
+  stated future-dataset assumptions, say so clearly; do not turn intentionally
+  deferred dataset-specific adapters or thresholds into current-methodology
+  blockers.
 - Do not ask for or issue a completion/pass judgment until claims are mapped to
   concrete artifacts and remaining blockers are stated.
 - Update `checklist.md` only when a new durable gate or changed acceptance
@@ -275,6 +363,20 @@ For substantial ML tasks:
   part of routine fixes.
 - Respect dirty worktrees. Existing user changes, including deleted data artifacts,
   must not be reverted unless the user asks.
+
+## Rule Persistence And Git Hygiene
+
+- Run permission-relevant commands as direct executable calls whenever practical.
+  Split `&&` and `||` chains into separate commands so command-prefix rules can
+  match the intended operation.
+- For web retrieval checks, run `curl` directly with timeout flags and rely on
+  tool output limits for truncation instead of shell pipelines.
+- Before staging, committing, cleaning git-related files, or changing git command
+  rules, read `.codex/git/hygiene.md` and `rules/git/hygiene.md` when present.
+- Do not delete git history, reflogs, `.git/logs`, or local git-status evidence
+  unless the user explicitly asks for that exact deletion.
+- If the user asks for a commit, use a concise lower-case typed subject such as
+  `docs: lint Viscnet agent instructions`.
 
 ## Validation
 
